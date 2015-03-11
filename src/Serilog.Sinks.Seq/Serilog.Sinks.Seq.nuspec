@@ -3,19 +3,19 @@
   <metadata>
     <id>Serilog.Sinks.Seq</id>
     <version>$version$</version>
-    <authors>Continuous IT Pty Ltd</authors>
-    <description>Serilog event sink that writes to the Seq event server over HTTP/S.</description>
+    <authors>Serilog Contributors, Continuous IT Pty Ltd</authors>
+    <description>Serilog sink that writes to the Seq event server over HTTP/S.</description>
     <language>en-US</language>
     <projectUrl>http://serilog.net</projectUrl>
     <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
-    <iconUrl>http://serilog.net/images/serilog-nuget.png</iconUrl>
+    <iconUrl>http://serilog.net/images/serilog-sink-seq-nuget.png</iconUrl>
     <dependencies>
       <group targetFramework="net40">
-        <dependency id="Serilog" version="$version$" />
+        <dependency id="Serilog" version="[1.4,2)" />
         <dependency id="Microsoft.Net.Http" version="2.2.20" />
       </group>
       <group targetFramework="net45">
-        <dependency id="Serilog" version="$version$" />
+        <dependency id="Serilog" version="[1.4,2)" />
       </group>
     </dependencies>
     <tags>serilog seq structured logging</tags>

@@ -44,6 +44,14 @@
     <AssemblyOriginatorKeyFile>..\..\assets\Serilog.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Serilog, Version=1.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Serilog.1.4.204\lib\net40\Serilog.dll</HintPath>
+    </Reference>
+    <Reference Include="Serilog.FullNetFx, Version=1.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Serilog.1.4.204\lib\net40\Serilog.FullNetFx.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.IO">
@@ -97,16 +105,6 @@
     </None>
     <None Include="packages.config" />
     <None Include="Serilog.Sinks.Seq.nuspec" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Serilog.FullNetFx\Serilog.FullNetFx-net40.csproj">
-      <Project>{7a9e1095-167d-402a-b43d-b36b97ff183d}</Project>
-      <Name>Serilog.FullNetFx-net40</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Serilog\Serilog-net40.csproj">
-      <Project>{0915dbd9-0f7c-4439-8d9e-74c3d579b219}</Project>
-      <Name>Serilog-net40</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

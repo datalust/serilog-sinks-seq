@@ -22,7 +22,7 @@ var log = new LoggerConfiguration()
 
 And use the Serilog message template DSL to associate named properties with log events:
 
-```
+```csharp
 log.Error("Failed to log on user {ContactId}", contactId);
 ```
 

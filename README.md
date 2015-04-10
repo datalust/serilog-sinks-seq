@@ -49,8 +49,9 @@ When XML is used for configuration, it's not necessary to include the `WriteTo.S
 The two settings typically included are:
 
 ```xml
+<add key="serilog:using:Seq" value="Serilog.Sinks.Seq" />
 <add key="serilog:write-to:Seq.serverUrl" value="http://localhost:5341" />
-<add key="serilog:write-to:Seq.apiKey" value="[API key here]" />
+<add key="serilog:write-to:Seq.apiKey" value="[optional API key here]" />
 ```
 
 Serilog's XML configuration has several other capabilities that are described on the [Serilog wiki](https://github.com/serilog/serilog/wiki/AppSettings).

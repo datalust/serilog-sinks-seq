@@ -17,7 +17,11 @@ namespace Serilog.Sinks.Seq
         readonly Timer _timer;
         readonly TimeSpan _period;
         readonly object _stateLock = new object();
+
         LogEventLevel? _minimumAcceptedLevel;
+        static readonly TimeSpan RequiredLevelCheckInterval = TimeSpan.FromMinutes(2);
+        DateTime _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
+
         volatile bool _unloading;
         readonly string _bookmarkFilename;
         readonly string _logFolder;
@@ -121,10 +125,11 @@ namespace Serilog.Sinks.Seq
 
             try
             {
-                var count = 0;
-
+                int count;
                 do
                 {
+                    count = 0;
+
                     // Locking the bookmark ensures that though there may be multiple instances of this
                     // class running, only one will ship logs at a time.
 
@@ -143,66 +148,70 @@ namespace Serilog.Sinks.Seq
                             currentFile = fileSet.FirstOrDefault();
                         }
 
-                        if (currentFile != null)
+                        if (currentFile == null)
+                            continue;
+
+                        var payload = new StringWriter();
+                        payload.Write("{\"events\":[");
+                        var delimStart = "";
+
+                        using (var current = File.Open(currentFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                         {
-                            var payload = new StringWriter();
-                            payload.Write("{\"events\":[");
-                            count = 0;
-                            var delimStart = "";
+                            current.Position = nextLineBeginsAtOffset;
 
-                            using (var current = File.Open(currentFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                            string nextLine;
+                            while (count < _batchPostingLimit &&
+                                   TryReadLine(current, ref nextLineBeginsAtOffset, out nextLine))
                             {
-                                current.Position = nextLineBeginsAtOffset;
-
-                                string nextLine;
-                                while (count < _batchPostingLimit &&
-                                    TryReadLine(current, ref nextLineBeginsAtOffset, out nextLine))
-                                {
-                                    ++count;
-                                    payload.Write(delimStart);
-                                    payload.Write(nextLine);
-                                    delimStart = ",";
-                                }
-
-                                payload.Write("]}");
+                                ++count;
+                                payload.Write(delimStart);
+                                payload.Write(nextLine);
+                                delimStart = ",";
                             }
 
-                            if (count > 0)
-                            {
-                                var content = new StringContent(payload.ToString(), Encoding.UTF8, "application/json");
-                                if (!string.IsNullOrWhiteSpace(_apiKey))
-                                    content.Headers.Add(ApiKeyHeaderName, _apiKey);
+                            payload.Write("]}");
+                        }
 
-                                var result = _httpClient.PostAsync(BulkUploadResource, content).Result;
-                                if (result.IsSuccessStatusCode)
-                                {
-                                    WriteBookmark(bookmark, nextLineBeginsAtOffset, currentFile);
-                                    var returned = result.Content.ReadAsStringAsync().Result;
-                                    minimumAcceptedLevel = SeqApi.ReadEventInputResult(returned);
-                                }
-                                else
-                                {
-                                    SelfLog.WriteLine("Received failed HTTP shipping result {0}: {1}", result.StatusCode, result.Content.ReadAsStringAsync().Result);
-                                }
+                        if (count > 0 || _minimumAcceptedLevel != null && _nextRequiredLevelCheckUtc < DateTime.UtcNow)
+                        {
+                            lock (_stateLock)
+                            {
+                                _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
+                            }
+
+                            var content = new StringContent(payload.ToString(), Encoding.UTF8, "application/json");
+                            if (!string.IsNullOrWhiteSpace(_apiKey))
+                                content.Headers.Add(ApiKeyHeaderName, _apiKey);
+
+                            var result = _httpClient.PostAsync(BulkUploadResource, content).Result;
+                            if (result.IsSuccessStatusCode)
+                            {
+                                WriteBookmark(bookmark, nextLineBeginsAtOffset, currentFile);
+                                var returned = result.Content.ReadAsStringAsync().Result;
+                                minimumAcceptedLevel = SeqApi.ReadEventInputResult(returned);
                             }
                             else
                             {
-                                // Only advance the bookmark if no other process has the
-                                // current file locked, and its length is as we found it.
+                                SelfLog.WriteLine("Received failed HTTP shipping result {0}: {1}", result.StatusCode, result.Content.ReadAsStringAsync().Result);
+                            }
+                        }
+                        else
+                        {
+                            // Only advance the bookmark if no other process has the
+                            // current file locked, and its length is as we found it.
                                 
-                                if (fileSet.Length == 2 && fileSet.First() == currentFile && IsUnlockedAtLength(currentFile, nextLineBeginsAtOffset))
-                                {
-                                    WriteBookmark(bookmark, 0, fileSet[1]);
-                                }
+                            if (fileSet.Length == 2 && fileSet.First() == currentFile && IsUnlockedAtLength(currentFile, nextLineBeginsAtOffset))
+                            {
+                                WriteBookmark(bookmark, 0, fileSet[1]);
+                            }
 
-                                if (fileSet.Length > 2)
-                                {
-                                    // Once there's a third file waiting to ship, we do our
-                                    // best to move on, though a lock on the current file
-                                    // will delay this.
+                            if (fileSet.Length > 2)
+                            {
+                                // Once there's a third file waiting to ship, we do our
+                                // best to move on, though a lock on the current file
+                                // will delay this.
 
-                                    File.Delete(fileSet[0]);
-                                }
+                                File.Delete(fileSet[0]);
                             }
                         }
                     }

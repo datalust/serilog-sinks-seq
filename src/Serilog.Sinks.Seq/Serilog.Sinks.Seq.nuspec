@@ -11,11 +11,11 @@
     <iconUrl>http://serilog.net/images/serilog-sink-seq-nuget.png</iconUrl>
     <dependencies>
       <group targetFramework="net40">
-        <dependency id="Serilog" version="1.5.1" />
+        <dependency id="Serilog" version="1.5.10" />
         <dependency id="Microsoft.Net.Http" version="2.2.20" />
       </group>
       <group targetFramework="net45">
-        <dependency id="Serilog" version="1.5.1" />
+        <dependency id="Serilog" version="1.5.10" />
       </group>
     </dependencies>
     <tags>serilog seq structured logging</tags>

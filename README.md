@@ -30,7 +30,7 @@ Then query log event properties like `ContactId` from the browser:
 
 ![Query in Seq](http://getseq.net/img/search-by-property.png?extern)
 
-The sink supports durable (disk-buffered) log shipping, and can take advantage of Seq's API keys to authenticate clients and dynamically attach properties to events at the server-side. Visit the [full documentation](https://getseq.atlassian.net/wiki/display/SEQ10/Logging+to+Seq+with+Serilog] for examples.
+The sink supports durable (disk-buffered) log shipping, and can take advantage of Seq's API keys to authenticate clients and dynamically attach properties to events at the server-side. Visit the [full documentation](http://docs.getseq.net/docs/using-serilog) for examples.
 
 ## Configuring with XML
 

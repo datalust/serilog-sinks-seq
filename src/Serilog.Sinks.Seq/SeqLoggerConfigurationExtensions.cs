@@ -52,8 +52,8 @@ namespace Serilog
             string bufferBaseFilename = null,
             long? bufferFileSizeLimitBytes = null)
         {
-            if (loggerSinkConfiguration == null) throw new ArgumentNullException("loggerSinkConfiguration");
-            if (serverUrl == null) throw new ArgumentNullException("serverUrl");
+            if (loggerSinkConfiguration == null) throw new ArgumentNullException(nameof(loggerSinkConfiguration));
+            if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
             if (bufferFileSizeLimitBytes.HasValue && bufferFileSizeLimitBytes < 0) throw new ArgumentException("Negative value provided; file size limit must be non-negative");
 
             var defaultedPeriod = period ?? SeqSink.DefaultPeriod;

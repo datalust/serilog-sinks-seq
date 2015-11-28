@@ -14,7 +14,11 @@ namespace Serilog.Sinks.Seq
     {
         readonly string _apiKey;
         readonly int _batchPostingLimit;
+#if DNXCORE50
+        readonly PortableTimer _timer;
+#else
         readonly Timer _timer;
+#endif
         readonly TimeSpan _period;
         readonly object _stateLock = new object();
 
@@ -46,11 +50,15 @@ namespace Serilog.Sinks.Seq
             _bookmarkFilename = Path.GetFullPath(bufferBaseFilename + ".bookmark");
             _logFolder = Path.GetDirectoryName(_bookmarkFilename);
             _candidateSearchPath = Path.GetFileName(bufferBaseFilename) + "*.json";
-            _timer = new Timer(s => OnTick());
             _period = period;
 
+#if DNXCORE50
+            _timer = new PortableTimer(c => OnTick());
+#else
+            _timer = new Timer(s => OnTick());
             AppDomain.CurrentDomain.DomainUnload += OnAppDomainUnloading;
             AppDomain.CurrentDomain.ProcessExit += OnAppDomainUnloading;
+#endif
 
             SetTimer();
         }
@@ -70,12 +78,16 @@ namespace Serilog.Sinks.Seq
                 _unloading = true;
             }
 
+#if DNXCORE50
+            _timer.Dispose();
+#else
             AppDomain.CurrentDomain.DomainUnload -= OnAppDomainUnloading;
             AppDomain.CurrentDomain.ProcessExit -= OnAppDomainUnloading;
 
             var wh = new ManualResetEvent(false);
             if (_timer.Dispose(wh))
                 wh.WaitOne();
+#endif
 
             OnTick();
         }
@@ -116,7 +128,13 @@ namespace Serilog.Sinks.Seq
         {
             // Note, called under _stateLock
 
+#if DNXCORE50
+            _timer.Start(_period);
+#elif NET40
+            _timer.Change(_period, TimeSpan.FromMilliseconds(-1));
+#else
             _timer.Change(_period, Timeout.InfiniteTimeSpan);
+#endif
         }
 
         void OnTick()
@@ -279,11 +297,10 @@ namespace Serilog.Sinks.Seq
 
             current.Position = nextStart;
 
-            using (var reader = new StreamReader(current, Encoding.UTF8, false, 128, true))
-            {
-                nextLine = reader.ReadLine();
-            }
-
+            // Important not to dispose this StreamReader as the stream must remain open.
+            var reader = new StreamReader(current, Encoding.UTF8, false, 128);
+            nextLine = reader.ReadLine();
+ 
             if (nextLine == null)
                 return false;
 
@@ -301,11 +318,9 @@ namespace Serilog.Sinks.Seq
 
             if (bookmark.Length != 0)
             {
-                string current;
-                using (var reader = new StreamReader(bookmark, Encoding.UTF8, false, 128, true))
-                {
-                    current = reader.ReadLine();
-                }
+                // Important not to dispose this StreamReader as the stream must remain open.
+                var reader = new StreamReader(bookmark, Encoding.UTF8, false, 128);
+                var current = reader.ReadLine();
 
                 if (current != null)
                 {

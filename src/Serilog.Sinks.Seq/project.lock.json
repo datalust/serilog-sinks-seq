@@ -1,0 +1,624 @@
+{
+  "locked": false,
+  "version": 2,
+  "targets": {
+    ".NETFramework,Version=v4.0": {
+      "Microsoft.Bcl/1.1.9": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Bcl.Build": "1.0.14"
+        },
+        "compile": {
+          "lib/net40/System.IO.dll": {},
+          "lib/net40/System.Runtime.dll": {},
+          "lib/net40/System.Threading.Tasks.dll": {}
+        },
+        "runtime": {
+          "lib/net40/System.IO.dll": {},
+          "lib/net40/System.Runtime.dll": {},
+          "lib/net40/System.Threading.Tasks.dll": {}
+        }
+      },
+      "Microsoft.Bcl.Async/1.0.168": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Bcl": "1.1.8"
+        },
+        "frameworkAssemblies": [
+          "System.Net"
+        ],
+        "compile": {
+          "lib/net40/Microsoft.Threading.Tasks.dll": {},
+          "lib/net40/Microsoft.Threading.Tasks.Extensions.Desktop.dll": {},
+          "lib/net40/Microsoft.Threading.Tasks.Extensions.dll": {}
+        },
+        "runtime": {
+          "lib/net40/Microsoft.Threading.Tasks.dll": {},
+          "lib/net40/Microsoft.Threading.Tasks.Extensions.Desktop.dll": {},
+          "lib/net40/Microsoft.Threading.Tasks.Extensions.dll": {}
+        }
+      },
+      "Microsoft.Bcl.Build/1.0.14": {
+        "type": "package"
+      },
+      "Microsoft.Net.Http/2.2.22": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Bcl": "1.1.9",
+          "Microsoft.Bcl.Build": "1.0.14"
+        },
+        "compile": {
+          "lib/net40/System.Net.Http.dll": {},
+          "lib/net40/System.Net.Http.Extensions.dll": {},
+          "lib/net40/System.Net.Http.Primitives.dll": {},
+          "lib/net40/System.Net.Http.WebRequest.dll": {}
+        },
+        "runtime": {
+          "lib/net40/System.Net.Http.dll": {},
+          "lib/net40/System.Net.Http.Extensions.dll": {},
+          "lib/net40/System.Net.Http.Primitives.dll": {},
+          "lib/net40/System.Net.Http.WebRequest.dll": {}
+        }
+      },
+      "Serilog/2.0.0-beta-395": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Bcl.Async": "1.0.168"
+        },
+        "frameworkAssemblies": [
+          "Microsoft.CSharp",
+          "mscorlib",
+          "System",
+          "System.Configuration",
+          "System.Core"
+        ],
+        "compile": {
+          "lib/net40/Serilog.dll": {}
+        },
+        "runtime": {
+          "lib/net40/Serilog.dll": {}
+        }
+      }
+    },
+    ".NETFramework,Version=v4.5": {
+      "Serilog/2.0.0-beta-395": {
+        "type": "package",
+        "frameworkAssemblies": [
+          "Microsoft.CSharp",
+          "mscorlib",
+          "System",
+          "System.Configuration",
+          "System.Core"
+        ],
+        "compile": {
+          "lib/net45/Serilog.dll": {}
+        },
+        "runtime": {
+          "lib/net45/Serilog.dll": {}
+        }
+      }
+    },
+    "DNX,Version=v4.5.1": {
+      "Serilog/2.0.0-beta-395": {
+        "type": "package",
+        "frameworkAssemblies": [
+          "Microsoft.CSharp",
+          "mscorlib",
+          "System",
+          "System.Configuration",
+          "System.Core"
+        ],
+        "compile": {
+          "lib/dnx451/Serilog.dll": {}
+        },
+        "runtime": {
+          "lib/dnx451/Serilog.dll": {}
+        }
+      }
+    },
+    ".NETFramework,Version=v4.0/win7-x86": {
+      "Microsoft.Bcl/1.1.9": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Bcl.Build": "1.0.14"
+        },
+        "compile": {
+          "lib/net40/System.IO.dll": {},
+          "lib/net40/System.Runtime.dll": {},
+          "lib/net40/System.Threading.Tasks.dll": {}
+        },
+        "runtime": {
+          "lib/net40/System.IO.dll": {},
+          "lib/net40/System.Runtime.dll": {},
+          "lib/net40/System.Threading.Tasks.dll": {}
+        }
+      },
+      "Microsoft.Bcl.Async/1.0.168": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Bcl": "1.1.8"
+        },
+        "frameworkAssemblies": [
+          "System.Net"
+        ],
+        "compile": {
+          "lib/net40/Microsoft.Threading.Tasks.dll": {},
+          "lib/net40/Microsoft.Threading.Tasks.Extensions.Desktop.dll": {},
+          "lib/net40/Microsoft.Threading.Tasks.Extensions.dll": {}
+        },
+        "runtime": {
+          "lib/net40/Microsoft.Threading.Tasks.dll": {},
+          "lib/net40/Microsoft.Threading.Tasks.Extensions.Desktop.dll": {},
+          "lib/net40/Microsoft.Threading.Tasks.Extensions.dll": {}
+        }
+      },
+      "Microsoft.Bcl.Build/1.0.14": {
+        "type": "package"
+      },
+      "Microsoft.Net.Http/2.2.22": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Bcl": "1.1.9",
+          "Microsoft.Bcl.Build": "1.0.14"
+        },
+        "compile": {
+          "lib/net40/System.Net.Http.dll": {},
+          "lib/net40/System.Net.Http.Extensions.dll": {},
+          "lib/net40/System.Net.Http.Primitives.dll": {},
+          "lib/net40/System.Net.Http.WebRequest.dll": {}
+        },
+        "runtime": {
+          "lib/net40/System.Net.Http.dll": {},
+          "lib/net40/System.Net.Http.Extensions.dll": {},
+          "lib/net40/System.Net.Http.Primitives.dll": {},
+          "lib/net40/System.Net.Http.WebRequest.dll": {}
+        }
+      },
+      "Serilog/2.0.0-beta-395": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Bcl.Async": "1.0.168"
+        },
+        "frameworkAssemblies": [
+          "Microsoft.CSharp",
+          "mscorlib",
+          "System",
+          "System.Configuration",
+          "System.Core"
+        ],
+        "compile": {
+          "lib/net40/Serilog.dll": {}
+        },
+        "runtime": {
+          "lib/net40/Serilog.dll": {}
+        }
+      }
+    },
+    ".NETFramework,Version=v4.0/win7-x64": {
+      "Microsoft.Bcl/1.1.9": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Bcl.Build": "1.0.14"
+        },
+        "compile": {
+          "lib/net40/System.IO.dll": {},
+          "lib/net40/System.Runtime.dll": {},
+          "lib/net40/System.Threading.Tasks.dll": {}
+        },
+        "runtime": {
+          "lib/net40/System.IO.dll": {},
+          "lib/net40/System.Runtime.dll": {},
+          "lib/net40/System.Threading.Tasks.dll": {}
+        }
+      },
+      "Microsoft.Bcl.Async/1.0.168": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Bcl": "1.1.8"
+        },
+        "frameworkAssemblies": [
+          "System.Net"
+        ],
+        "compile": {
+          "lib/net40/Microsoft.Threading.Tasks.dll": {},
+          "lib/net40/Microsoft.Threading.Tasks.Extensions.Desktop.dll": {},
+          "lib/net40/Microsoft.Threading.Tasks.Extensions.dll": {}
+        },
+        "runtime": {
+          "lib/net40/Microsoft.Threading.Tasks.dll": {},
+          "lib/net40/Microsoft.Threading.Tasks.Extensions.Desktop.dll": {},
+          "lib/net40/Microsoft.Threading.Tasks.Extensions.dll": {}
+        }
+      },
+      "Microsoft.Bcl.Build/1.0.14": {
+        "type": "package"
+      },
+      "Microsoft.Net.Http/2.2.22": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Bcl": "1.1.9",
+          "Microsoft.Bcl.Build": "1.0.14"
+        },
+        "compile": {
+          "lib/net40/System.Net.Http.dll": {},
+          "lib/net40/System.Net.Http.Extensions.dll": {},
+          "lib/net40/System.Net.Http.Primitives.dll": {},
+          "lib/net40/System.Net.Http.WebRequest.dll": {}
+        },
+        "runtime": {
+          "lib/net40/System.Net.Http.dll": {},
+          "lib/net40/System.Net.Http.Extensions.dll": {},
+          "lib/net40/System.Net.Http.Primitives.dll": {},
+          "lib/net40/System.Net.Http.WebRequest.dll": {}
+        }
+      },
+      "Serilog/2.0.0-beta-395": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Bcl.Async": "1.0.168"
+        },
+        "frameworkAssemblies": [
+          "Microsoft.CSharp",
+          "mscorlib",
+          "System",
+          "System.Configuration",
+          "System.Core"
+        ],
+        "compile": {
+          "lib/net40/Serilog.dll": {}
+        },
+        "runtime": {
+          "lib/net40/Serilog.dll": {}
+        }
+      }
+    },
+    ".NETFramework,Version=v4.5/win7-x86": {
+      "Serilog/2.0.0-beta-395": {
+        "type": "package",
+        "frameworkAssemblies": [
+          "Microsoft.CSharp",
+          "mscorlib",
+          "System",
+          "System.Configuration",
+          "System.Core"
+        ],
+        "compile": {
+          "lib/net45/Serilog.dll": {}
+        },
+        "runtime": {
+          "lib/net45/Serilog.dll": {}
+        }
+      }
+    },
+    ".NETFramework,Version=v4.5/win7-x64": {
+      "Serilog/2.0.0-beta-395": {
+        "type": "package",
+        "frameworkAssemblies": [
+          "Microsoft.CSharp",
+          "mscorlib",
+          "System",
+          "System.Configuration",
+          "System.Core"
+        ],
+        "compile": {
+          "lib/net45/Serilog.dll": {}
+        },
+        "runtime": {
+          "lib/net45/Serilog.dll": {}
+        }
+      }
+    },
+    "DNX,Version=v4.5.1/win7-x86": {
+      "Serilog/2.0.0-beta-395": {
+        "type": "package",
+        "frameworkAssemblies": [
+          "Microsoft.CSharp",
+          "mscorlib",
+          "System",
+          "System.Configuration",
+          "System.Core"
+        ],
+        "compile": {
+          "lib/dnx451/Serilog.dll": {}
+        },
+        "runtime": {
+          "lib/dnx451/Serilog.dll": {}
+        }
+      }
+    },
+    "DNX,Version=v4.5.1/win7-x64": {
+      "Serilog/2.0.0-beta-395": {
+        "type": "package",
+        "frameworkAssemblies": [
+          "Microsoft.CSharp",
+          "mscorlib",
+          "System",
+          "System.Configuration",
+          "System.Core"
+        ],
+        "compile": {
+          "lib/dnx451/Serilog.dll": {}
+        },
+        "runtime": {
+          "lib/dnx451/Serilog.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Microsoft.Bcl/1.1.9": {
+      "type": "package",
+      "sha512": "USQ55innJy8K+tAXvVa1O8dUTp2s7pmJ5cJj6Tl02HtGc2xBDj0P2QH5620HbGXIWKWYhydoeQF8Rm/JRDBGhw==",
+      "files": [
+        "content/monoandroid/_._",
+        "content/monotouch/_._",
+        "content/net45/_._",
+        "content/portable-net45+win8+wp8+wpa81/_._",
+        "content/portable-net45+win8+wpa81/_._",
+        "content/portable-net451+win81/_._",
+        "content/portable-net451+win81+wpa81/_._",
+        "content/portable-win81+wp81+wpa81/_._",
+        "content/sl4/_._",
+        "content/sl5/_._",
+        "content/win8/_._",
+        "content/wp8/_._",
+        "content/wpa81/_._",
+        "lib/monoandroid/_._",
+        "lib/monotouch/_._",
+        "lib/net40/ensureRedirect.xml",
+        "lib/net40/System.IO.dll",
+        "lib/net40/System.IO.xml",
+        "lib/net40/System.Runtime.dll",
+        "lib/net40/System.Runtime.xml",
+        "lib/net40/System.Threading.Tasks.dll",
+        "lib/net40/System.Threading.Tasks.xml",
+        "lib/net45/_._",
+        "lib/portable-net40+sl4+win8/ensureRedirect.xml",
+        "lib/portable-net40+sl4+win8/System.IO.dll",
+        "lib/portable-net40+sl4+win8/System.IO.xml",
+        "lib/portable-net40+sl4+win8/System.Runtime.dll",
+        "lib/portable-net40+sl4+win8/System.Runtime.xml",
+        "lib/portable-net40+sl4+win8/System.Threading.Tasks.dll",
+        "lib/portable-net40+sl4+win8/System.Threading.Tasks.xml",
+        "lib/portable-net40+sl4+win8+wp71+wpa81/ensureRedirect.xml",
+        "lib/portable-net40+sl4+win8+wp71+wpa81/System.IO.dll",
+        "lib/portable-net40+sl4+win8+wp71+wpa81/System.IO.xml",
+        "lib/portable-net40+sl4+win8+wp71+wpa81/System.Runtime.dll",
+        "lib/portable-net40+sl4+win8+wp71+wpa81/System.Runtime.xml",
+        "lib/portable-net40+sl4+win8+wp71+wpa81/System.Threading.Tasks.dll",
+        "lib/portable-net40+sl4+win8+wp71+wpa81/System.Threading.Tasks.xml",
+        "lib/portable-net40+sl4+win8+wp8+wpa81/ensureRedirect.xml",
+        "lib/portable-net40+sl4+win8+wp8+wpa81/System.IO.dll",
+        "lib/portable-net40+sl4+win8+wp8+wpa81/System.IO.xml",
+        "lib/portable-net40+sl4+win8+wp8+wpa81/System.Runtime.dll",
+        "lib/portable-net40+sl4+win8+wp8+wpa81/System.Runtime.xml",
+        "lib/portable-net40+sl4+win8+wp8+wpa81/System.Threading.Tasks.dll",
+        "lib/portable-net40+sl4+win8+wp8+wpa81/System.Threading.Tasks.xml",
+        "lib/portable-net40+sl5+win8+wp8+wpa81/ensureRedirect.xml",
+        "lib/portable-net40+sl5+win8+wp8+wpa81/System.IO.dll",
+        "lib/portable-net40+sl5+win8+wp8+wpa81/System.IO.xml",
+        "lib/portable-net40+sl5+win8+wp8+wpa81/System.Runtime.dll",
+        "lib/portable-net40+sl5+win8+wp8+wpa81/System.Runtime.xml",
+        "lib/portable-net40+sl5+win8+wp8+wpa81/System.Threading.Tasks.dll",
+        "lib/portable-net40+sl5+win8+wp8+wpa81/System.Threading.Tasks.xml",
+        "lib/portable-net40+win8/ensureRedirect.xml",
+        "lib/portable-net40+win8/System.IO.dll",
+        "lib/portable-net40+win8/System.IO.xml",
+        "lib/portable-net40+win8/System.Runtime.dll",
+        "lib/portable-net40+win8/System.Runtime.xml",
+        "lib/portable-net40+win8/System.Threading.Tasks.dll",
+        "lib/portable-net40+win8/System.Threading.Tasks.xml",
+        "lib/portable-net40+win8+wp8+wpa81/ensureRedirect.xml",
+        "lib/portable-net40+win8+wp8+wpa81/System.IO.dll",
+        "lib/portable-net40+win8+wp8+wpa81/System.IO.xml",
+        "lib/portable-net40+win8+wp8+wpa81/System.Runtime.dll",
+        "lib/portable-net40+win8+wp8+wpa81/System.Runtime.xml",
+        "lib/portable-net40+win8+wp8+wpa81/System.Threading.Tasks.dll",
+        "lib/portable-net40+win8+wp8+wpa81/System.Threading.Tasks.xml",
+        "lib/portable-net45+win8+wp8+wpa81/_._",
+        "lib/portable-net45+win8+wpa81/_._",
+        "lib/portable-net451+win81/_._",
+        "lib/portable-net451+win81+wpa81/_._",
+        "lib/portable-win81+wp81+wpa81/_._",
+        "lib/sl4/System.IO.dll",
+        "lib/sl4/System.IO.xml",
+        "lib/sl4/System.Runtime.dll",
+        "lib/sl4/System.Runtime.xml",
+        "lib/sl4/System.Threading.Tasks.dll",
+        "lib/sl4/System.Threading.Tasks.xml",
+        "lib/sl4-windowsphone71/ensureRedirect.xml",
+        "lib/sl4-windowsphone71/System.IO.dll",
+        "lib/sl4-windowsphone71/System.IO.xml",
+        "lib/sl4-windowsphone71/System.Runtime.dll",
+        "lib/sl4-windowsphone71/System.Runtime.xml",
+        "lib/sl4-windowsphone71/System.Threading.Tasks.dll",
+        "lib/sl4-windowsphone71/System.Threading.Tasks.xml",
+        "lib/sl5/System.IO.dll",
+        "lib/sl5/System.IO.xml",
+        "lib/sl5/System.Runtime.dll",
+        "lib/sl5/System.Runtime.xml",
+        "lib/sl5/System.Threading.Tasks.dll",
+        "lib/sl5/System.Threading.Tasks.xml",
+        "lib/win8/_._",
+        "lib/wp8/_._",
+        "lib/wpa81/_._",
+        "License-Stable.rtf",
+        "Microsoft.Bcl.1.1.9.nupkg",
+        "Microsoft.Bcl.1.1.9.nupkg.sha512",
+        "Microsoft.Bcl.nuspec"
+      ]
+    },
+    "Microsoft.Bcl.Async/1.0.168": {
+      "type": "package",
+      "sha512": "tUNC02eBwDKpGre0BcNIvblLv1q0Q3DnS/vtkRHj2FE1sXwt386HAudztyl5C0U88hllrqHDvtlz8bK0Y8cHDA==",
+      "files": [
+        "lib/net40/Microsoft.Threading.Tasks.dll",
+        "lib/net40/Microsoft.Threading.Tasks.Extensions.Desktop.dll",
+        "lib/net40/Microsoft.Threading.Tasks.Extensions.Desktop.xml",
+        "lib/net40/Microsoft.Threading.Tasks.Extensions.dll",
+        "lib/net40/Microsoft.Threading.Tasks.Extensions.xml",
+        "lib/net40/Microsoft.Threading.Tasks.xml",
+        "lib/portable-net40+sl4+win8+wp71+wpa81/Microsoft.Threading.Tasks.dll",
+        "lib/portable-net40+sl4+win8+wp71+wpa81/Microsoft.Threading.Tasks.Extensions.dll",
+        "lib/portable-net40+sl4+win8+wp71+wpa81/Microsoft.Threading.Tasks.Extensions.xml",
+        "lib/portable-net40+sl4+win8+wp71+wpa81/Microsoft.Threading.Tasks.xml",
+        "lib/portable-net45+win8+wp8+wpa81/Microsoft.Threading.Tasks.dll",
+        "lib/portable-net45+win8+wp8+wpa81/Microsoft.Threading.Tasks.Extensions.dll",
+        "lib/portable-net45+win8+wp8+wpa81/Microsoft.Threading.Tasks.Extensions.xml",
+        "lib/portable-net45+win8+wp8+wpa81/Microsoft.Threading.Tasks.xml",
+        "lib/portable-net45+win8+wpa81/Microsoft.Threading.Tasks.dll",
+        "lib/portable-net45+win8+wpa81/Microsoft.Threading.Tasks.Extensions.dll",
+        "lib/portable-net45+win8+wpa81/Microsoft.Threading.Tasks.Extensions.xml",
+        "lib/portable-net45+win8+wpa81/Microsoft.Threading.Tasks.xml",
+        "lib/sl4/Microsoft.Threading.Tasks.dll",
+        "lib/sl4/Microsoft.Threading.Tasks.Extensions.dll",
+        "lib/sl4/Microsoft.Threading.Tasks.Extensions.Silverlight.dll",
+        "lib/sl4/Microsoft.Threading.Tasks.Extensions.Silverlight.xml",
+        "lib/sl4/Microsoft.Threading.Tasks.Extensions.xml",
+        "lib/sl4/Microsoft.Threading.Tasks.xml",
+        "lib/sl4-windowsphone71/Microsoft.Threading.Tasks.dll",
+        "lib/sl4-windowsphone71/Microsoft.Threading.Tasks.Extensions.dll",
+        "lib/sl4-windowsphone71/Microsoft.Threading.Tasks.Extensions.Phone.dll",
+        "lib/sl4-windowsphone71/Microsoft.Threading.Tasks.Extensions.Phone.xml",
+        "lib/sl4-windowsphone71/Microsoft.Threading.Tasks.Extensions.xml",
+        "lib/sl4-windowsphone71/Microsoft.Threading.Tasks.xml",
+        "lib/win8/Microsoft.Threading.Tasks.dll",
+        "lib/win8/Microsoft.Threading.Tasks.Extensions.dll",
+        "lib/win8/Microsoft.Threading.Tasks.Extensions.xml",
+        "lib/win8/Microsoft.Threading.Tasks.xml",
+        "lib/wp8/Microsoft.Threading.Tasks.dll",
+        "lib/wp8/Microsoft.Threading.Tasks.Extensions.dll",
+        "lib/wp8/Microsoft.Threading.Tasks.Extensions.Phone.dll",
+        "lib/wp8/Microsoft.Threading.Tasks.Extensions.Phone.xml",
+        "lib/wp8/Microsoft.Threading.Tasks.Extensions.xml",
+        "lib/wp8/Microsoft.Threading.Tasks.xml",
+        "lib/wpa81/Microsoft.Threading.Tasks.dll",
+        "lib/wpa81/Microsoft.Threading.Tasks.Extensions.dll",
+        "lib/wpa81/Microsoft.Threading.Tasks.Extensions.xml",
+        "lib/wpa81/Microsoft.Threading.Tasks.xml",
+        "License-Stable.rtf",
+        "Microsoft.Bcl.Async.1.0.168.nupkg",
+        "Microsoft.Bcl.Async.1.0.168.nupkg.sha512",
+        "Microsoft.Bcl.Async.nuspec"
+      ]
+    },
+    "Microsoft.Bcl.Build/1.0.14": {
+      "type": "package",
+      "sha512": "cDLKSvNvRa519hplsbSoYqO69TjdDIhfjtKUM0g20/nVROoWsGav9KCI9HtnGjLmdV1+TcUUDhbotcllibjPEA==",
+      "files": [
+        "content/net40/_._",
+        "content/netcore45/_._",
+        "content/portable-net40+win8+sl4+wp71+wpa81/_._",
+        "content/sl4/_._",
+        "content/sl4-windowsphone71/_._",
+        "License-Stable.rtf",
+        "Microsoft.Bcl.Build.1.0.14.nupkg",
+        "Microsoft.Bcl.Build.1.0.14.nupkg.sha512",
+        "Microsoft.Bcl.Build.nuspec",
+        "tools/Install.ps1",
+        "tools/Microsoft.Bcl.Build.targets",
+        "tools/Microsoft.Bcl.Build.Tasks.dll",
+        "tools/Uninstall.ps1"
+      ]
+    },
+    "Microsoft.Net.Http/2.2.22": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "bqVLJ2UimlAEs2bn3y28lB1pmFRxuysv9pFyB0A86WEMYGYTfDyfjAGjm0fiaSRjlMNU1jVnp8Mxt8qe4OmpXQ==",
+      "files": [
+        "lib/monoandroid/System.Net.Http.Extensions.dll",
+        "lib/monoandroid/System.Net.Http.Extensions.XML",
+        "lib/monoandroid/System.Net.Http.Primitives.dll",
+        "lib/monoandroid/System.Net.Http.Primitives.xml",
+        "lib/monotouch/System.Net.Http.Extensions.dll",
+        "lib/monotouch/System.Net.Http.Extensions.XML",
+        "lib/monotouch/System.Net.Http.Primitives.dll",
+        "lib/monotouch/System.Net.Http.Primitives.xml",
+        "lib/net40/ensureRedirect.xml",
+        "lib/net40/System.Net.Http.dll",
+        "lib/net40/System.Net.Http.Extensions.dll",
+        "lib/net40/System.Net.Http.Extensions.XML",
+        "lib/net40/System.Net.Http.Primitives.dll",
+        "lib/net40/System.Net.Http.Primitives.xml",
+        "lib/net40/System.Net.Http.WebRequest.dll",
+        "lib/net40/System.Net.Http.WebRequest.xml",
+        "lib/net40/System.Net.Http.xml",
+        "lib/net45/ensureRedirect.xml",
+        "lib/net45/System.Net.Http.Extensions.dll",
+        "lib/net45/System.Net.Http.Extensions.XML",
+        "lib/net45/System.Net.Http.Primitives.dll",
+        "lib/net45/System.Net.Http.Primitives.xml",
+        "lib/portable-net40+sl4+win8+wp71+wpa81/ensureRedirect.xml",
+        "lib/portable-net40+sl4+win8+wp71+wpa81/System.Net.Http.dll",
+        "lib/portable-net40+sl4+win8+wp71+wpa81/System.Net.Http.Extensions.dll",
+        "lib/portable-net40+sl4+win8+wp71+wpa81/System.Net.Http.Extensions.XML",
+        "lib/portable-net40+sl4+win8+wp71+wpa81/System.Net.Http.Primitives.dll",
+        "lib/portable-net40+sl4+win8+wp71+wpa81/System.Net.Http.Primitives.XML",
+        "lib/portable-net40+sl4+win8+wp71+wpa81/System.Net.Http.xml",
+        "lib/portable-net45+win8/ensureRedirect.xml",
+        "lib/portable-net45+win8/System.Net.Http.Extensions.dll",
+        "lib/portable-net45+win8/System.Net.Http.Extensions.XML",
+        "lib/portable-net45+win8/System.Net.Http.Primitives.dll",
+        "lib/portable-net45+win8/System.Net.Http.Primitives.xml",
+        "lib/portable-net45+win8+wpa81/ensureRedirect.xml",
+        "lib/portable-net45+win8+wpa81/System.Net.Http.Extensions.dll",
+        "lib/portable-net45+win8+wpa81/System.Net.Http.Extensions.XML",
+        "lib/portable-net45+win8+wpa81/System.Net.Http.Primitives.dll",
+        "lib/portable-net45+win8+wpa81/System.Net.Http.Primitives.xml",
+        "lib/sl4-windowsphone71/System.Net.Http.dll",
+        "lib/sl4-windowsphone71/System.Net.Http.Extensions.dll",
+        "lib/sl4-windowsphone71/System.Net.Http.Extensions.XML",
+        "lib/sl4-windowsphone71/System.Net.Http.Primitives.dll",
+        "lib/sl4-windowsphone71/System.Net.Http.Primitives.XML",
+        "lib/sl4-windowsphone71/System.Net.Http.xml",
+        "lib/win8/System.Net.Http.Extensions.dll",
+        "lib/win8/System.Net.Http.Extensions.XML",
+        "lib/win8/System.Net.Http.Primitives.dll",
+        "lib/win8/System.Net.Http.Primitives.xml",
+        "lib/wpa81/System.Net.Http.Extensions.dll",
+        "lib/wpa81/System.Net.Http.Extensions.XML",
+        "lib/wpa81/System.Net.Http.Primitives.dll",
+        "lib/wpa81/System.Net.Http.Primitives.xml",
+        "License-Stable.rtf",
+        "Microsoft.Net.Http.2.2.22.nupkg",
+        "Microsoft.Net.Http.2.2.22.nupkg.sha512",
+        "Microsoft.Net.Http.nuspec"
+      ]
+    },
+    "Serilog/2.0.0-beta-395": {
+      "type": "package",
+      "sha512": "Z+aeXz6v9fzJi2rZ7mxWMY6LkBU3/4Z2aob1Utd+TfyV9QTUq2zAetSxEXi/gZrMnvY3/l4gHqzICI07YNeRQg==",
+      "files": [
+        "lib/dnx451/Serilog.dll",
+        "lib/dnx451/Serilog.xml",
+        "lib/dotnet/Serilog.dll",
+        "lib/dotnet/Serilog.xml",
+        "lib/net40/Serilog.dll",
+        "lib/net40/Serilog.xml",
+        "lib/net45/Serilog.dll",
+        "lib/net45/Serilog.xml",
+        "lib/portable-net45+dnxcore50+win+wpa81+wp80+MonoAndroid10+Xamarin.iOS10+MonoTouch10/Serilog.dll",
+        "lib/portable-net45+dnxcore50+win+wpa81+wp80+MonoAndroid10+Xamarin.iOS10+MonoTouch10/Serilog.xml",
+        "Serilog.2.0.0-beta-395.nupkg",
+        "Serilog.2.0.0-beta-395.nupkg.sha512",
+        "Serilog.nuspec"
+      ]
+    }
+  },
+  "projectFileDependencyGroups": {
+    "": [
+      "Serilog >= 2.0.0-beta-395"
+    ],
+    ".NETFramework,Version=v4.0": [
+      "Microsoft.Bcl.Async >= 1.0.168",
+      "Microsoft.Net.Http >= 2.2.22",
+      "fx/System.Configuration "
+    ],
+    ".NETFramework,Version=v4.5": [
+      "fx/System.Net.Http "
+    ],
+    "DNX,Version=v4.5.1": [
+      "fx/System.Net.Http "
+    ]
+  }
+}

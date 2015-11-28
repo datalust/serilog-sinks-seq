@@ -10,33 +10,43 @@
     "Serilog": "2.0.0-beta-395"
   },
   "frameworks": {
-      "net40": {
-            "compilationOptions": {
-                "keyFile": "../../assets/Serilog.snk"
-            },
-            "frameworkAssemblies": {
-                "System.Configuration": ""
-            },
-            "dependencies": {
-              "Microsoft.Bcl.Async": "1.0.168",
-              "Microsoft.Net.Http": "2.2.22"
-            }
-        },
-        "net45": {
-            "compilationOptions": {
-                "keyFile": "../../assets/Serilog.snk"
-            },
-            "frameworkAssemblies": {
-              "System.Net.Http": ""
-            }
-        },
-        "dnx451": {
-            "compilationOptions": {
-                "keyFile": "../../assets/Serilog.snk"
-            },
-            "frameworkAssemblies": {
-              "System.Net.Http": ""
-            }
-        }
+    "net40": {
+      "compilationOptions": {
+        "keyFile": "../../assets/Serilog.snk"
+      },
+      "frameworkAssemblies": {
+        "System.Configuration": ""
+      },
+      "dependencies": {
+        "Microsoft.Bcl.Async": "1.0.168",
+        "Microsoft.Net.Http": "2.2.22"
+      }
+    },
+    "net45": {
+      "compilationOptions": {
+        "keyFile": "../../assets/Serilog.snk"
+      },
+      "frameworkAssemblies": {
+        "System.Net.Http": ""
+      }
+    },
+    "dnx451": {
+      "compilationOptions": {
+        "keyFile": "../../assets/Serilog.snk"
+      },
+      "frameworkAssemblies": {
+        "System.Net.Http": ""
+      }
+    },
+    "dnxcore50": {
+      "compilationOptions": {
+        "define": [ "DNXCORE50" ]
+      },
+      "dependencies": {
+        "Microsoft.NETCore.Platforms": "1.0.0",
+        "Microsoft.NETCore": "5.0.0",
+        "System.Net.Http": "4.0.1-beta-23225"
+      }
     }
+  }
 }

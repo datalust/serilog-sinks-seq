@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -20,6 +21,7 @@ namespace Serilog.Sinks.Seq
         readonly Timer _timer;
 #endif
         readonly TimeSpan _period;
+        readonly long? _eventPayloadLimitBytes;
         readonly object _stateLock = new object();
 
         LogEventLevel? _minimumAcceptedLevel;
@@ -35,11 +37,12 @@ namespace Serilog.Sinks.Seq
         const string ApiKeyHeaderName = "X-Seq-ApiKey";
         const string BulkUploadResource = "api/events/raw";
 
-        public HttpLogShipper(string serverUrl, string bufferBaseFilename, string apiKey, int batchPostingLimit, TimeSpan period)
+        public HttpLogShipper(string serverUrl, string bufferBaseFilename, string apiKey, int batchPostingLimit, TimeSpan period, long? eventPayloadLimitBytes)
         {
             _apiKey = apiKey;
             _batchPostingLimit = batchPostingLimit;
             _period = period;
+            _eventPayloadLimitBytes = eventPayloadLimitBytes;
 
             var baseUri = serverUrl;
             if (!baseUri.EndsWith("/"))
@@ -181,10 +184,20 @@ namespace Serilog.Sinks.Seq
                             while (count < _batchPostingLimit &&
                                    TryReadLine(current, ref nextLineBeginsAtOffset, out nextLine))
                             {
+                                // Count is the indicator that work was done, so advances even in the (rare) case an
+                                // oversized event is dropped.
                                 ++count;
-                                payload.Write(delimStart);
-                                payload.Write(nextLine);
-                                delimStart = ",";
+
+                                if (_eventPayloadLimitBytes.HasValue && Encoding.UTF8.GetByteCount(nextLine) > _eventPayloadLimitBytes.Value)
+                                {
+                                    SelfLog.WriteLine("Event JSON representation exceeds the byte size limit of {0} and will be dropped; data: {1}", _eventPayloadLimitBytes, nextLine);
+                                }
+                                else
+                                {
+                                    payload.Write(delimStart);
+                                    payload.Write(nextLine);
+                                    delimStart = ",";
+                                }
                             }
 
                             payload.Write("]}");
@@ -197,7 +210,8 @@ namespace Serilog.Sinks.Seq
                                 _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
                             }
 
-                            var content = new StringContent(payload.ToString(), Encoding.UTF8, "application/json");
+                            var payloadText = payload.ToString();
+                            var content = new StringContent(payloadText, Encoding.UTF8, "application/json");
                             if (!string.IsNullOrWhiteSpace(_apiKey))
                                 content.Headers.Add(ApiKeyHeaderName, _apiKey);
 
@@ -207,6 +221,15 @@ namespace Serilog.Sinks.Seq
                                 WriteBookmark(bookmark, nextLineBeginsAtOffset, currentFile);
                                 var returned = result.Content.ReadAsStringAsync().Result;
                                 minimumAcceptedLevel = SeqApi.ReadEventInputResult(returned);
+                            }
+                            else if (result.StatusCode == HttpStatusCode.BadRequest ||
+                                     result.StatusCode == HttpStatusCode.RequestEntityTooLarge)
+                            {
+                                var invalidPayloadFilename = $"invalid-{result.StatusCode}-{Guid.NewGuid():n}.json";
+                                var invalidPayloadFile = Path.Combine(_logFolder, invalidPayloadFilename);
+                                SelfLog.WriteLine("HTTP shipping failed with {0}: {1}; dumping payload to {2}", result.StatusCode, result.Content.ReadAsStringAsync().Result, invalidPayloadFile);
+                                File.WriteAllText(invalidPayloadFile, payloadText);
+                                WriteBookmark(bookmark, nextLineBeginsAtOffset, currentFile);
                             }
                             else
                             {

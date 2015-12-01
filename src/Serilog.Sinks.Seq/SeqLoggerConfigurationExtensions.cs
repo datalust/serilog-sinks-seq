@@ -40,6 +40,8 @@ namespace Serilog
         /// <param name="apiKey">A Seq <i>API key</i> that authenticates the client to the Seq server.</param>
         /// <param name="bufferFileSizeLimitBytes">The maximum size, in bytes, to which the buffer
         /// log file for a specific date will be allowed to grow. By default no limit will be applied.</param>
+        /// <param name="eventPayloadLimitBytes">The maximum size, in bytes, that the JSON representation of
+        /// an event may take before it is dropped rather than being sent to the Seq server.</param>
         /// <returns>Logger configuration, allowing configuration to continue.</returns>
         /// <exception cref="ArgumentNullException">A required parameter is null.</exception>
         public static LoggerConfiguration Seq(
@@ -50,7 +52,8 @@ namespace Serilog
             TimeSpan? period = null,
             string apiKey = null,
             string bufferBaseFilename = null,
-            long? bufferFileSizeLimitBytes = null)
+            long? bufferFileSizeLimitBytes = null,
+            long? eventPayloadLimitBytes = null)
         {
             if (loggerSinkConfiguration == null) throw new ArgumentNullException(nameof(loggerSinkConfiguration));
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
@@ -60,9 +63,9 @@ namespace Serilog
 
             ILogEventSink sink;
             if (bufferBaseFilename == null)
-                sink = new SeqSink(serverUrl, apiKey, batchPostingLimit, defaultedPeriod);
+                sink = new SeqSink(serverUrl, apiKey, batchPostingLimit, defaultedPeriod, eventPayloadLimitBytes);
             else
-                sink = new DurableSeqSink(serverUrl, bufferBaseFilename, apiKey, batchPostingLimit, defaultedPeriod, bufferFileSizeLimitBytes);
+                sink = new DurableSeqSink(serverUrl, bufferBaseFilename, apiKey, batchPostingLimit, defaultedPeriod, bufferFileSizeLimitBytes, eventPayloadLimitBytes);
 
             return loggerSinkConfiguration.Sink(sink, restrictedToMinimumLevel);
         }

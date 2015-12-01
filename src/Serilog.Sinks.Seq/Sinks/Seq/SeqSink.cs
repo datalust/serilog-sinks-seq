@@ -29,6 +29,7 @@ namespace Serilog.Sinks.Seq
     class SeqSink : PeriodicBatchingSink
     {
         readonly string _apiKey;
+        readonly long? _eventPayloadLimitBytes;
         readonly HttpClient _httpClient;
         const string BulkUploadResource = "api/events/raw";
         const string ApiKeyHeaderName = "X-Seq-ApiKey";
@@ -41,11 +42,12 @@ namespace Serilog.Sinks.Seq
         public const int DefaultBatchPostingLimit = 1000;
         public static readonly TimeSpan DefaultPeriod = TimeSpan.FromSeconds(2);
 
-        public SeqSink(string serverUrl, string apiKey, int batchPostingLimit, TimeSpan period)
+        public SeqSink(string serverUrl, string apiKey, int batchPostingLimit, TimeSpan period, long? eventPayloadLimitBytes)
             : base(batchPostingLimit, period)
         {
-            if (serverUrl == null) throw new ArgumentNullException("serverUrl");
+            if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
             _apiKey = apiKey;
+            _eventPayloadLimitBytes = eventPayloadLimitBytes;
 
             var baseUri = serverUrl;
             if (!baseUri.EndsWith("/"))
@@ -78,15 +80,35 @@ namespace Serilog.Sinks.Seq
             _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
 
             var payload = new StringWriter();
-            payload.Write("{\"events\":[");
+            payload.Write("{\"Events\":[");
 
             var formatter = new JsonFormatter(closingDelimiter: "");
             var delimStart = "";
             foreach (var logEvent in events)
             {
-                payload.Write(delimStart);
-                formatter.Format(logEvent, payload);
-                delimStart = ",";
+                if (_eventPayloadLimitBytes.HasValue)
+                {
+                    var scratch = new StringWriter();
+                    formatter.Format(logEvent, scratch);
+                    var buffered = scratch.ToString();
+
+                    if (Encoding.UTF8.GetByteCount(buffered) > _eventPayloadLimitBytes.Value)
+                    {
+                        SelfLog.WriteLine("Event JSON representation exceeds the byte size limit of {0} set for this sink and will be dropped; data: {1}", _eventPayloadLimitBytes, buffered);
+                    }
+                    else
+                    {
+                        payload.Write(delimStart);
+                        payload.Write(buffered);
+                        delimStart = ",";
+                    }
+                }
+                else
+                {
+                    payload.Write(delimStart);
+                    formatter.Format(logEvent, payload);
+                    delimStart = ",";
+                }
             }
 
             payload.Write("]}");
@@ -97,7 +119,7 @@ namespace Serilog.Sinks.Seq
     
             var result = await _httpClient.PostAsync(BulkUploadResource, content);
             if (!result.IsSuccessStatusCode)
-                throw new LoggingFailedException(string.Format("Received failed result {0} when posting events to Seq", result.StatusCode));
+                throw new LoggingFailedException($"Received failed result {result.StatusCode} when posting events to Seq");
 
             var returned = await result.Content.ReadAsStringAsync();
             _minimumAcceptedLevel = SeqApi.ReadEventInputResult(returned);

@@ -95,7 +95,7 @@ namespace Serilog.Sinks.Seq
             if (!string.IsNullOrWhiteSpace(_apiKey))
                 content.Headers.Add(ApiKeyHeaderName, _apiKey);
     
-            var result = await _httpClient.PostAsync(BulkUploadResource, content);
+            var result = await _httpClient.PostAsync(BulkUploadResource, content).ConfigureAwait(false);
             if (!result.IsSuccessStatusCode)
                 throw new LoggingFailedException(string.Format("Received failed result {0} when posting events to Seq", result.StatusCode));
 

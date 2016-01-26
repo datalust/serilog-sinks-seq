@@ -14,21 +14,19 @@
   "frameworks": {
     "net45": {
       "compilationOptions": {
-        "keyFile": "../../assets/Serilog.snk"
+        "keyFile": "../../assets/Serilog.snk",
+        "define": ["TIMER", "APPDOMAIN"]
       },
       "frameworkAssemblies": {
         "System.Net.Http": ""
       }
     },
-    "dnxcore50": {
+    "dotnet5.4": {
       "compilationOptions": {
-        "keyFile": "../../assets/Serilog.snk",
-        "define": [ "DNXCORE50" ]
+        "keyFile": "../../assets/Serilog.snk"
       },
       "dependencies": {
-        "Microsoft.NETCore.Platforms": "1.0.0",
-        "Microsoft.NETCore": "5.0.0",
-        "System.Net.Http": "4.0.1-beta-23225"
+        "System.Net.Http": "4.0.1-beta-23516"
       }
     }
   }

@@ -16,7 +16,7 @@ namespace Serilog.Sinks.Seq
     {
         readonly string _apiKey;
         readonly int _batchPostingLimit;
-#if DNXCORE50
+#if !TIMER
         readonly PortableTimer _timer;
 #else
         readonly Timer _timer;
@@ -56,10 +56,13 @@ namespace Serilog.Sinks.Seq
             _candidateSearchPath = Path.GetFileName(bufferBaseFilename) + "*.json";
             _period = period;
 
-#if DNXCORE50
+#if !TIMER
             _timer = new PortableTimer(c => OnTick());
 #else
             _timer = new Timer(s => OnTick());
+#endif
+
+#if APPDOMAIN
             AppDomain.CurrentDomain.DomainUnload += OnAppDomainUnloading;
             AppDomain.CurrentDomain.ProcessExit += OnAppDomainUnloading;
 #endif
@@ -82,12 +85,14 @@ namespace Serilog.Sinks.Seq
                 _unloading = true;
             }
 
-#if DNXCORE50
-            _timer.Dispose();
-#else
+#if APPDOMAIN
             AppDomain.CurrentDomain.DomainUnload -= OnAppDomainUnloading;
             AppDomain.CurrentDomain.ProcessExit -= OnAppDomainUnloading;
+#endif
 
+#if !TIMER
+            _timer.Dispose();
+#else
             var wh = new ManualResetEvent(false);
             if (_timer.Dispose(wh))
                 wh.WaitOne();
@@ -132,10 +137,8 @@ namespace Serilog.Sinks.Seq
         {
             // Note, called under _stateLock
 
-#if DNXCORE50
+#if !TIMER
             _timer.Start(_period);
-#elif NET40
-            _timer.Change(_period, TimeSpan.FromMilliseconds(-1));
 #else
             _timer.Change(_period, Timeout.InfiniteTimeSpan);
 #endif

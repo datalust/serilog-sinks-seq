@@ -7,30 +7,12 @@
   "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0",
   "iconUrl": "http://serilog.net/images/serilog-sink-seq-nuget.png",
   "dependencies": {
-    "Serilog": "2.0.0-beta-450"
+    "Serilog": "2.0.0-beta-465",
+    "Serilog.Sinks.PeriodicBatching": "2.0.0-beta-465",
+    "Serilog.Sinks.RollingFile":  "2.0.0-beta-465"
   },
   "frameworks": {
-    "net40": {
-      "compilationOptions": {
-        "keyFile": "../../assets/Serilog.snk"
-      },
-      "frameworkAssemblies": {
-        "System.Configuration": ""
-      },
-      "dependencies": {
-        "Microsoft.Bcl.Async": "1.0.168",
-        "Microsoft.Net.Http": "2.2.22"
-      }
-    },
     "net45": {
-      "compilationOptions": {
-        "keyFile": "../../assets/Serilog.snk"
-      },
-      "frameworkAssemblies": {
-        "System.Net.Http": ""
-      }
-    },
-    "dnx451": {
       "compilationOptions": {
         "keyFile": "../../assets/Serilog.snk"
       },
@@ -40,6 +22,7 @@
     },
     "dnxcore50": {
       "compilationOptions": {
+        "keyFile": "../../assets/Serilog.snk",
         "define": [ "DNXCORE50" ]
       },
       "dependencies": {

@@ -2,86 +2,8 @@
   "locked": false,
   "version": 2,
   "targets": {
-    ".NETFramework,Version=v4.0": {
-      "Microsoft.Bcl/1.1.9": {
-        "type": "package",
-        "dependencies": {
-          "Microsoft.Bcl.Build": "1.0.14"
-        },
-        "compile": {
-          "lib/net40/System.IO.dll": {},
-          "lib/net40/System.Runtime.dll": {},
-          "lib/net40/System.Threading.Tasks.dll": {}
-        },
-        "runtime": {
-          "lib/net40/System.IO.dll": {},
-          "lib/net40/System.Runtime.dll": {},
-          "lib/net40/System.Threading.Tasks.dll": {}
-        }
-      },
-      "Microsoft.Bcl.Async/1.0.168": {
-        "type": "package",
-        "dependencies": {
-          "Microsoft.Bcl": "1.1.8"
-        },
-        "frameworkAssemblies": [
-          "System.Net"
-        ],
-        "compile": {
-          "lib/net40/Microsoft.Threading.Tasks.dll": {},
-          "lib/net40/Microsoft.Threading.Tasks.Extensions.Desktop.dll": {},
-          "lib/net40/Microsoft.Threading.Tasks.Extensions.dll": {}
-        },
-        "runtime": {
-          "lib/net40/Microsoft.Threading.Tasks.dll": {},
-          "lib/net40/Microsoft.Threading.Tasks.Extensions.Desktop.dll": {},
-          "lib/net40/Microsoft.Threading.Tasks.Extensions.dll": {}
-        }
-      },
-      "Microsoft.Bcl.Build/1.0.14": {
-        "type": "package"
-      },
-      "Microsoft.Net.Http/2.2.22": {
-        "type": "package",
-        "dependencies": {
-          "Microsoft.Bcl": "1.1.9",
-          "Microsoft.Bcl.Build": "1.0.14"
-        },
-        "compile": {
-          "lib/net40/System.Net.Http.dll": {},
-          "lib/net40/System.Net.Http.Extensions.dll": {},
-          "lib/net40/System.Net.Http.Primitives.dll": {},
-          "lib/net40/System.Net.Http.WebRequest.dll": {}
-        },
-        "runtime": {
-          "lib/net40/System.Net.Http.dll": {},
-          "lib/net40/System.Net.Http.Extensions.dll": {},
-          "lib/net40/System.Net.Http.Primitives.dll": {},
-          "lib/net40/System.Net.Http.WebRequest.dll": {}
-        }
-      },
-      "Serilog/2.0.0-beta-450": {
-        "type": "package",
-        "dependencies": {
-          "Microsoft.Bcl.Async": "1.0.168"
-        },
-        "frameworkAssemblies": [
-          "Microsoft.CSharp",
-          "mscorlib",
-          "System",
-          "System.Configuration",
-          "System.Core"
-        ],
-        "compile": {
-          "lib/net40/Serilog.dll": {}
-        },
-        "runtime": {
-          "lib/net40/Serilog.dll": {}
-        }
-      }
-    },
     ".NETFramework,Version=v4.5": {
-      "Serilog/2.0.0-beta-450": {
+      "Serilog/2.0.0-beta-465": {
         "type": "package",
         "frameworkAssemblies": [
           "Microsoft.CSharp",
@@ -96,11 +18,36 @@
         "runtime": {
           "lib/net45/Serilog.dll": {}
         }
-      }
-    },
-    "DNX,Version=v4.5.1": {
-      "Serilog/2.0.0-beta-450": {
+      },
+      "Serilog.Sinks.File/2.0.0-beta-465": {
         "type": "package",
+        "dependencies": {
+          "Serilog": "2.0.0-beta-465"
+        },
+        "frameworkAssemblies": [
+          "Microsoft.CSharp",
+          "mscorlib",
+          "System",
+          "System.Core"
+        ],
+        "compile": {
+          "lib/net45/Serilog.dll": {},
+          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
+          "lib/net45/Serilog.Sinks.Console.dll": {},
+          "lib/net45/Serilog.Sinks.File.dll": {}
+        },
+        "runtime": {
+          "lib/net45/Serilog.dll": {},
+          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
+          "lib/net45/Serilog.Sinks.Console.dll": {},
+          "lib/net45/Serilog.Sinks.File.dll": {}
+        }
+      },
+      "Serilog.Sinks.PeriodicBatching/2.0.0-beta-465": {
+        "type": "package",
+        "dependencies": {
+          "Serilog": "2.0.0-beta-465"
+        },
         "frameworkAssemblies": [
           "Microsoft.CSharp",
           "mscorlib",
@@ -109,10 +56,51 @@
           "System.Core"
         ],
         "compile": {
-          "lib/net45/Serilog.dll": {}
+          "lib/net45/Serilog.dll": {},
+          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
+          "lib/net45/Serilog.Sinks.Console.dll": {},
+          "lib/net45/Serilog.Sinks.File.dll": {},
+          "lib/net45/Serilog.Sinks.Observable.dll": {},
+          "lib/net45/Serilog.Sinks.PeriodicBatching.dll": {}
         },
         "runtime": {
-          "lib/net45/Serilog.dll": {}
+          "lib/net45/Serilog.dll": {},
+          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
+          "lib/net45/Serilog.Sinks.Console.dll": {},
+          "lib/net45/Serilog.Sinks.File.dll": {},
+          "lib/net45/Serilog.Sinks.Observable.dll": {},
+          "lib/net45/Serilog.Sinks.PeriodicBatching.dll": {}
+        }
+      },
+      "Serilog.Sinks.RollingFile/2.0.0-beta-465": {
+        "type": "package",
+        "dependencies": {
+          "Serilog": "2.0.0-beta-465",
+          "Serilog.Sinks.File": "2.0.0-beta-465"
+        },
+        "frameworkAssemblies": [
+          "Microsoft.CSharp",
+          "mscorlib",
+          "System",
+          "System.Core"
+        ],
+        "compile": {
+          "lib/net45/Serilog.dll": {},
+          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
+          "lib/net45/Serilog.Sinks.Console.dll": {},
+          "lib/net45/Serilog.Sinks.File.dll": {},
+          "lib/net45/Serilog.Sinks.Observable.dll": {},
+          "lib/net45/Serilog.Sinks.PeriodicBatching.dll": {},
+          "lib/net45/Serilog.Sinks.RollingFile.dll": {}
+        },
+        "runtime": {
+          "lib/net45/Serilog.dll": {},
+          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
+          "lib/net45/Serilog.Sinks.Console.dll": {},
+          "lib/net45/Serilog.Sinks.File.dll": {},
+          "lib/net45/Serilog.Sinks.Observable.dll": {},
+          "lib/net45/Serilog.Sinks.PeriodicBatching.dll": {},
+          "lib/net45/Serilog.Sinks.RollingFile.dll": {}
         }
       }
     },
@@ -257,7 +245,7 @@
           "lib/dotnet/Microsoft.Win32.Primitives.dll": {}
         }
       },
-      "Serilog/2.0.0-beta-450": {
+      "Serilog/2.0.0-beta-465": {
         "type": "package",
         "dependencies": {
           "Microsoft.CSharp": "4.0.1-beta-23516",
@@ -280,6 +268,59 @@
         },
         "runtime": {
           "lib/dotnet5.4/Serilog.dll": {}
+        }
+      },
+      "Serilog.Sinks.File/2.0.0-beta-465": {
+        "type": "package",
+        "dependencies": {
+          "Serilog": "2.0.0-beta-465",
+          "System.IO": "4.0.11-beta-23516",
+          "System.IO.FileSystem": "4.0.0",
+          "System.IO.FileSystem.Primitives": "4.0.0"
+        },
+        "compile": {
+          "lib/dotnet5.1/Serilog.dll": {},
+          "lib/dotnet5.1/Serilog.Sinks.ColoredConsole.dll": {},
+          "lib/dotnet5.1/Serilog.Sinks.Console.dll": {},
+          "lib/dotnet5.1/Serilog.Sinks.File.dll": {}
+        },
+        "runtime": {
+          "lib/dotnet5.1/Serilog.dll": {},
+          "lib/dotnet5.1/Serilog.Sinks.ColoredConsole.dll": {},
+          "lib/dotnet5.1/Serilog.Sinks.Console.dll": {},
+          "lib/dotnet5.1/Serilog.Sinks.File.dll": {}
+        }
+      },
+      "Serilog.Sinks.PeriodicBatching/2.0.0-beta-465": {
+        "type": "package",
+        "dependencies": {
+          "Serilog": "2.0.0-beta-465",
+          "System.Collections.Concurrent": "4.0.11-beta-23516"
+        },
+        "compile": {
+          "lib/dotnet5.2/Serilog.Sinks.Observable.dll": {},
+          "lib/dotnet5.2/Serilog.Sinks.PeriodicBatching.dll": {}
+        },
+        "runtime": {
+          "lib/dotnet5.2/Serilog.Sinks.Observable.dll": {},
+          "lib/dotnet5.2/Serilog.Sinks.PeriodicBatching.dll": {}
+        }
+      },
+      "Serilog.Sinks.RollingFile/2.0.0-beta-465": {
+        "type": "package",
+        "dependencies": {
+          "Serilog": "2.0.0-beta-465",
+          "Serilog.Sinks.File": "2.0.0-beta-465",
+          "System.IO": "4.0.11-beta-23516",
+          "System.IO.FileSystem.Primitives": "4.0.1-beta-23516"
+        },
+        "compile": {
+          "lib/dotnet5.4/Serilog.dll": {},
+          "lib/dotnet5.4/Serilog.Sinks.RollingFile.dll": {}
+        },
+        "runtime": {
+          "lib/dotnet5.4/Serilog.dll": {},
+          "lib/dotnet5.4/Serilog.Sinks.RollingFile.dll": {}
         }
       },
       "System.AppContext/4.0.0": {
@@ -611,16 +652,16 @@
           "ref/dotnet5.4/System.IO.FileSystem.dll": {}
         }
       },
-      "System.IO.FileSystem.Primitives/4.0.0": {
+      "System.IO.FileSystem.Primitives/4.0.1-beta-23516": {
         "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
         "compile": {
-          "ref/dotnet/System.IO.FileSystem.Primitives.dll": {}
+          "ref/dotnet5.1/System.IO.FileSystem.Primitives.dll": {}
         },
         "runtime": {
-          "lib/dotnet/System.IO.FileSystem.Primitives.dll": {}
+          "lib/dotnet5.4/System.IO.FileSystem.Primitives.dll": {}
         }
       },
       "System.IO.UnmanagedMemoryStream/4.0.0": {
@@ -1366,164 +1407,8 @@
         }
       }
     },
-    ".NETFramework,Version=v4.0/win7-x86": {
-      "Microsoft.Bcl/1.1.9": {
-        "type": "package",
-        "dependencies": {
-          "Microsoft.Bcl.Build": "1.0.14"
-        },
-        "compile": {
-          "lib/net40/System.IO.dll": {},
-          "lib/net40/System.Runtime.dll": {},
-          "lib/net40/System.Threading.Tasks.dll": {}
-        },
-        "runtime": {
-          "lib/net40/System.IO.dll": {},
-          "lib/net40/System.Runtime.dll": {},
-          "lib/net40/System.Threading.Tasks.dll": {}
-        }
-      },
-      "Microsoft.Bcl.Async/1.0.168": {
-        "type": "package",
-        "dependencies": {
-          "Microsoft.Bcl": "1.1.8"
-        },
-        "frameworkAssemblies": [
-          "System.Net"
-        ],
-        "compile": {
-          "lib/net40/Microsoft.Threading.Tasks.dll": {},
-          "lib/net40/Microsoft.Threading.Tasks.Extensions.Desktop.dll": {},
-          "lib/net40/Microsoft.Threading.Tasks.Extensions.dll": {}
-        },
-        "runtime": {
-          "lib/net40/Microsoft.Threading.Tasks.dll": {},
-          "lib/net40/Microsoft.Threading.Tasks.Extensions.Desktop.dll": {},
-          "lib/net40/Microsoft.Threading.Tasks.Extensions.dll": {}
-        }
-      },
-      "Microsoft.Bcl.Build/1.0.14": {
-        "type": "package"
-      },
-      "Microsoft.Net.Http/2.2.22": {
-        "type": "package",
-        "dependencies": {
-          "Microsoft.Bcl": "1.1.9",
-          "Microsoft.Bcl.Build": "1.0.14"
-        },
-        "compile": {
-          "lib/net40/System.Net.Http.dll": {},
-          "lib/net40/System.Net.Http.Extensions.dll": {},
-          "lib/net40/System.Net.Http.Primitives.dll": {},
-          "lib/net40/System.Net.Http.WebRequest.dll": {}
-        },
-        "runtime": {
-          "lib/net40/System.Net.Http.dll": {},
-          "lib/net40/System.Net.Http.Extensions.dll": {},
-          "lib/net40/System.Net.Http.Primitives.dll": {},
-          "lib/net40/System.Net.Http.WebRequest.dll": {}
-        }
-      },
-      "Serilog/2.0.0-beta-450": {
-        "type": "package",
-        "dependencies": {
-          "Microsoft.Bcl.Async": "1.0.168"
-        },
-        "frameworkAssemblies": [
-          "Microsoft.CSharp",
-          "mscorlib",
-          "System",
-          "System.Configuration",
-          "System.Core"
-        ],
-        "compile": {
-          "lib/net40/Serilog.dll": {}
-        },
-        "runtime": {
-          "lib/net40/Serilog.dll": {}
-        }
-      }
-    },
-    ".NETFramework,Version=v4.0/win7-x64": {
-      "Microsoft.Bcl/1.1.9": {
-        "type": "package",
-        "dependencies": {
-          "Microsoft.Bcl.Build": "1.0.14"
-        },
-        "compile": {
-          "lib/net40/System.IO.dll": {},
-          "lib/net40/System.Runtime.dll": {},
-          "lib/net40/System.Threading.Tasks.dll": {}
-        },
-        "runtime": {
-          "lib/net40/System.IO.dll": {},
-          "lib/net40/System.Runtime.dll": {},
-          "lib/net40/System.Threading.Tasks.dll": {}
-        }
-      },
-      "Microsoft.Bcl.Async/1.0.168": {
-        "type": "package",
-        "dependencies": {
-          "Microsoft.Bcl": "1.1.8"
-        },
-        "frameworkAssemblies": [
-          "System.Net"
-        ],
-        "compile": {
-          "lib/net40/Microsoft.Threading.Tasks.dll": {},
-          "lib/net40/Microsoft.Threading.Tasks.Extensions.Desktop.dll": {},
-          "lib/net40/Microsoft.Threading.Tasks.Extensions.dll": {}
-        },
-        "runtime": {
-          "lib/net40/Microsoft.Threading.Tasks.dll": {},
-          "lib/net40/Microsoft.Threading.Tasks.Extensions.Desktop.dll": {},
-          "lib/net40/Microsoft.Threading.Tasks.Extensions.dll": {}
-        }
-      },
-      "Microsoft.Bcl.Build/1.0.14": {
-        "type": "package"
-      },
-      "Microsoft.Net.Http/2.2.22": {
-        "type": "package",
-        "dependencies": {
-          "Microsoft.Bcl": "1.1.9",
-          "Microsoft.Bcl.Build": "1.0.14"
-        },
-        "compile": {
-          "lib/net40/System.Net.Http.dll": {},
-          "lib/net40/System.Net.Http.Extensions.dll": {},
-          "lib/net40/System.Net.Http.Primitives.dll": {},
-          "lib/net40/System.Net.Http.WebRequest.dll": {}
-        },
-        "runtime": {
-          "lib/net40/System.Net.Http.dll": {},
-          "lib/net40/System.Net.Http.Extensions.dll": {},
-          "lib/net40/System.Net.Http.Primitives.dll": {},
-          "lib/net40/System.Net.Http.WebRequest.dll": {}
-        }
-      },
-      "Serilog/2.0.0-beta-450": {
-        "type": "package",
-        "dependencies": {
-          "Microsoft.Bcl.Async": "1.0.168"
-        },
-        "frameworkAssemblies": [
-          "Microsoft.CSharp",
-          "mscorlib",
-          "System",
-          "System.Configuration",
-          "System.Core"
-        ],
-        "compile": {
-          "lib/net40/Serilog.dll": {}
-        },
-        "runtime": {
-          "lib/net40/Serilog.dll": {}
-        }
-      }
-    },
     ".NETFramework,Version=v4.5/win7-x86": {
-      "Serilog/2.0.0-beta-450": {
+      "Serilog/2.0.0-beta-465": {
         "type": "package",
         "frameworkAssemblies": [
           "Microsoft.CSharp",
@@ -1537,11 +1422,95 @@
         },
         "runtime": {
           "lib/net45/Serilog.dll": {}
+        }
+      },
+      "Serilog.Sinks.File/2.0.0-beta-465": {
+        "type": "package",
+        "dependencies": {
+          "Serilog": "2.0.0-beta-465"
+        },
+        "frameworkAssemblies": [
+          "Microsoft.CSharp",
+          "mscorlib",
+          "System",
+          "System.Core"
+        ],
+        "compile": {
+          "lib/net45/Serilog.dll": {},
+          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
+          "lib/net45/Serilog.Sinks.Console.dll": {},
+          "lib/net45/Serilog.Sinks.File.dll": {}
+        },
+        "runtime": {
+          "lib/net45/Serilog.dll": {},
+          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
+          "lib/net45/Serilog.Sinks.Console.dll": {},
+          "lib/net45/Serilog.Sinks.File.dll": {}
+        }
+      },
+      "Serilog.Sinks.PeriodicBatching/2.0.0-beta-465": {
+        "type": "package",
+        "dependencies": {
+          "Serilog": "2.0.0-beta-465"
+        },
+        "frameworkAssemblies": [
+          "Microsoft.CSharp",
+          "mscorlib",
+          "System",
+          "System.Configuration",
+          "System.Core"
+        ],
+        "compile": {
+          "lib/net45/Serilog.dll": {},
+          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
+          "lib/net45/Serilog.Sinks.Console.dll": {},
+          "lib/net45/Serilog.Sinks.File.dll": {},
+          "lib/net45/Serilog.Sinks.Observable.dll": {},
+          "lib/net45/Serilog.Sinks.PeriodicBatching.dll": {}
+        },
+        "runtime": {
+          "lib/net45/Serilog.dll": {},
+          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
+          "lib/net45/Serilog.Sinks.Console.dll": {},
+          "lib/net45/Serilog.Sinks.File.dll": {},
+          "lib/net45/Serilog.Sinks.Observable.dll": {},
+          "lib/net45/Serilog.Sinks.PeriodicBatching.dll": {}
+        }
+      },
+      "Serilog.Sinks.RollingFile/2.0.0-beta-465": {
+        "type": "package",
+        "dependencies": {
+          "Serilog": "2.0.0-beta-465",
+          "Serilog.Sinks.File": "2.0.0-beta-465"
+        },
+        "frameworkAssemblies": [
+          "Microsoft.CSharp",
+          "mscorlib",
+          "System",
+          "System.Core"
+        ],
+        "compile": {
+          "lib/net45/Serilog.dll": {},
+          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
+          "lib/net45/Serilog.Sinks.Console.dll": {},
+          "lib/net45/Serilog.Sinks.File.dll": {},
+          "lib/net45/Serilog.Sinks.Observable.dll": {},
+          "lib/net45/Serilog.Sinks.PeriodicBatching.dll": {},
+          "lib/net45/Serilog.Sinks.RollingFile.dll": {}
+        },
+        "runtime": {
+          "lib/net45/Serilog.dll": {},
+          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
+          "lib/net45/Serilog.Sinks.Console.dll": {},
+          "lib/net45/Serilog.Sinks.File.dll": {},
+          "lib/net45/Serilog.Sinks.Observable.dll": {},
+          "lib/net45/Serilog.Sinks.PeriodicBatching.dll": {},
+          "lib/net45/Serilog.Sinks.RollingFile.dll": {}
         }
       }
     },
     ".NETFramework,Version=v4.5/win7-x64": {
-      "Serilog/2.0.0-beta-450": {
+      "Serilog/2.0.0-beta-465": {
         "type": "package",
         "frameworkAssemblies": [
           "Microsoft.CSharp",
@@ -1556,29 +1525,36 @@
         "runtime": {
           "lib/net45/Serilog.dll": {}
         }
-      }
-    },
-    "DNX,Version=v4.5.1/win7-x86": {
-      "Serilog/2.0.0-beta-450": {
+      },
+      "Serilog.Sinks.File/2.0.0-beta-465": {
         "type": "package",
+        "dependencies": {
+          "Serilog": "2.0.0-beta-465"
+        },
         "frameworkAssemblies": [
           "Microsoft.CSharp",
           "mscorlib",
           "System",
-          "System.Configuration",
           "System.Core"
         ],
         "compile": {
-          "lib/net45/Serilog.dll": {}
+          "lib/net45/Serilog.dll": {},
+          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
+          "lib/net45/Serilog.Sinks.Console.dll": {},
+          "lib/net45/Serilog.Sinks.File.dll": {}
         },
         "runtime": {
-          "lib/net45/Serilog.dll": {}
+          "lib/net45/Serilog.dll": {},
+          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
+          "lib/net45/Serilog.Sinks.Console.dll": {},
+          "lib/net45/Serilog.Sinks.File.dll": {}
         }
-      }
-    },
-    "DNX,Version=v4.5.1/win7-x64": {
-      "Serilog/2.0.0-beta-450": {
+      },
+      "Serilog.Sinks.PeriodicBatching/2.0.0-beta-465": {
         "type": "package",
+        "dependencies": {
+          "Serilog": "2.0.0-beta-465"
+        },
         "frameworkAssemblies": [
           "Microsoft.CSharp",
           "mscorlib",
@@ -1587,10 +1563,51 @@
           "System.Core"
         ],
         "compile": {
-          "lib/net45/Serilog.dll": {}
+          "lib/net45/Serilog.dll": {},
+          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
+          "lib/net45/Serilog.Sinks.Console.dll": {},
+          "lib/net45/Serilog.Sinks.File.dll": {},
+          "lib/net45/Serilog.Sinks.Observable.dll": {},
+          "lib/net45/Serilog.Sinks.PeriodicBatching.dll": {}
         },
         "runtime": {
-          "lib/net45/Serilog.dll": {}
+          "lib/net45/Serilog.dll": {},
+          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
+          "lib/net45/Serilog.Sinks.Console.dll": {},
+          "lib/net45/Serilog.Sinks.File.dll": {},
+          "lib/net45/Serilog.Sinks.Observable.dll": {},
+          "lib/net45/Serilog.Sinks.PeriodicBatching.dll": {}
+        }
+      },
+      "Serilog.Sinks.RollingFile/2.0.0-beta-465": {
+        "type": "package",
+        "dependencies": {
+          "Serilog": "2.0.0-beta-465",
+          "Serilog.Sinks.File": "2.0.0-beta-465"
+        },
+        "frameworkAssemblies": [
+          "Microsoft.CSharp",
+          "mscorlib",
+          "System",
+          "System.Core"
+        ],
+        "compile": {
+          "lib/net45/Serilog.dll": {},
+          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
+          "lib/net45/Serilog.Sinks.Console.dll": {},
+          "lib/net45/Serilog.Sinks.File.dll": {},
+          "lib/net45/Serilog.Sinks.Observable.dll": {},
+          "lib/net45/Serilog.Sinks.PeriodicBatching.dll": {},
+          "lib/net45/Serilog.Sinks.RollingFile.dll": {}
+        },
+        "runtime": {
+          "lib/net45/Serilog.dll": {},
+          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
+          "lib/net45/Serilog.Sinks.Console.dll": {},
+          "lib/net45/Serilog.Sinks.File.dll": {},
+          "lib/net45/Serilog.Sinks.Observable.dll": {},
+          "lib/net45/Serilog.Sinks.PeriodicBatching.dll": {},
+          "lib/net45/Serilog.Sinks.RollingFile.dll": {}
         }
       }
     },
@@ -1863,7 +1880,7 @@
           "runtimes/win7/lib/DNXCore50/System.Threading.dll": {}
         }
       },
-      "Serilog/2.0.0-beta-450": {
+      "Serilog/2.0.0-beta-465": {
         "type": "package",
         "dependencies": {
           "Microsoft.CSharp": "4.0.1-beta-23516",
@@ -1886,6 +1903,59 @@
         },
         "runtime": {
           "lib/dotnet5.4/Serilog.dll": {}
+        }
+      },
+      "Serilog.Sinks.File/2.0.0-beta-465": {
+        "type": "package",
+        "dependencies": {
+          "Serilog": "2.0.0-beta-465",
+          "System.IO": "4.0.11-beta-23516",
+          "System.IO.FileSystem": "4.0.0",
+          "System.IO.FileSystem.Primitives": "4.0.0"
+        },
+        "compile": {
+          "lib/dotnet5.1/Serilog.dll": {},
+          "lib/dotnet5.1/Serilog.Sinks.ColoredConsole.dll": {},
+          "lib/dotnet5.1/Serilog.Sinks.Console.dll": {},
+          "lib/dotnet5.1/Serilog.Sinks.File.dll": {}
+        },
+        "runtime": {
+          "lib/dotnet5.1/Serilog.dll": {},
+          "lib/dotnet5.1/Serilog.Sinks.ColoredConsole.dll": {},
+          "lib/dotnet5.1/Serilog.Sinks.Console.dll": {},
+          "lib/dotnet5.1/Serilog.Sinks.File.dll": {}
+        }
+      },
+      "Serilog.Sinks.PeriodicBatching/2.0.0-beta-465": {
+        "type": "package",
+        "dependencies": {
+          "Serilog": "2.0.0-beta-465",
+          "System.Collections.Concurrent": "4.0.11-beta-23516"
+        },
+        "compile": {
+          "lib/dotnet5.2/Serilog.Sinks.Observable.dll": {},
+          "lib/dotnet5.2/Serilog.Sinks.PeriodicBatching.dll": {}
+        },
+        "runtime": {
+          "lib/dotnet5.2/Serilog.Sinks.Observable.dll": {},
+          "lib/dotnet5.2/Serilog.Sinks.PeriodicBatching.dll": {}
+        }
+      },
+      "Serilog.Sinks.RollingFile/2.0.0-beta-465": {
+        "type": "package",
+        "dependencies": {
+          "Serilog": "2.0.0-beta-465",
+          "Serilog.Sinks.File": "2.0.0-beta-465",
+          "System.IO": "4.0.11-beta-23516",
+          "System.IO.FileSystem.Primitives": "4.0.1-beta-23516"
+        },
+        "compile": {
+          "lib/dotnet5.4/Serilog.dll": {},
+          "lib/dotnet5.4/Serilog.Sinks.RollingFile.dll": {}
+        },
+        "runtime": {
+          "lib/dotnet5.4/Serilog.dll": {},
+          "lib/dotnet5.4/Serilog.Sinks.RollingFile.dll": {}
         }
       },
       "System.AppContext/4.0.0": {
@@ -2223,16 +2293,16 @@
           "ref/dotnet5.4/System.IO.FileSystem.dll": {}
         }
       },
-      "System.IO.FileSystem.Primitives/4.0.0": {
+      "System.IO.FileSystem.Primitives/4.0.1-beta-23516": {
         "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
         "compile": {
-          "ref/dotnet/System.IO.FileSystem.Primitives.dll": {}
+          "ref/dotnet5.1/System.IO.FileSystem.Primitives.dll": {}
         },
         "runtime": {
-          "lib/dotnet/System.IO.FileSystem.Primitives.dll": {}
+          "lib/dotnet5.4/System.IO.FileSystem.Primitives.dll": {}
         }
       },
       "System.IO.UnmanagedMemoryStream/4.0.0": {
@@ -3278,7 +3348,7 @@
           "runtimes/win7/lib/DNXCore50/System.Threading.dll": {}
         }
       },
-      "Serilog/2.0.0-beta-450": {
+      "Serilog/2.0.0-beta-465": {
         "type": "package",
         "dependencies": {
           "Microsoft.CSharp": "4.0.1-beta-23516",
@@ -3301,6 +3371,59 @@
         },
         "runtime": {
           "lib/dotnet5.4/Serilog.dll": {}
+        }
+      },
+      "Serilog.Sinks.File/2.0.0-beta-465": {
+        "type": "package",
+        "dependencies": {
+          "Serilog": "2.0.0-beta-465",
+          "System.IO": "4.0.11-beta-23516",
+          "System.IO.FileSystem": "4.0.0",
+          "System.IO.FileSystem.Primitives": "4.0.0"
+        },
+        "compile": {
+          "lib/dotnet5.1/Serilog.dll": {},
+          "lib/dotnet5.1/Serilog.Sinks.ColoredConsole.dll": {},
+          "lib/dotnet5.1/Serilog.Sinks.Console.dll": {},
+          "lib/dotnet5.1/Serilog.Sinks.File.dll": {}
+        },
+        "runtime": {
+          "lib/dotnet5.1/Serilog.dll": {},
+          "lib/dotnet5.1/Serilog.Sinks.ColoredConsole.dll": {},
+          "lib/dotnet5.1/Serilog.Sinks.Console.dll": {},
+          "lib/dotnet5.1/Serilog.Sinks.File.dll": {}
+        }
+      },
+      "Serilog.Sinks.PeriodicBatching/2.0.0-beta-465": {
+        "type": "package",
+        "dependencies": {
+          "Serilog": "2.0.0-beta-465",
+          "System.Collections.Concurrent": "4.0.11-beta-23516"
+        },
+        "compile": {
+          "lib/dotnet5.2/Serilog.Sinks.Observable.dll": {},
+          "lib/dotnet5.2/Serilog.Sinks.PeriodicBatching.dll": {}
+        },
+        "runtime": {
+          "lib/dotnet5.2/Serilog.Sinks.Observable.dll": {},
+          "lib/dotnet5.2/Serilog.Sinks.PeriodicBatching.dll": {}
+        }
+      },
+      "Serilog.Sinks.RollingFile/2.0.0-beta-465": {
+        "type": "package",
+        "dependencies": {
+          "Serilog": "2.0.0-beta-465",
+          "Serilog.Sinks.File": "2.0.0-beta-465",
+          "System.IO": "4.0.11-beta-23516",
+          "System.IO.FileSystem.Primitives": "4.0.1-beta-23516"
+        },
+        "compile": {
+          "lib/dotnet5.4/Serilog.dll": {},
+          "lib/dotnet5.4/Serilog.Sinks.RollingFile.dll": {}
+        },
+        "runtime": {
+          "lib/dotnet5.4/Serilog.dll": {},
+          "lib/dotnet5.4/Serilog.Sinks.RollingFile.dll": {}
         }
       },
       "System.AppContext/4.0.0": {
@@ -3638,16 +3761,16 @@
           "ref/dotnet5.4/System.IO.FileSystem.dll": {}
         }
       },
-      "System.IO.FileSystem.Primitives/4.0.0": {
+      "System.IO.FileSystem.Primitives/4.0.1-beta-23516": {
         "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
         "compile": {
-          "ref/dotnet/System.IO.FileSystem.Primitives.dll": {}
+          "ref/dotnet5.1/System.IO.FileSystem.Primitives.dll": {}
         },
         "runtime": {
-          "lib/dotnet/System.IO.FileSystem.Primitives.dll": {}
+          "lib/dotnet5.4/System.IO.FileSystem.Primitives.dll": {}
         }
       },
       "System.IO.UnmanagedMemoryStream/4.0.0": {
@@ -4426,181 +4549,6 @@
     }
   },
   "libraries": {
-    "Microsoft.Bcl/1.1.9": {
-      "type": "package",
-      "sha512": "USQ55innJy8K+tAXvVa1O8dUTp2s7pmJ5cJj6Tl02HtGc2xBDj0P2QH5620HbGXIWKWYhydoeQF8Rm/JRDBGhw==",
-      "files": [
-        "content/monoandroid/_._",
-        "content/monotouch/_._",
-        "content/net45/_._",
-        "content/portable-net45+win8+wp8+wpa81/_._",
-        "content/portable-net45+win8+wpa81/_._",
-        "content/portable-net451+win81/_._",
-        "content/portable-net451+win81+wpa81/_._",
-        "content/portable-win81+wp81+wpa81/_._",
-        "content/sl4/_._",
-        "content/sl5/_._",
-        "content/win8/_._",
-        "content/wp8/_._",
-        "content/wpa81/_._",
-        "lib/monoandroid/_._",
-        "lib/monotouch/_._",
-        "lib/net40/ensureRedirect.xml",
-        "lib/net40/System.IO.dll",
-        "lib/net40/System.IO.xml",
-        "lib/net40/System.Runtime.dll",
-        "lib/net40/System.Runtime.xml",
-        "lib/net40/System.Threading.Tasks.dll",
-        "lib/net40/System.Threading.Tasks.xml",
-        "lib/net45/_._",
-        "lib/portable-net40+sl4+win8/ensureRedirect.xml",
-        "lib/portable-net40+sl4+win8/System.IO.dll",
-        "lib/portable-net40+sl4+win8/System.IO.xml",
-        "lib/portable-net40+sl4+win8/System.Runtime.dll",
-        "lib/portable-net40+sl4+win8/System.Runtime.xml",
-        "lib/portable-net40+sl4+win8/System.Threading.Tasks.dll",
-        "lib/portable-net40+sl4+win8/System.Threading.Tasks.xml",
-        "lib/portable-net40+sl4+win8+wp71+wpa81/ensureRedirect.xml",
-        "lib/portable-net40+sl4+win8+wp71+wpa81/System.IO.dll",
-        "lib/portable-net40+sl4+win8+wp71+wpa81/System.IO.xml",
-        "lib/portable-net40+sl4+win8+wp71+wpa81/System.Runtime.dll",
-        "lib/portable-net40+sl4+win8+wp71+wpa81/System.Runtime.xml",
-        "lib/portable-net40+sl4+win8+wp71+wpa81/System.Threading.Tasks.dll",
-        "lib/portable-net40+sl4+win8+wp71+wpa81/System.Threading.Tasks.xml",
-        "lib/portable-net40+sl4+win8+wp8+wpa81/ensureRedirect.xml",
-        "lib/portable-net40+sl4+win8+wp8+wpa81/System.IO.dll",
-        "lib/portable-net40+sl4+win8+wp8+wpa81/System.IO.xml",
-        "lib/portable-net40+sl4+win8+wp8+wpa81/System.Runtime.dll",
-        "lib/portable-net40+sl4+win8+wp8+wpa81/System.Runtime.xml",
-        "lib/portable-net40+sl4+win8+wp8+wpa81/System.Threading.Tasks.dll",
-        "lib/portable-net40+sl4+win8+wp8+wpa81/System.Threading.Tasks.xml",
-        "lib/portable-net40+sl5+win8+wp8+wpa81/ensureRedirect.xml",
-        "lib/portable-net40+sl5+win8+wp8+wpa81/System.IO.dll",
-        "lib/portable-net40+sl5+win8+wp8+wpa81/System.IO.xml",
-        "lib/portable-net40+sl5+win8+wp8+wpa81/System.Runtime.dll",
-        "lib/portable-net40+sl5+win8+wp8+wpa81/System.Runtime.xml",
-        "lib/portable-net40+sl5+win8+wp8+wpa81/System.Threading.Tasks.dll",
-        "lib/portable-net40+sl5+win8+wp8+wpa81/System.Threading.Tasks.xml",
-        "lib/portable-net40+win8/ensureRedirect.xml",
-        "lib/portable-net40+win8/System.IO.dll",
-        "lib/portable-net40+win8/System.IO.xml",
-        "lib/portable-net40+win8/System.Runtime.dll",
-        "lib/portable-net40+win8/System.Runtime.xml",
-        "lib/portable-net40+win8/System.Threading.Tasks.dll",
-        "lib/portable-net40+win8/System.Threading.Tasks.xml",
-        "lib/portable-net40+win8+wp8+wpa81/ensureRedirect.xml",
-        "lib/portable-net40+win8+wp8+wpa81/System.IO.dll",
-        "lib/portable-net40+win8+wp8+wpa81/System.IO.xml",
-        "lib/portable-net40+win8+wp8+wpa81/System.Runtime.dll",
-        "lib/portable-net40+win8+wp8+wpa81/System.Runtime.xml",
-        "lib/portable-net40+win8+wp8+wpa81/System.Threading.Tasks.dll",
-        "lib/portable-net40+win8+wp8+wpa81/System.Threading.Tasks.xml",
-        "lib/portable-net45+win8+wp8+wpa81/_._",
-        "lib/portable-net45+win8+wpa81/_._",
-        "lib/portable-net451+win81/_._",
-        "lib/portable-net451+win81+wpa81/_._",
-        "lib/portable-win81+wp81+wpa81/_._",
-        "lib/sl4/System.IO.dll",
-        "lib/sl4/System.IO.xml",
-        "lib/sl4/System.Runtime.dll",
-        "lib/sl4/System.Runtime.xml",
-        "lib/sl4/System.Threading.Tasks.dll",
-        "lib/sl4/System.Threading.Tasks.xml",
-        "lib/sl4-windowsphone71/ensureRedirect.xml",
-        "lib/sl4-windowsphone71/System.IO.dll",
-        "lib/sl4-windowsphone71/System.IO.xml",
-        "lib/sl4-windowsphone71/System.Runtime.dll",
-        "lib/sl4-windowsphone71/System.Runtime.xml",
-        "lib/sl4-windowsphone71/System.Threading.Tasks.dll",
-        "lib/sl4-windowsphone71/System.Threading.Tasks.xml",
-        "lib/sl5/System.IO.dll",
-        "lib/sl5/System.IO.xml",
-        "lib/sl5/System.Runtime.dll",
-        "lib/sl5/System.Runtime.xml",
-        "lib/sl5/System.Threading.Tasks.dll",
-        "lib/sl5/System.Threading.Tasks.xml",
-        "lib/win8/_._",
-        "lib/wp8/_._",
-        "lib/wpa81/_._",
-        "License-Stable.rtf",
-        "Microsoft.Bcl.1.1.9.nupkg",
-        "Microsoft.Bcl.1.1.9.nupkg.sha512",
-        "Microsoft.Bcl.nuspec"
-      ]
-    },
-    "Microsoft.Bcl.Async/1.0.168": {
-      "type": "package",
-      "sha512": "tUNC02eBwDKpGre0BcNIvblLv1q0Q3DnS/vtkRHj2FE1sXwt386HAudztyl5C0U88hllrqHDvtlz8bK0Y8cHDA==",
-      "files": [
-        "lib/net40/Microsoft.Threading.Tasks.dll",
-        "lib/net40/Microsoft.Threading.Tasks.Extensions.Desktop.dll",
-        "lib/net40/Microsoft.Threading.Tasks.Extensions.Desktop.xml",
-        "lib/net40/Microsoft.Threading.Tasks.Extensions.dll",
-        "lib/net40/Microsoft.Threading.Tasks.Extensions.xml",
-        "lib/net40/Microsoft.Threading.Tasks.xml",
-        "lib/portable-net40+sl4+win8+wp71+wpa81/Microsoft.Threading.Tasks.dll",
-        "lib/portable-net40+sl4+win8+wp71+wpa81/Microsoft.Threading.Tasks.Extensions.dll",
-        "lib/portable-net40+sl4+win8+wp71+wpa81/Microsoft.Threading.Tasks.Extensions.xml",
-        "lib/portable-net40+sl4+win8+wp71+wpa81/Microsoft.Threading.Tasks.xml",
-        "lib/portable-net45+win8+wp8+wpa81/Microsoft.Threading.Tasks.dll",
-        "lib/portable-net45+win8+wp8+wpa81/Microsoft.Threading.Tasks.Extensions.dll",
-        "lib/portable-net45+win8+wp8+wpa81/Microsoft.Threading.Tasks.Extensions.xml",
-        "lib/portable-net45+win8+wp8+wpa81/Microsoft.Threading.Tasks.xml",
-        "lib/portable-net45+win8+wpa81/Microsoft.Threading.Tasks.dll",
-        "lib/portable-net45+win8+wpa81/Microsoft.Threading.Tasks.Extensions.dll",
-        "lib/portable-net45+win8+wpa81/Microsoft.Threading.Tasks.Extensions.xml",
-        "lib/portable-net45+win8+wpa81/Microsoft.Threading.Tasks.xml",
-        "lib/sl4/Microsoft.Threading.Tasks.dll",
-        "lib/sl4/Microsoft.Threading.Tasks.Extensions.dll",
-        "lib/sl4/Microsoft.Threading.Tasks.Extensions.Silverlight.dll",
-        "lib/sl4/Microsoft.Threading.Tasks.Extensions.Silverlight.xml",
-        "lib/sl4/Microsoft.Threading.Tasks.Extensions.xml",
-        "lib/sl4/Microsoft.Threading.Tasks.xml",
-        "lib/sl4-windowsphone71/Microsoft.Threading.Tasks.dll",
-        "lib/sl4-windowsphone71/Microsoft.Threading.Tasks.Extensions.dll",
-        "lib/sl4-windowsphone71/Microsoft.Threading.Tasks.Extensions.Phone.dll",
-        "lib/sl4-windowsphone71/Microsoft.Threading.Tasks.Extensions.Phone.xml",
-        "lib/sl4-windowsphone71/Microsoft.Threading.Tasks.Extensions.xml",
-        "lib/sl4-windowsphone71/Microsoft.Threading.Tasks.xml",
-        "lib/win8/Microsoft.Threading.Tasks.dll",
-        "lib/win8/Microsoft.Threading.Tasks.Extensions.dll",
-        "lib/win8/Microsoft.Threading.Tasks.Extensions.xml",
-        "lib/win8/Microsoft.Threading.Tasks.xml",
-        "lib/wp8/Microsoft.Threading.Tasks.dll",
-        "lib/wp8/Microsoft.Threading.Tasks.Extensions.dll",
-        "lib/wp8/Microsoft.Threading.Tasks.Extensions.Phone.dll",
-        "lib/wp8/Microsoft.Threading.Tasks.Extensions.Phone.xml",
-        "lib/wp8/Microsoft.Threading.Tasks.Extensions.xml",
-        "lib/wp8/Microsoft.Threading.Tasks.xml",
-        "lib/wpa81/Microsoft.Threading.Tasks.dll",
-        "lib/wpa81/Microsoft.Threading.Tasks.Extensions.dll",
-        "lib/wpa81/Microsoft.Threading.Tasks.Extensions.xml",
-        "lib/wpa81/Microsoft.Threading.Tasks.xml",
-        "License-Stable.rtf",
-        "Microsoft.Bcl.Async.1.0.168.nupkg",
-        "Microsoft.Bcl.Async.1.0.168.nupkg.sha512",
-        "Microsoft.Bcl.Async.nuspec"
-      ]
-    },
-    "Microsoft.Bcl.Build/1.0.14": {
-      "type": "package",
-      "sha512": "cDLKSvNvRa519hplsbSoYqO69TjdDIhfjtKUM0g20/nVROoWsGav9KCI9HtnGjLmdV1+TcUUDhbotcllibjPEA==",
-      "files": [
-        "content/net40/_._",
-        "content/netcore45/_._",
-        "content/portable-net40+win8+sl4+wp71+wpa81/_._",
-        "content/sl4/_._",
-        "content/sl4-windowsphone71/_._",
-        "License-Stable.rtf",
-        "Microsoft.Bcl.Build.1.0.14.nupkg",
-        "Microsoft.Bcl.Build.1.0.14.nupkg.sha512",
-        "Microsoft.Bcl.Build.nuspec",
-        "tools/Install.ps1",
-        "tools/Microsoft.Bcl.Build.targets",
-        "tools/Microsoft.Bcl.Build.Tasks.dll",
-        "tools/Uninstall.ps1"
-      ]
-    },
     "Microsoft.CSharp/4.0.1-beta-23516": {
       "type": "package",
       "serviceable": true,
@@ -4649,70 +4597,6 @@
         "ref/wpa81/_._",
         "ref/xamarinios10/_._",
         "ref/xamarinmac20/_._"
-      ]
-    },
-    "Microsoft.Net.Http/2.2.22": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "bqVLJ2UimlAEs2bn3y28lB1pmFRxuysv9pFyB0A86WEMYGYTfDyfjAGjm0fiaSRjlMNU1jVnp8Mxt8qe4OmpXQ==",
-      "files": [
-        "lib/monoandroid/System.Net.Http.Extensions.dll",
-        "lib/monoandroid/System.Net.Http.Extensions.XML",
-        "lib/monoandroid/System.Net.Http.Primitives.dll",
-        "lib/monoandroid/System.Net.Http.Primitives.xml",
-        "lib/monotouch/System.Net.Http.Extensions.dll",
-        "lib/monotouch/System.Net.Http.Extensions.XML",
-        "lib/monotouch/System.Net.Http.Primitives.dll",
-        "lib/monotouch/System.Net.Http.Primitives.xml",
-        "lib/net40/ensureRedirect.xml",
-        "lib/net40/System.Net.Http.dll",
-        "lib/net40/System.Net.Http.Extensions.dll",
-        "lib/net40/System.Net.Http.Extensions.XML",
-        "lib/net40/System.Net.Http.Primitives.dll",
-        "lib/net40/System.Net.Http.Primitives.xml",
-        "lib/net40/System.Net.Http.WebRequest.dll",
-        "lib/net40/System.Net.Http.WebRequest.xml",
-        "lib/net40/System.Net.Http.xml",
-        "lib/net45/ensureRedirect.xml",
-        "lib/net45/System.Net.Http.Extensions.dll",
-        "lib/net45/System.Net.Http.Extensions.XML",
-        "lib/net45/System.Net.Http.Primitives.dll",
-        "lib/net45/System.Net.Http.Primitives.xml",
-        "lib/portable-net40+sl4+win8+wp71+wpa81/ensureRedirect.xml",
-        "lib/portable-net40+sl4+win8+wp71+wpa81/System.Net.Http.dll",
-        "lib/portable-net40+sl4+win8+wp71+wpa81/System.Net.Http.Extensions.dll",
-        "lib/portable-net40+sl4+win8+wp71+wpa81/System.Net.Http.Extensions.XML",
-        "lib/portable-net40+sl4+win8+wp71+wpa81/System.Net.Http.Primitives.dll",
-        "lib/portable-net40+sl4+win8+wp71+wpa81/System.Net.Http.Primitives.XML",
-        "lib/portable-net40+sl4+win8+wp71+wpa81/System.Net.Http.xml",
-        "lib/portable-net45+win8/ensureRedirect.xml",
-        "lib/portable-net45+win8/System.Net.Http.Extensions.dll",
-        "lib/portable-net45+win8/System.Net.Http.Extensions.XML",
-        "lib/portable-net45+win8/System.Net.Http.Primitives.dll",
-        "lib/portable-net45+win8/System.Net.Http.Primitives.xml",
-        "lib/portable-net45+win8+wpa81/ensureRedirect.xml",
-        "lib/portable-net45+win8+wpa81/System.Net.Http.Extensions.dll",
-        "lib/portable-net45+win8+wpa81/System.Net.Http.Extensions.XML",
-        "lib/portable-net45+win8+wpa81/System.Net.Http.Primitives.dll",
-        "lib/portable-net45+win8+wpa81/System.Net.Http.Primitives.xml",
-        "lib/sl4-windowsphone71/System.Net.Http.dll",
-        "lib/sl4-windowsphone71/System.Net.Http.Extensions.dll",
-        "lib/sl4-windowsphone71/System.Net.Http.Extensions.XML",
-        "lib/sl4-windowsphone71/System.Net.Http.Primitives.dll",
-        "lib/sl4-windowsphone71/System.Net.Http.Primitives.XML",
-        "lib/sl4-windowsphone71/System.Net.Http.xml",
-        "lib/win8/System.Net.Http.Extensions.dll",
-        "lib/win8/System.Net.Http.Extensions.XML",
-        "lib/win8/System.Net.Http.Primitives.dll",
-        "lib/win8/System.Net.Http.Primitives.xml",
-        "lib/wpa81/System.Net.Http.Extensions.dll",
-        "lib/wpa81/System.Net.Http.Extensions.XML",
-        "lib/wpa81/System.Net.Http.Primitives.dll",
-        "lib/wpa81/System.Net.Http.Primitives.xml",
-        "License-Stable.rtf",
-        "Microsoft.Net.Http.2.2.22.nupkg",
-        "Microsoft.Net.Http.2.2.22.nupkg.sha512",
-        "Microsoft.Net.Http.nuspec"
       ]
     },
     "Microsoft.NETCore/5.0.0": {
@@ -4934,9 +4818,9 @@
         "runtimes/win8-aot/lib/netcore50/System.Threading.dll"
       ]
     },
-    "Serilog/2.0.0-beta-450": {
+    "Serilog/2.0.0-beta-465": {
       "type": "package",
-      "sha512": "avTfl1Owv15Zxbd02CTIP0633stpQsEzQa7nomxToFef4u0vEllT1sSq0w8HiQe0RYM2leyjHIju+WICFBy9cA==",
+      "sha512": "WCWljYsF2u2gzcKAAieKisqI4GXfd1Y97jfOa+yfqfLhur0VOt/20SwEQprOBfpSdlKbDbefSg9PjaLB0HzR6A==",
       "files": [
         "lib/dotnet5.1/Serilog.dll",
         "lib/dotnet5.1/Serilog.xml",
@@ -4946,9 +4830,86 @@
         "lib/net40/Serilog.xml",
         "lib/net45/Serilog.dll",
         "lib/net45/Serilog.xml",
-        "Serilog.2.0.0-beta-450.nupkg",
-        "Serilog.2.0.0-beta-450.nupkg.sha512",
+        "Serilog.2.0.0-beta-465.nupkg",
+        "Serilog.2.0.0-beta-465.nupkg.sha512",
         "Serilog.nuspec"
+      ]
+    },
+    "Serilog.Sinks.File/2.0.0-beta-465": {
+      "type": "package",
+      "sha512": "FVLlr0971K7AEiDIMEMNxEsfqIHxvOakD4PjlpNKl0IhGP+ZX5DX9pCFENta7jTe7KU4vz3MVWvo7GDmdHamaQ==",
+      "files": [
+        "lib/dotnet5.1/Serilog.dll",
+        "lib/dotnet5.1/Serilog.Sinks.ColoredConsole.dll",
+        "lib/dotnet5.1/Serilog.Sinks.ColoredConsole.xml",
+        "lib/dotnet5.1/Serilog.Sinks.Console.dll",
+        "lib/dotnet5.1/Serilog.Sinks.Console.xml",
+        "lib/dotnet5.1/Serilog.Sinks.File.dll",
+        "lib/dotnet5.1/Serilog.Sinks.File.xml",
+        "lib/dotnet5.1/Serilog.xml",
+        "lib/net45/Serilog.dll",
+        "lib/net45/Serilog.Sinks.ColoredConsole.dll",
+        "lib/net45/Serilog.Sinks.ColoredConsole.xml",
+        "lib/net45/Serilog.Sinks.Console.dll",
+        "lib/net45/Serilog.Sinks.Console.xml",
+        "lib/net45/Serilog.Sinks.File.dll",
+        "lib/net45/Serilog.Sinks.File.xml",
+        "lib/net45/Serilog.xml",
+        "Serilog.Sinks.File.2.0.0-beta-465.nupkg",
+        "Serilog.Sinks.File.2.0.0-beta-465.nupkg.sha512",
+        "Serilog.Sinks.File.nuspec"
+      ]
+    },
+    "Serilog.Sinks.PeriodicBatching/2.0.0-beta-465": {
+      "type": "package",
+      "sha512": "KPtLMJfGhsGNkaluN43CRisEqIoOjhpNZdr4NmbOLvPhKauD7deO8n9gwiC7Bmh5ZV8pz2ilaerJ1QY/r+ggDg==",
+      "files": [
+        "lib/dotnet5.2/Serilog.Sinks.Observable.dll",
+        "lib/dotnet5.2/Serilog.Sinks.Observable.xml",
+        "lib/dotnet5.2/Serilog.Sinks.PeriodicBatching.dll",
+        "lib/dotnet5.2/Serilog.Sinks.PeriodicBatching.xml",
+        "lib/net45/Serilog.dll",
+        "lib/net45/Serilog.Sinks.ColoredConsole.dll",
+        "lib/net45/Serilog.Sinks.ColoredConsole.xml",
+        "lib/net45/Serilog.Sinks.Console.dll",
+        "lib/net45/Serilog.Sinks.Console.xml",
+        "lib/net45/Serilog.Sinks.File.dll",
+        "lib/net45/Serilog.Sinks.File.xml",
+        "lib/net45/Serilog.Sinks.Observable.dll",
+        "lib/net45/Serilog.Sinks.Observable.xml",
+        "lib/net45/Serilog.Sinks.PeriodicBatching.dll",
+        "lib/net45/Serilog.Sinks.PeriodicBatching.xml",
+        "lib/net45/Serilog.xml",
+        "Serilog.Sinks.PeriodicBatching.2.0.0-beta-465.nupkg",
+        "Serilog.Sinks.PeriodicBatching.2.0.0-beta-465.nupkg.sha512",
+        "Serilog.Sinks.PeriodicBatching.nuspec"
+      ]
+    },
+    "Serilog.Sinks.RollingFile/2.0.0-beta-465": {
+      "type": "package",
+      "sha512": "CLY7hvQCnCYZ9kCFrsgg9VWoMwM3MKv8M78PPbRNxl/uT/BTzH3uQNfPkQnO3SizbvWKrDquubxoWqwS/L/0Hw==",
+      "files": [
+        "lib/dotnet5.4/Serilog.dll",
+        "lib/dotnet5.4/Serilog.Sinks.RollingFile.dll",
+        "lib/dotnet5.4/Serilog.Sinks.RollingFile.xml",
+        "lib/dotnet5.4/Serilog.xml",
+        "lib/net45/Serilog.dll",
+        "lib/net45/Serilog.Sinks.ColoredConsole.dll",
+        "lib/net45/Serilog.Sinks.ColoredConsole.xml",
+        "lib/net45/Serilog.Sinks.Console.dll",
+        "lib/net45/Serilog.Sinks.Console.xml",
+        "lib/net45/Serilog.Sinks.File.dll",
+        "lib/net45/Serilog.Sinks.File.xml",
+        "lib/net45/Serilog.Sinks.Observable.dll",
+        "lib/net45/Serilog.Sinks.Observable.xml",
+        "lib/net45/Serilog.Sinks.PeriodicBatching.dll",
+        "lib/net45/Serilog.Sinks.PeriodicBatching.xml",
+        "lib/net45/Serilog.Sinks.RollingFile.dll",
+        "lib/net45/Serilog.Sinks.RollingFile.xml",
+        "lib/net45/Serilog.xml",
+        "Serilog.Sinks.RollingFile.2.0.0-beta-465.nupkg",
+        "Serilog.Sinks.RollingFile.2.0.0-beta-465.nupkg.sha512",
+        "Serilog.Sinks.RollingFile.nuspec"
       ]
     },
     "System.AppContext/4.0.0": {
@@ -5781,35 +5742,35 @@
         "System.IO.FileSystem.nuspec"
       ]
     },
-    "System.IO.FileSystem.Primitives/4.0.0": {
+    "System.IO.FileSystem.Primitives/4.0.1-beta-23516": {
       "type": "package",
       "serviceable": true,
-      "sha512": "7pJUvYi/Yq3A5nagqCCiOw3+aJp3xXc/Cjr8dnJDnER3/6kX3LEencfqmXUcPl9+7OvRNyPMNhqsLAcMK6K/KA==",
+      "sha512": "vaT0Coz/K9ZnuxyF50D541F9N7LmHCZJZ1RgFmBAB2T4A8U+WLrtdBrmA6jf2hl/aS7+RInYOfJ1cpDFErTbfQ==",
       "files": [
-        "lib/dotnet/System.IO.FileSystem.Primitives.dll",
+        "lib/dotnet5.4/System.IO.FileSystem.Primitives.dll",
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
         "lib/net46/System.IO.FileSystem.Primitives.dll",
         "lib/xamarinios10/_._",
         "lib/xamarinmac20/_._",
-        "ref/dotnet/de/System.IO.FileSystem.Primitives.xml",
-        "ref/dotnet/es/System.IO.FileSystem.Primitives.xml",
-        "ref/dotnet/fr/System.IO.FileSystem.Primitives.xml",
-        "ref/dotnet/it/System.IO.FileSystem.Primitives.xml",
-        "ref/dotnet/ja/System.IO.FileSystem.Primitives.xml",
-        "ref/dotnet/ko/System.IO.FileSystem.Primitives.xml",
-        "ref/dotnet/ru/System.IO.FileSystem.Primitives.xml",
-        "ref/dotnet/System.IO.FileSystem.Primitives.dll",
-        "ref/dotnet/System.IO.FileSystem.Primitives.xml",
-        "ref/dotnet/zh-hans/System.IO.FileSystem.Primitives.xml",
-        "ref/dotnet/zh-hant/System.IO.FileSystem.Primitives.xml",
+        "ref/dotnet5.1/de/System.IO.FileSystem.Primitives.xml",
+        "ref/dotnet5.1/es/System.IO.FileSystem.Primitives.xml",
+        "ref/dotnet5.1/fr/System.IO.FileSystem.Primitives.xml",
+        "ref/dotnet5.1/it/System.IO.FileSystem.Primitives.xml",
+        "ref/dotnet5.1/ja/System.IO.FileSystem.Primitives.xml",
+        "ref/dotnet5.1/ko/System.IO.FileSystem.Primitives.xml",
+        "ref/dotnet5.1/ru/System.IO.FileSystem.Primitives.xml",
+        "ref/dotnet5.1/System.IO.FileSystem.Primitives.dll",
+        "ref/dotnet5.1/System.IO.FileSystem.Primitives.xml",
+        "ref/dotnet5.1/zh-hans/System.IO.FileSystem.Primitives.xml",
+        "ref/dotnet5.1/zh-hant/System.IO.FileSystem.Primitives.xml",
         "ref/MonoAndroid10/_._",
         "ref/MonoTouch10/_._",
         "ref/net46/System.IO.FileSystem.Primitives.dll",
         "ref/xamarinios10/_._",
         "ref/xamarinmac20/_._",
-        "System.IO.FileSystem.Primitives.4.0.0.nupkg",
-        "System.IO.FileSystem.Primitives.4.0.0.nupkg.sha512",
+        "System.IO.FileSystem.Primitives.4.0.1-beta-23516.nupkg",
+        "System.IO.FileSystem.Primitives.4.0.1-beta-23516.nupkg.sha512",
         "System.IO.FileSystem.Primitives.nuspec"
       ]
     },
@@ -7322,17 +7283,11 @@
   },
   "projectFileDependencyGroups": {
     "": [
-      "Serilog >= 2.0.0-beta-450"
-    ],
-    ".NETFramework,Version=v4.0": [
-      "Microsoft.Bcl.Async >= 1.0.168",
-      "Microsoft.Net.Http >= 2.2.22",
-      "fx/System.Configuration "
+      "Serilog >= 2.0.0-beta-465",
+      "Serilog.Sinks.PeriodicBatching >= 2.0.0-beta-465",
+      "Serilog.Sinks.RollingFile >= 2.0.0-beta-465"
     ],
     ".NETFramework,Version=v4.5": [
-      "fx/System.Net.Http "
-    ],
-    "DNX,Version=v4.5.1": [
       "fx/System.Net.Http "
     ],
     "DNXCore,Version=v5.0": [

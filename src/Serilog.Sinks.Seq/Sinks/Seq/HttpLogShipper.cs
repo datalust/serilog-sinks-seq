@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using Serilog.Debugging;
 using Serilog.Events;
+using IOFile = System.IO.File;
 
 namespace Serilog.Sinks.Seq
 {
@@ -154,7 +155,7 @@ namespace Serilog.Sinks.Seq
                     // Locking the bookmark ensures that though there may be multiple instances of this
                     // class running, only one will ship logs at a time.
 
-                    using (var bookmark = File.Open(_bookmarkFilename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
+                    using (var bookmark = IOFile.Open(_bookmarkFilename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
                     {
                         long nextLineBeginsAtOffset;
                         string currentFile;
@@ -163,7 +164,7 @@ namespace Serilog.Sinks.Seq
 
                         var fileSet = GetFileSet();
 
-                        if (currentFile == null || !File.Exists(currentFile))
+                        if (currentFile == null || !IOFile.Exists(currentFile))
                         {
                             nextLineBeginsAtOffset = 0;
                             currentFile = fileSet.FirstOrDefault();
@@ -176,7 +177,7 @@ namespace Serilog.Sinks.Seq
                         payload.Write("{\"events\":[");
                         var delimStart = "";
 
-                        using (var current = File.Open(currentFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                        using (var current = IOFile.Open(currentFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                         {
                             current.Position = nextLineBeginsAtOffset;
 
@@ -228,7 +229,7 @@ namespace Serilog.Sinks.Seq
                                 var invalidPayloadFilename = $"invalid-{result.StatusCode}-{Guid.NewGuid():n}.json";
                                 var invalidPayloadFile = Path.Combine(_logFolder, invalidPayloadFilename);
                                 SelfLog.WriteLine("HTTP shipping failed with {0}: {1}; dumping payload to {2}", result.StatusCode, result.Content.ReadAsStringAsync().Result, invalidPayloadFile);
-                                File.WriteAllText(invalidPayloadFile, payloadText);
+                                IOFile.WriteAllText(invalidPayloadFile, payloadText);
                                 WriteBookmark(bookmark, nextLineBeginsAtOffset, currentFile);
                             }
                             else
@@ -252,7 +253,7 @@ namespace Serilog.Sinks.Seq
                                 // best to move on, though a lock on the current file
                                 // will delay this.
 
-                                File.Delete(fileSet[0]);
+                                IOFile.Delete(fileSet[0]);
                             }
                         }
                     }
@@ -278,7 +279,7 @@ namespace Serilog.Sinks.Seq
         {
             try
             {
-                using (var fileStream = File.Open(file, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
+                using (var fileStream = IOFile.Open(file, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
                 {
                     return fileStream.Length <= maxLen;
                 }

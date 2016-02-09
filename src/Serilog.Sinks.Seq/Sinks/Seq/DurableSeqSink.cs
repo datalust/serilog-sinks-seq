@@ -27,12 +27,12 @@ namespace Serilog.Sinks.Seq
 
         public DurableSeqSink(string serverUrl, string bufferBaseFilename, string apiKey, 
             int batchPostingLimit, TimeSpan period, long? bufferFileSizeLimitBytes,
-            long? eventPayloadLimitBytes)
+            long? eventBodyLimitBytes)
         {
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
             if (bufferBaseFilename == null) throw new ArgumentNullException(nameof(bufferBaseFilename));
 
-            _shipper = new HttpLogShipper(serverUrl, bufferBaseFilename, apiKey, batchPostingLimit, period, eventPayloadLimitBytes);
+            _shipper = new HttpLogShipper(serverUrl, bufferBaseFilename, apiKey, batchPostingLimit, period, eventBodyLimitBytes);
             _sink = new RollingFileSink(
                 bufferBaseFilename + "-{Date}.json",
                 new JsonFormatter(),

@@ -29,7 +29,7 @@ namespace Serilog.Sinks.Seq
     class SeqSink : PeriodicBatchingSink
     {
         readonly string _apiKey;
-        readonly long? _eventPayloadLimitBytes;
+        readonly long? _eventBodyLimitBytes;
         readonly HttpClient _httpClient;
         const string BulkUploadResource = "api/events/raw";
         const string ApiKeyHeaderName = "X-Seq-ApiKey";
@@ -42,12 +42,12 @@ namespace Serilog.Sinks.Seq
         public const int DefaultBatchPostingLimit = 1000;
         public static readonly TimeSpan DefaultPeriod = TimeSpan.FromSeconds(2);
 
-        public SeqSink(string serverUrl, string apiKey, int batchPostingLimit, TimeSpan period, long? eventPayloadLimitBytes)
+        public SeqSink(string serverUrl, string apiKey, int batchPostingLimit, TimeSpan period, long? eventBodyLimitBytes)
             : base(batchPostingLimit, period)
         {
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
             _apiKey = apiKey;
-            _eventPayloadLimitBytes = eventPayloadLimitBytes;
+            _eventBodyLimitBytes = eventBodyLimitBytes;
 
             var baseUri = serverUrl;
             if (!baseUri.EndsWith("/"))
@@ -86,15 +86,15 @@ namespace Serilog.Sinks.Seq
             var delimStart = "";
             foreach (var logEvent in events)
             {
-                if (_eventPayloadLimitBytes.HasValue)
+                if (_eventBodyLimitBytes.HasValue)
                 {
                     var scratch = new StringWriter();
                     formatter.Format(logEvent, scratch);
                     var buffered = scratch.ToString();
 
-                    if (Encoding.UTF8.GetByteCount(buffered) > _eventPayloadLimitBytes.Value)
+                    if (Encoding.UTF8.GetByteCount(buffered) > _eventBodyLimitBytes.Value)
                     {
-                        SelfLog.WriteLine("Event JSON representation exceeds the byte size limit of {0} set for this sink and will be dropped; data: {1}", _eventPayloadLimitBytes, buffered);
+                        SelfLog.WriteLine("Event JSON representation exceeds the byte size limit of {0} set for this sink and will be dropped; data: {1}", _eventBodyLimitBytes, buffered);
                     }
                     else
                     {

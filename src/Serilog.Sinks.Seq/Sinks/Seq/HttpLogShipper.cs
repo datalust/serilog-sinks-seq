@@ -22,7 +22,7 @@ namespace Serilog.Sinks.Seq
         readonly Timer _timer;
 #endif
         readonly TimeSpan _period;
-        readonly long? _eventPayloadLimitBytes;
+        readonly long? _eventBodyLimitBytes;
         readonly object _stateLock = new object();
 
         LogEventLevel? _minimumAcceptedLevel;
@@ -38,12 +38,12 @@ namespace Serilog.Sinks.Seq
         const string ApiKeyHeaderName = "X-Seq-ApiKey";
         const string BulkUploadResource = "api/events/raw";
 
-        public HttpLogShipper(string serverUrl, string bufferBaseFilename, string apiKey, int batchPostingLimit, TimeSpan period, long? eventPayloadLimitBytes)
+        public HttpLogShipper(string serverUrl, string bufferBaseFilename, string apiKey, int batchPostingLimit, TimeSpan period, long? eventBodyLimitBytes)
         {
             _apiKey = apiKey;
             _batchPostingLimit = batchPostingLimit;
             _period = period;
-            _eventPayloadLimitBytes = eventPayloadLimitBytes;
+            _eventBodyLimitBytes = eventBodyLimitBytes;
 
             var baseUri = serverUrl;
             if (!baseUri.EndsWith("/"))
@@ -192,9 +192,9 @@ namespace Serilog.Sinks.Seq
                                 // oversized event is dropped.
                                 ++count;
 
-                                if (_eventPayloadLimitBytes.HasValue && Encoding.UTF8.GetByteCount(nextLine) > _eventPayloadLimitBytes.Value)
+                                if (_eventBodyLimitBytes.HasValue && Encoding.UTF8.GetByteCount(nextLine) > _eventBodyLimitBytes.Value)
                                 {
-                                    SelfLog.WriteLine("Event JSON representation exceeds the byte size limit of {0} and will be dropped; data: {1}", _eventPayloadLimitBytes, nextLine);
+                                    SelfLog.WriteLine("Event JSON representation exceeds the byte size limit of {0} and will be dropped; data: {1}", _eventBodyLimitBytes, nextLine);
                                 }
                                 else
                                 {

@@ -43,6 +43,9 @@ namespace Serilog
         /// <param name="eventBodyLimitBytes">The maximum size, in bytes, that the JSON representation of
         /// an event may take before it is dropped rather than being sent to the Seq server. Specify null for no limit.
         /// The default is 265 KB.</param>
+        /// <param name="controlLevelSwitch">If provided, the switch will be updated based on the Seq server's level setting
+        /// for the corresponding API key. Passing the same key to MinimumLevel.ControlledBy() will make the whole pipeline
+        /// dynamically controlled. Do not specify <paramref name="restrictedToMinimumLevel"/> with this setting.</param>
         /// <returns>Logger configuration, allowing configuration to continue.</returns>
         /// <exception cref="ArgumentNullException">A required parameter is null.</exception>
         public static LoggerConfiguration Seq(
@@ -54,7 +57,8 @@ namespace Serilog
             string apiKey = null,
             string bufferBaseFilename = null,
             long? bufferFileSizeLimitBytes = null,
-            long? eventBodyLimitBytes = 256 * 1024)
+            long? eventBodyLimitBytes = 256 * 1024,
+            LoggingLevelSwitch controlLevelSwitch = null)
         {
             if (loggerSinkConfiguration == null) throw new ArgumentNullException(nameof(loggerSinkConfiguration));
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
@@ -64,9 +68,9 @@ namespace Serilog
 
             ILogEventSink sink;
             if (bufferBaseFilename == null)
-                sink = new SeqSink(serverUrl, apiKey, batchPostingLimit, defaultedPeriod, eventBodyLimitBytes);
+                sink = new SeqSink(serverUrl, apiKey, batchPostingLimit, defaultedPeriod, eventBodyLimitBytes, controlLevelSwitch);
             else
-                sink = new DurableSeqSink(serverUrl, bufferBaseFilename, apiKey, batchPostingLimit, defaultedPeriod, bufferFileSizeLimitBytes, eventBodyLimitBytes);
+                sink = new DurableSeqSink(serverUrl, bufferBaseFilename, apiKey, batchPostingLimit, defaultedPeriod, bufferFileSizeLimitBytes, eventBodyLimitBytes, controlLevelSwitch);
 
             return loggerSinkConfiguration.Sink(sink, restrictedToMinimumLevel);
         }

@@ -19,6 +19,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Serilog.Core;
 using Serilog.Debugging;
 using Serilog.Events;
 using Serilog.Formatting.Json;
@@ -33,21 +34,23 @@ namespace Serilog.Sinks.Seq
         readonly HttpClient _httpClient;
         const string BulkUploadResource = "api/events/raw";
         const string ApiKeyHeaderName = "X-Seq-ApiKey";
-        
-        LogEventLevel? _minimumAcceptedLevel;
 
+        // If non-null, then background level checks will be performed; set either through the constructor
+        // or in response to a level specification from the server. Never set to null after being made non-null.
+        LoggingLevelSwitch _levelControlSwitch;
         static readonly TimeSpan RequiredLevelCheckInterval = TimeSpan.FromMinutes(2);
         DateTime _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
 
         public const int DefaultBatchPostingLimit = 1000;
         public static readonly TimeSpan DefaultPeriod = TimeSpan.FromSeconds(2);
 
-        public SeqSink(string serverUrl, string apiKey, int batchPostingLimit, TimeSpan period, long? eventBodyLimitBytes)
+        public SeqSink(string serverUrl, string apiKey, int batchPostingLimit, TimeSpan period, long? eventBodyLimitBytes, LoggingLevelSwitch levelControlSwitch)
             : base(batchPostingLimit, period)
         {
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
             _apiKey = apiKey;
             _eventBodyLimitBytes = eventBodyLimitBytes;
+            _levelControlSwitch = levelControlSwitch;
 
             var baseUri = serverUrl;
             if (!baseUri.EndsWith("/"))
@@ -68,7 +71,7 @@ namespace Serilog.Sinks.Seq
         // configured to set a specific level, before background level checks will be performed.
         protected override void OnEmptyBatch()
         {
-            if (_minimumAcceptedLevel != null &&
+            if (_levelControlSwitch != null &&
                 _nextRequiredLevelCheckUtc < DateTime.UtcNow)
             {
                 EmitBatch(Enumerable.Empty<LogEvent>());
@@ -122,13 +125,26 @@ namespace Serilog.Sinks.Seq
                 throw new LoggingFailedException($"Received failed result {result.StatusCode} when posting events to Seq");
 
             var returned = await result.Content.ReadAsStringAsync();
-            _minimumAcceptedLevel = SeqApi.ReadEventInputResult(returned);
+            var minimumAcceptedLevel = SeqApi.ReadEventInputResult(returned);
+            if (minimumAcceptedLevel == null)
+            {
+                if (_levelControlSwitch != null)
+                    _levelControlSwitch.MinimumLevel = LevelAlias.Minimum;
+            }
+            else
+            {
+                if (_levelControlSwitch == null)
+                    _levelControlSwitch = new LoggingLevelSwitch(minimumAcceptedLevel.Value);
+                else
+                    _levelControlSwitch.MinimumLevel = minimumAcceptedLevel.Value;
+            }
         }
 
         protected override bool CanInclude(LogEvent evt)
         {
-            return _minimumAcceptedLevel == null ||
-                (int)_minimumAcceptedLevel <= (int)evt.Level;
+            var levelControlSwitch = _levelControlSwitch;
+            return levelControlSwitch == null ||
+                (int)levelControlSwitch.MinimumLevel <= (int)evt.Level;
         }
     }
 }

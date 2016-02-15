@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using Serilog.Core;
 using Serilog.Debugging;
 using Serilog.Events;
 using IOFile = System.IO.File;
@@ -25,7 +26,8 @@ namespace Serilog.Sinks.Seq
         readonly long? _eventBodyLimitBytes;
         readonly object _stateLock = new object();
 
-        LogEventLevel? _minimumAcceptedLevel;
+        // As per SeqSink
+        LoggingLevelSwitch _levelControlSwitch;
         static readonly TimeSpan RequiredLevelCheckInterval = TimeSpan.FromMinutes(2);
         DateTime _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
 
@@ -38,12 +40,14 @@ namespace Serilog.Sinks.Seq
         const string ApiKeyHeaderName = "X-Seq-ApiKey";
         const string BulkUploadResource = "api/events/raw";
 
-        public HttpLogShipper(string serverUrl, string bufferBaseFilename, string apiKey, int batchPostingLimit, TimeSpan period, long? eventBodyLimitBytes)
+        public HttpLogShipper(string serverUrl, string bufferBaseFilename, string apiKey, int batchPostingLimit, TimeSpan period, 
+            long? eventBodyLimitBytes, LoggingLevelSwitch levelControlSwitch)
         {
             _apiKey = apiKey;
             _batchPostingLimit = batchPostingLimit;
             _period = period;
             _eventBodyLimitBytes = eventBodyLimitBytes;
+            _levelControlSwitch = levelControlSwitch;
 
             var baseUri = serverUrl;
             if (!baseUri.EndsWith("/"))
@@ -109,7 +113,7 @@ namespace Serilog.Sinks.Seq
             get
             {
                 lock (_stateLock)
-                    return _minimumAcceptedLevel;
+                    return _levelControlSwitch?.MinimumLevel;
             }
         }
 
@@ -207,7 +211,7 @@ namespace Serilog.Sinks.Seq
                             payload.Write("]}");
                         }
 
-                        if (count > 0 || _minimumAcceptedLevel != null && _nextRequiredLevelCheckUtc < DateTime.UtcNow)
+                        if (count > 0 || _levelControlSwitch != null && _nextRequiredLevelCheckUtc < DateTime.UtcNow)
                         {
                             lock (_stateLock)
                             {
@@ -271,7 +275,19 @@ namespace Serilog.Sinks.Seq
             {
                 lock (_stateLock)
                 {
-                    _minimumAcceptedLevel = minimumAcceptedLevel;
+                    if (minimumAcceptedLevel == null)
+                    {
+                        if (_levelControlSwitch != null)
+                            _levelControlSwitch.MinimumLevel = LevelAlias.Minimum;
+                    }
+                    else
+                    {
+                        if (_levelControlSwitch == null)
+                            _levelControlSwitch = new LoggingLevelSwitch(minimumAcceptedLevel.Value);
+                        else
+                            _levelControlSwitch.MinimumLevel = minimumAcceptedLevel.Value;
+                    }
+
                     if (!_unloading)
                         SetTimer();
                 }

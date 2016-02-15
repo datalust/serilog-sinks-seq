@@ -9,7 +9,8 @@ namespace Sample
     {
         public static void Main(string[] args)
         {
-            // By sharing 
+            // By sharing between the Seq sink and logger itself,
+            // Seq API keys can be used to control the level of the whole logging pipeline.
             var levelSwitch = new LoggingLevelSwitch();
 
             Log.Logger = new LoggerConfiguration()

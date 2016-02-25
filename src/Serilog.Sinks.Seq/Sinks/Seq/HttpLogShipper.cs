@@ -193,6 +193,7 @@ namespace Serilog.Sinks.Seq
                             else
                             {
                                 SelfLog.WriteLine("Received failed HTTP shipping result {0}: {1}", result.StatusCode, result.Content.ReadAsStringAsync().Result);
+                                break;
                             }
                         }
                         else

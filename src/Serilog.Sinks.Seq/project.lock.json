@@ -3,13 +3,12 @@
   "version": 2,
   "targets": {
     ".NETFramework,Version=v4.5": {
-      "Serilog/2.0.0-beta-465": {
+      "Serilog/2.0.0-beta-505": {
         "type": "package",
         "frameworkAssemblies": [
           "Microsoft.CSharp",
           "mscorlib",
           "System",
-          "System.Configuration",
           "System.Core"
         ],
         "compile": {
@@ -19,10 +18,10 @@
           "lib/net45/Serilog.dll": {}
         }
       },
-      "Serilog.Sinks.File/2.0.0-beta-465": {
+      "Serilog.Sinks.File/2.0.0-beta-505": {
         "type": "package",
         "dependencies": {
-          "Serilog": "2.0.0-beta-465"
+          "Serilog": "2.0.0-beta-505"
         },
         "frameworkAssemblies": [
           "Microsoft.CSharp",
@@ -31,52 +30,35 @@
           "System.Core"
         ],
         "compile": {
-          "lib/net45/Serilog.dll": {},
-          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
-          "lib/net45/Serilog.Sinks.Console.dll": {},
           "lib/net45/Serilog.Sinks.File.dll": {}
         },
         "runtime": {
-          "lib/net45/Serilog.dll": {},
-          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
-          "lib/net45/Serilog.Sinks.Console.dll": {},
           "lib/net45/Serilog.Sinks.File.dll": {}
         }
       },
-      "Serilog.Sinks.PeriodicBatching/2.0.0-beta-465": {
+      "Serilog.Sinks.PeriodicBatching/2.0.0-beta-505": {
         "type": "package",
         "dependencies": {
-          "Serilog": "2.0.0-beta-465"
+          "Serilog": "2.0.0-beta-505"
         },
         "frameworkAssemblies": [
           "Microsoft.CSharp",
           "mscorlib",
           "System",
-          "System.Configuration",
           "System.Core"
         ],
         "compile": {
-          "lib/net45/Serilog.dll": {},
-          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
-          "lib/net45/Serilog.Sinks.Console.dll": {},
-          "lib/net45/Serilog.Sinks.File.dll": {},
-          "lib/net45/Serilog.Sinks.Observable.dll": {},
           "lib/net45/Serilog.Sinks.PeriodicBatching.dll": {}
         },
         "runtime": {
-          "lib/net45/Serilog.dll": {},
-          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
-          "lib/net45/Serilog.Sinks.Console.dll": {},
-          "lib/net45/Serilog.Sinks.File.dll": {},
-          "lib/net45/Serilog.Sinks.Observable.dll": {},
           "lib/net45/Serilog.Sinks.PeriodicBatching.dll": {}
         }
       },
-      "Serilog.Sinks.RollingFile/2.0.0-beta-465": {
+      "Serilog.Sinks.RollingFile/2.0.0-beta-505": {
         "type": "package",
         "dependencies": {
-          "Serilog": "2.0.0-beta-465",
-          "Serilog.Sinks.File": "2.0.0-beta-465"
+          "Serilog": "2.0.0-beta-505",
+          "Serilog.Sinks.File": "2.0.0-beta-505"
         },
         "frameworkAssemblies": [
           "Microsoft.CSharp",
@@ -85,21 +67,9 @@
           "System.Core"
         ],
         "compile": {
-          "lib/net45/Serilog.dll": {},
-          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
-          "lib/net45/Serilog.Sinks.Console.dll": {},
-          "lib/net45/Serilog.Sinks.File.dll": {},
-          "lib/net45/Serilog.Sinks.Observable.dll": {},
-          "lib/net45/Serilog.Sinks.PeriodicBatching.dll": {},
           "lib/net45/Serilog.Sinks.RollingFile.dll": {}
         },
         "runtime": {
-          "lib/net45/Serilog.dll": {},
-          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
-          "lib/net45/Serilog.Sinks.Console.dll": {},
-          "lib/net45/Serilog.Sinks.File.dll": {},
-          "lib/net45/Serilog.Sinks.Observable.dll": {},
-          "lib/net45/Serilog.Sinks.PeriodicBatching.dll": {},
           "lib/net45/Serilog.Sinks.RollingFile.dll": {}
         }
       }
@@ -132,7 +102,7 @@
           "lib/dotnet5.4/Microsoft.CSharp.dll": {}
         }
       },
-      "Serilog/2.0.0-beta-465": {
+      "Serilog/2.0.0-beta-505": {
         "type": "package",
         "dependencies": {
           "Microsoft.CSharp": "4.0.1-beta-23516",
@@ -146,6 +116,7 @@
           "System.Linq": "4.0.1-beta-23516",
           "System.Reflection.Extensions": "4.0.1-beta-23516",
           "System.Runtime.Extensions": "4.0.11-beta-23516",
+          "System.Runtime.Serialization.Primitives": "4.1.0-beta-23516",
           "System.Text.RegularExpressions": "4.0.11-beta-23516",
           "System.Threading": "4.0.11-beta-23516",
           "System.Threading.Thread": "4.0.0-beta-23516"
@@ -157,56 +128,46 @@
           "lib/dotnet5.4/Serilog.dll": {}
         }
       },
-      "Serilog.Sinks.File/2.0.0-beta-465": {
+      "Serilog.Sinks.File/2.0.0-beta-505": {
         "type": "package",
         "dependencies": {
-          "Serilog": "2.0.0-beta-465",
+          "Serilog": "2.0.0-beta-505",
           "System.IO": "4.0.11-beta-23516",
           "System.IO.FileSystem": "4.0.0",
           "System.IO.FileSystem.Primitives": "4.0.0"
         },
         "compile": {
-          "lib/dotnet5.1/Serilog.dll": {},
-          "lib/dotnet5.1/Serilog.Sinks.ColoredConsole.dll": {},
-          "lib/dotnet5.1/Serilog.Sinks.Console.dll": {},
           "lib/dotnet5.1/Serilog.Sinks.File.dll": {}
         },
         "runtime": {
-          "lib/dotnet5.1/Serilog.dll": {},
-          "lib/dotnet5.1/Serilog.Sinks.ColoredConsole.dll": {},
-          "lib/dotnet5.1/Serilog.Sinks.Console.dll": {},
           "lib/dotnet5.1/Serilog.Sinks.File.dll": {}
         }
       },
-      "Serilog.Sinks.PeriodicBatching/2.0.0-beta-465": {
+      "Serilog.Sinks.PeriodicBatching/2.0.0-beta-505": {
         "type": "package",
         "dependencies": {
-          "Serilog": "2.0.0-beta-465",
+          "Serilog": "2.0.0-beta-505",
           "System.Collections.Concurrent": "4.0.11-beta-23516"
         },
         "compile": {
-          "lib/dotnet5.2/Serilog.Sinks.Observable.dll": {},
           "lib/dotnet5.2/Serilog.Sinks.PeriodicBatching.dll": {}
         },
         "runtime": {
-          "lib/dotnet5.2/Serilog.Sinks.Observable.dll": {},
           "lib/dotnet5.2/Serilog.Sinks.PeriodicBatching.dll": {}
         }
       },
-      "Serilog.Sinks.RollingFile/2.0.0-beta-465": {
+      "Serilog.Sinks.RollingFile/2.0.0-beta-505": {
         "type": "package",
         "dependencies": {
-          "Serilog": "2.0.0-beta-465",
-          "Serilog.Sinks.File": "2.0.0-beta-465",
+          "Serilog": "2.0.0-beta-505",
+          "Serilog.Sinks.File": "2.0.0-beta-505",
           "System.IO": "4.0.11-beta-23516",
           "System.IO.FileSystem.Primitives": "4.0.1-beta-23516"
         },
         "compile": {
-          "lib/dotnet5.4/Serilog.dll": {},
           "lib/dotnet5.4/Serilog.Sinks.RollingFile.dll": {}
         },
         "runtime": {
-          "lib/dotnet5.4/Serilog.dll": {},
           "lib/dotnet5.4/Serilog.Sinks.RollingFile.dll": {}
         }
       },
@@ -497,6 +458,19 @@
           "ref/dotnet/System.Runtime.InteropServices.dll": {}
         }
       },
+      "System.Runtime.Serialization.Primitives/4.1.0-beta-23516": {
+        "type": "package",
+        "dependencies": {
+          "System.Resources.ResourceManager": "4.0.0",
+          "System.Runtime": "4.0.20"
+        },
+        "compile": {
+          "ref/dotnet5.4/System.Runtime.Serialization.Primitives.dll": {}
+        },
+        "runtime": {
+          "lib/dotnet5.4/System.Runtime.Serialization.Primitives.dll": {}
+        }
+      },
       "System.Text.Encoding/4.0.0": {
         "type": "package",
         "dependencies": {
@@ -553,13 +527,12 @@
       }
     },
     ".NETFramework,Version=v4.5/win7-x86": {
-      "Serilog/2.0.0-beta-465": {
+      "Serilog/2.0.0-beta-505": {
         "type": "package",
         "frameworkAssemblies": [
           "Microsoft.CSharp",
           "mscorlib",
           "System",
-          "System.Configuration",
           "System.Core"
         ],
         "compile": {
@@ -569,10 +542,10 @@
           "lib/net45/Serilog.dll": {}
         }
       },
-      "Serilog.Sinks.File/2.0.0-beta-465": {
+      "Serilog.Sinks.File/2.0.0-beta-505": {
         "type": "package",
         "dependencies": {
-          "Serilog": "2.0.0-beta-465"
+          "Serilog": "2.0.0-beta-505"
         },
         "frameworkAssemblies": [
           "Microsoft.CSharp",
@@ -581,52 +554,35 @@
           "System.Core"
         ],
         "compile": {
-          "lib/net45/Serilog.dll": {},
-          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
-          "lib/net45/Serilog.Sinks.Console.dll": {},
           "lib/net45/Serilog.Sinks.File.dll": {}
         },
         "runtime": {
-          "lib/net45/Serilog.dll": {},
-          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
-          "lib/net45/Serilog.Sinks.Console.dll": {},
           "lib/net45/Serilog.Sinks.File.dll": {}
         }
       },
-      "Serilog.Sinks.PeriodicBatching/2.0.0-beta-465": {
+      "Serilog.Sinks.PeriodicBatching/2.0.0-beta-505": {
         "type": "package",
         "dependencies": {
-          "Serilog": "2.0.0-beta-465"
+          "Serilog": "2.0.0-beta-505"
         },
         "frameworkAssemblies": [
           "Microsoft.CSharp",
           "mscorlib",
           "System",
-          "System.Configuration",
           "System.Core"
         ],
         "compile": {
-          "lib/net45/Serilog.dll": {},
-          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
-          "lib/net45/Serilog.Sinks.Console.dll": {},
-          "lib/net45/Serilog.Sinks.File.dll": {},
-          "lib/net45/Serilog.Sinks.Observable.dll": {},
           "lib/net45/Serilog.Sinks.PeriodicBatching.dll": {}
         },
         "runtime": {
-          "lib/net45/Serilog.dll": {},
-          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
-          "lib/net45/Serilog.Sinks.Console.dll": {},
-          "lib/net45/Serilog.Sinks.File.dll": {},
-          "lib/net45/Serilog.Sinks.Observable.dll": {},
           "lib/net45/Serilog.Sinks.PeriodicBatching.dll": {}
         }
       },
-      "Serilog.Sinks.RollingFile/2.0.0-beta-465": {
+      "Serilog.Sinks.RollingFile/2.0.0-beta-505": {
         "type": "package",
         "dependencies": {
-          "Serilog": "2.0.0-beta-465",
-          "Serilog.Sinks.File": "2.0.0-beta-465"
+          "Serilog": "2.0.0-beta-505",
+          "Serilog.Sinks.File": "2.0.0-beta-505"
         },
         "frameworkAssemblies": [
           "Microsoft.CSharp",
@@ -635,33 +591,20 @@
           "System.Core"
         ],
         "compile": {
-          "lib/net45/Serilog.dll": {},
-          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
-          "lib/net45/Serilog.Sinks.Console.dll": {},
-          "lib/net45/Serilog.Sinks.File.dll": {},
-          "lib/net45/Serilog.Sinks.Observable.dll": {},
-          "lib/net45/Serilog.Sinks.PeriodicBatching.dll": {},
           "lib/net45/Serilog.Sinks.RollingFile.dll": {}
         },
         "runtime": {
-          "lib/net45/Serilog.dll": {},
-          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
-          "lib/net45/Serilog.Sinks.Console.dll": {},
-          "lib/net45/Serilog.Sinks.File.dll": {},
-          "lib/net45/Serilog.Sinks.Observable.dll": {},
-          "lib/net45/Serilog.Sinks.PeriodicBatching.dll": {},
           "lib/net45/Serilog.Sinks.RollingFile.dll": {}
         }
       }
     },
     ".NETFramework,Version=v4.5/win7-x64": {
-      "Serilog/2.0.0-beta-465": {
+      "Serilog/2.0.0-beta-505": {
         "type": "package",
         "frameworkAssemblies": [
           "Microsoft.CSharp",
           "mscorlib",
           "System",
-          "System.Configuration",
           "System.Core"
         ],
         "compile": {
@@ -671,10 +614,10 @@
           "lib/net45/Serilog.dll": {}
         }
       },
-      "Serilog.Sinks.File/2.0.0-beta-465": {
+      "Serilog.Sinks.File/2.0.0-beta-505": {
         "type": "package",
         "dependencies": {
-          "Serilog": "2.0.0-beta-465"
+          "Serilog": "2.0.0-beta-505"
         },
         "frameworkAssemblies": [
           "Microsoft.CSharp",
@@ -683,52 +626,35 @@
           "System.Core"
         ],
         "compile": {
-          "lib/net45/Serilog.dll": {},
-          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
-          "lib/net45/Serilog.Sinks.Console.dll": {},
           "lib/net45/Serilog.Sinks.File.dll": {}
         },
         "runtime": {
-          "lib/net45/Serilog.dll": {},
-          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
-          "lib/net45/Serilog.Sinks.Console.dll": {},
           "lib/net45/Serilog.Sinks.File.dll": {}
         }
       },
-      "Serilog.Sinks.PeriodicBatching/2.0.0-beta-465": {
+      "Serilog.Sinks.PeriodicBatching/2.0.0-beta-505": {
         "type": "package",
         "dependencies": {
-          "Serilog": "2.0.0-beta-465"
+          "Serilog": "2.0.0-beta-505"
         },
         "frameworkAssemblies": [
           "Microsoft.CSharp",
           "mscorlib",
           "System",
-          "System.Configuration",
           "System.Core"
         ],
         "compile": {
-          "lib/net45/Serilog.dll": {},
-          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
-          "lib/net45/Serilog.Sinks.Console.dll": {},
-          "lib/net45/Serilog.Sinks.File.dll": {},
-          "lib/net45/Serilog.Sinks.Observable.dll": {},
           "lib/net45/Serilog.Sinks.PeriodicBatching.dll": {}
         },
         "runtime": {
-          "lib/net45/Serilog.dll": {},
-          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
-          "lib/net45/Serilog.Sinks.Console.dll": {},
-          "lib/net45/Serilog.Sinks.File.dll": {},
-          "lib/net45/Serilog.Sinks.Observable.dll": {},
           "lib/net45/Serilog.Sinks.PeriodicBatching.dll": {}
         }
       },
-      "Serilog.Sinks.RollingFile/2.0.0-beta-465": {
+      "Serilog.Sinks.RollingFile/2.0.0-beta-505": {
         "type": "package",
         "dependencies": {
-          "Serilog": "2.0.0-beta-465",
-          "Serilog.Sinks.File": "2.0.0-beta-465"
+          "Serilog": "2.0.0-beta-505",
+          "Serilog.Sinks.File": "2.0.0-beta-505"
         },
         "frameworkAssemblies": [
           "Microsoft.CSharp",
@@ -737,21 +663,9 @@
           "System.Core"
         ],
         "compile": {
-          "lib/net45/Serilog.dll": {},
-          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
-          "lib/net45/Serilog.Sinks.Console.dll": {},
-          "lib/net45/Serilog.Sinks.File.dll": {},
-          "lib/net45/Serilog.Sinks.Observable.dll": {},
-          "lib/net45/Serilog.Sinks.PeriodicBatching.dll": {},
           "lib/net45/Serilog.Sinks.RollingFile.dll": {}
         },
         "runtime": {
-          "lib/net45/Serilog.dll": {},
-          "lib/net45/Serilog.Sinks.ColoredConsole.dll": {},
-          "lib/net45/Serilog.Sinks.Console.dll": {},
-          "lib/net45/Serilog.Sinks.File.dll": {},
-          "lib/net45/Serilog.Sinks.Observable.dll": {},
-          "lib/net45/Serilog.Sinks.PeriodicBatching.dll": {},
           "lib/net45/Serilog.Sinks.RollingFile.dll": {}
         }
       }
@@ -870,7 +784,7 @@
           "ref/dotnet/_._": {}
         }
       },
-      "Serilog/2.0.0-beta-465": {
+      "Serilog/2.0.0-beta-505": {
         "type": "package",
         "dependencies": {
           "Microsoft.CSharp": "4.0.1-beta-23516",
@@ -884,6 +798,7 @@
           "System.Linq": "4.0.1-beta-23516",
           "System.Reflection.Extensions": "4.0.1-beta-23516",
           "System.Runtime.Extensions": "4.0.11-beta-23516",
+          "System.Runtime.Serialization.Primitives": "4.1.0-beta-23516",
           "System.Text.RegularExpressions": "4.0.11-beta-23516",
           "System.Threading": "4.0.11-beta-23516",
           "System.Threading.Thread": "4.0.0-beta-23516"
@@ -895,56 +810,46 @@
           "lib/dotnet5.4/Serilog.dll": {}
         }
       },
-      "Serilog.Sinks.File/2.0.0-beta-465": {
+      "Serilog.Sinks.File/2.0.0-beta-505": {
         "type": "package",
         "dependencies": {
-          "Serilog": "2.0.0-beta-465",
+          "Serilog": "2.0.0-beta-505",
           "System.IO": "4.0.11-beta-23516",
           "System.IO.FileSystem": "4.0.0",
           "System.IO.FileSystem.Primitives": "4.0.0"
         },
         "compile": {
-          "lib/dotnet5.1/Serilog.dll": {},
-          "lib/dotnet5.1/Serilog.Sinks.ColoredConsole.dll": {},
-          "lib/dotnet5.1/Serilog.Sinks.Console.dll": {},
           "lib/dotnet5.1/Serilog.Sinks.File.dll": {}
         },
         "runtime": {
-          "lib/dotnet5.1/Serilog.dll": {},
-          "lib/dotnet5.1/Serilog.Sinks.ColoredConsole.dll": {},
-          "lib/dotnet5.1/Serilog.Sinks.Console.dll": {},
           "lib/dotnet5.1/Serilog.Sinks.File.dll": {}
         }
       },
-      "Serilog.Sinks.PeriodicBatching/2.0.0-beta-465": {
+      "Serilog.Sinks.PeriodicBatching/2.0.0-beta-505": {
         "type": "package",
         "dependencies": {
-          "Serilog": "2.0.0-beta-465",
+          "Serilog": "2.0.0-beta-505",
           "System.Collections.Concurrent": "4.0.11-beta-23516"
         },
         "compile": {
-          "lib/dotnet5.2/Serilog.Sinks.Observable.dll": {},
           "lib/dotnet5.2/Serilog.Sinks.PeriodicBatching.dll": {}
         },
         "runtime": {
-          "lib/dotnet5.2/Serilog.Sinks.Observable.dll": {},
           "lib/dotnet5.2/Serilog.Sinks.PeriodicBatching.dll": {}
         }
       },
-      "Serilog.Sinks.RollingFile/2.0.0-beta-465": {
+      "Serilog.Sinks.RollingFile/2.0.0-beta-505": {
         "type": "package",
         "dependencies": {
-          "Serilog": "2.0.0-beta-465",
-          "Serilog.Sinks.File": "2.0.0-beta-465",
+          "Serilog": "2.0.0-beta-505",
+          "Serilog.Sinks.File": "2.0.0-beta-505",
           "System.IO": "4.0.11-beta-23516",
           "System.IO.FileSystem.Primitives": "4.0.1-beta-23516"
         },
         "compile": {
-          "lib/dotnet5.4/Serilog.dll": {},
           "lib/dotnet5.4/Serilog.Sinks.RollingFile.dll": {}
         },
         "runtime": {
-          "lib/dotnet5.4/Serilog.dll": {},
           "lib/dotnet5.4/Serilog.Sinks.RollingFile.dll": {}
         }
       },
@@ -1233,6 +1138,19 @@
         },
         "compile": {
           "ref/dotnet/System.Runtime.InteropServices.dll": {}
+        }
+      },
+      "System.Runtime.Serialization.Primitives/4.1.0-beta-23516": {
+        "type": "package",
+        "dependencies": {
+          "System.Resources.ResourceManager": "4.0.0",
+          "System.Runtime": "4.0.20"
+        },
+        "compile": {
+          "ref/dotnet5.4/System.Runtime.Serialization.Primitives.dll": {}
+        },
+        "runtime": {
+          "lib/dotnet5.4/System.Runtime.Serialization.Primitives.dll": {}
         }
       },
       "System.Text.Encoding/4.0.10": {
@@ -1424,7 +1342,7 @@
           "ref/dotnet/_._": {}
         }
       },
-      "Serilog/2.0.0-beta-465": {
+      "Serilog/2.0.0-beta-505": {
         "type": "package",
         "dependencies": {
           "Microsoft.CSharp": "4.0.1-beta-23516",
@@ -1438,6 +1356,7 @@
           "System.Linq": "4.0.1-beta-23516",
           "System.Reflection.Extensions": "4.0.1-beta-23516",
           "System.Runtime.Extensions": "4.0.11-beta-23516",
+          "System.Runtime.Serialization.Primitives": "4.1.0-beta-23516",
           "System.Text.RegularExpressions": "4.0.11-beta-23516",
           "System.Threading": "4.0.11-beta-23516",
           "System.Threading.Thread": "4.0.0-beta-23516"
@@ -1449,56 +1368,46 @@
           "lib/dotnet5.4/Serilog.dll": {}
         }
       },
-      "Serilog.Sinks.File/2.0.0-beta-465": {
+      "Serilog.Sinks.File/2.0.0-beta-505": {
         "type": "package",
         "dependencies": {
-          "Serilog": "2.0.0-beta-465",
+          "Serilog": "2.0.0-beta-505",
           "System.IO": "4.0.11-beta-23516",
           "System.IO.FileSystem": "4.0.0",
           "System.IO.FileSystem.Primitives": "4.0.0"
         },
         "compile": {
-          "lib/dotnet5.1/Serilog.dll": {},
-          "lib/dotnet5.1/Serilog.Sinks.ColoredConsole.dll": {},
-          "lib/dotnet5.1/Serilog.Sinks.Console.dll": {},
           "lib/dotnet5.1/Serilog.Sinks.File.dll": {}
         },
         "runtime": {
-          "lib/dotnet5.1/Serilog.dll": {},
-          "lib/dotnet5.1/Serilog.Sinks.ColoredConsole.dll": {},
-          "lib/dotnet5.1/Serilog.Sinks.Console.dll": {},
           "lib/dotnet5.1/Serilog.Sinks.File.dll": {}
         }
       },
-      "Serilog.Sinks.PeriodicBatching/2.0.0-beta-465": {
+      "Serilog.Sinks.PeriodicBatching/2.0.0-beta-505": {
         "type": "package",
         "dependencies": {
-          "Serilog": "2.0.0-beta-465",
+          "Serilog": "2.0.0-beta-505",
           "System.Collections.Concurrent": "4.0.11-beta-23516"
         },
         "compile": {
-          "lib/dotnet5.2/Serilog.Sinks.Observable.dll": {},
           "lib/dotnet5.2/Serilog.Sinks.PeriodicBatching.dll": {}
         },
         "runtime": {
-          "lib/dotnet5.2/Serilog.Sinks.Observable.dll": {},
           "lib/dotnet5.2/Serilog.Sinks.PeriodicBatching.dll": {}
         }
       },
-      "Serilog.Sinks.RollingFile/2.0.0-beta-465": {
+      "Serilog.Sinks.RollingFile/2.0.0-beta-505": {
         "type": "package",
         "dependencies": {
-          "Serilog": "2.0.0-beta-465",
-          "Serilog.Sinks.File": "2.0.0-beta-465",
+          "Serilog": "2.0.0-beta-505",
+          "Serilog.Sinks.File": "2.0.0-beta-505",
           "System.IO": "4.0.11-beta-23516",
           "System.IO.FileSystem.Primitives": "4.0.1-beta-23516"
         },
         "compile": {
-          "lib/dotnet5.4/Serilog.dll": {},
           "lib/dotnet5.4/Serilog.Sinks.RollingFile.dll": {}
         },
         "runtime": {
-          "lib/dotnet5.4/Serilog.dll": {},
           "lib/dotnet5.4/Serilog.Sinks.RollingFile.dll": {}
         }
       },
@@ -1789,6 +1698,19 @@
           "ref/dotnet/System.Runtime.InteropServices.dll": {}
         }
       },
+      "System.Runtime.Serialization.Primitives/4.1.0-beta-23516": {
+        "type": "package",
+        "dependencies": {
+          "System.Resources.ResourceManager": "4.0.0",
+          "System.Runtime": "4.0.20"
+        },
+        "compile": {
+          "ref/dotnet5.4/System.Runtime.Serialization.Primitives.dll": {}
+        },
+        "runtime": {
+          "lib/dotnet5.4/System.Runtime.Serialization.Primitives.dll": {}
+        }
+      },
       "System.Text.Encoding/4.0.10": {
         "type": "package",
         "dependencies": {
@@ -1869,7 +1791,7 @@
     "Microsoft.CSharp/4.0.1-beta-23516": {
       "type": "package",
       "serviceable": true,
-      "sha512": "fb+HO3nIjHao9lqsVVM0ne3GM/+1EfRQUoM58cxEOt+5biy/8DQ1nxIahZ9VaJKw7Wgb6XhRhsdwg8DkePEOJA==",
+      "sha512": "z/W5YaTGVQ8WX6TQDW8cCBAe2rBhHOD7NZHxLAnBIMoLWMI/upWDi+dxHYMDDWmGOM7a3di6evem2OzOdaB1fQ==",
       "files": [
         "lib/dotnet5.4/Microsoft.CSharp.dll",
         "lib/MonoAndroid10/_._",
@@ -1919,7 +1841,7 @@
     "runtime.win7.System.Console/4.0.0-beta-23516": {
       "type": "package",
       "serviceable": true,
-      "sha512": "pfQrTtnYcWOtI3RrpqjAzwT3I55ivTVZFpbKYG59dYTTvaLFGbs2njc/mrXHij6GylyJ2YjekS/9r6I8X3LV1A==",
+      "sha512": "TJZhrw44Bf7sYqne+CX5II/PaNf5L7oKVfl0FLkr4pj76KS8hSsJzsKL0IvxC+bi4d51+wTbv91kF1kgPyHMVw==",
       "files": [
         "ref/dotnet/_._",
         "runtime.win7.System.Console.4.0.0-beta-23516.nupkg",
@@ -1932,7 +1854,7 @@
     "runtime.win7.System.Diagnostics.Process/4.1.0-beta-23516": {
       "type": "package",
       "serviceable": true,
-      "sha512": "qCCXX+OG6430kLtN/wyjeLTTiJvOIKB2G+qBvhSqVLWe5ZTiEiSnweKUzdi7raXL0te0WfPE5tf8FuKcEKPnIA==",
+      "sha512": "IDp4dljG6NkpMP9UzrtuvLZ0wfeOHphStOsVLmUTj2g3UH28L5Lo9481/fAXVPs2GEVMRwAvSwph90EcNfV/jQ==",
       "files": [
         "ref/dotnet/_._",
         "runtime.win7.System.Diagnostics.Process.4.1.0-beta-23516.nupkg",
@@ -1949,7 +1871,7 @@
     "runtime.win7.System.Diagnostics.TraceSource/4.0.0-beta-23516": {
       "type": "package",
       "serviceable": true,
-      "sha512": "hpD0T6zOEU/1qUSPitKSgIdsL4tZlZz7CUCu6PP7BYf8CM3vPkSEzN38kX6PnH8F6kvOqxEwzPYhZCK3PJkh/Q==",
+      "sha512": "6YSh7+vRI2ptFNPTWE100MNz0sRAVuBjwU0znK3kzd5GYQgLjvtWn8rT9DvJQA4R6OmC5Q+OgXzb/nibxcbtbA==",
       "files": [
         "ref/dotnet/_._",
         "runtime.win7.System.Diagnostics.TraceSource.4.0.0-beta-23516.nupkg",
@@ -1966,7 +1888,7 @@
     "runtime.win7.System.IO.FileSystem/4.0.1-beta-23516": {
       "type": "package",
       "serviceable": true,
-      "sha512": "UOHEVg3jQwsvy3b+8zhDk7BQ9GhHY1KcjHSuqArzIl7oemcM/+D7OfS5iOA96ydjEv9FmIKV3knkXMge+cUD0Q==",
+      "sha512": "PwsqcwAui7Ld6Ad32RjoHF3wBSEkEzvv5ka605IsaWxHSCfmmwevJnIbNgwJgBTao/uR+wSO9yoyvfrB109BfQ==",
       "files": [
         "ref/dotnet/_._",
         "runtime.win7.System.IO.FileSystem.4.0.1-beta-23516.nupkg",
@@ -1996,7 +1918,7 @@
     "runtime.win7.System.Runtime.Extensions/4.0.11-beta-23516": {
       "type": "package",
       "serviceable": true,
-      "sha512": "Jm+LAzN7CZl1BZSxz4TsMBNy1rHNqyY/1+jxZf3BpF7vkPlWRXa/vSfY0lZJZdy4Doxa893bmcCf9pZNsJU16Q==",
+      "sha512": "V4HbLYv2m4LaL+Kl+x6wz8Xl9TyrHBpA/lYq+w6J35mYY9ACCVV+YkHRJdNuRd3Qe3DEz9X8D1S8uWnKMyHvvg==",
       "files": [
         "lib/DNXCore50/System.Runtime.Extensions.dll",
         "lib/netcore50/System.Runtime.Extensions.dll",
@@ -2010,7 +1932,7 @@
     "runtime.win7.System.Threading/4.0.11-beta-23516": {
       "type": "package",
       "serviceable": true,
-      "sha512": "paSNXQ5Y6Exu3OpekooyMJFQ8mitn69fGO5Br3XLIfQ1KiMYVmRf+o6dMprC0SpPROVCiCxdUaJx5XkDEVL3uA==",
+      "sha512": "kKQ9uUB1g3S9eyK5njdwh5LO0HxJ9CN6cF9dXtp7uzdZvh2UoTgAZ0Jf+/TvzWcUsfcKIPQUGPPLOBLaQpXASg==",
       "files": [
         "ref/dotnet/_._",
         "runtime.win7.System.Threading.4.0.11-beta-23516.nupkg",
@@ -2021,97 +1943,57 @@
         "runtimes/win8-aot/lib/netcore50/System.Threading.dll"
       ]
     },
-    "Serilog/2.0.0-beta-465": {
+    "Serilog/2.0.0-beta-505": {
       "type": "package",
-      "sha512": "WCWljYsF2u2gzcKAAieKisqI4GXfd1Y97jfOa+yfqfLhur0VOt/20SwEQprOBfpSdlKbDbefSg9PjaLB0HzR6A==",
+      "sha512": "Pp8dfTjdUfYkwRGi3Ukxxxx+gJxnVeXO1TA6U3uISCcymKZLCkV1pHHwbZA8XjroTOV4a4Jzim9NK7zyab/lZQ==",
       "files": [
         "lib/dotnet5.1/Serilog.dll",
         "lib/dotnet5.1/Serilog.xml",
         "lib/dotnet5.4/Serilog.dll",
         "lib/dotnet5.4/Serilog.xml",
-        "lib/net40/Serilog.dll",
-        "lib/net40/Serilog.xml",
         "lib/net45/Serilog.dll",
         "lib/net45/Serilog.xml",
-        "Serilog.2.0.0-beta-465.nupkg",
-        "Serilog.2.0.0-beta-465.nupkg.sha512",
+        "Serilog.2.0.0-beta-505.nupkg",
+        "Serilog.2.0.0-beta-505.nupkg.sha512",
         "Serilog.nuspec"
       ]
     },
-    "Serilog.Sinks.File/2.0.0-beta-465": {
+    "Serilog.Sinks.File/2.0.0-beta-505": {
       "type": "package",
-      "sha512": "FVLlr0971K7AEiDIMEMNxEsfqIHxvOakD4PjlpNKl0IhGP+ZX5DX9pCFENta7jTe7KU4vz3MVWvo7GDmdHamaQ==",
+      "sha512": "COA3V43z40MdSP3c0pXZX6SadoxgH6QckcNL332dgcnisCgw6kEDVzS7p89P+/+3keyYye6vDHkSTE09Khv7kQ==",
       "files": [
-        "lib/dotnet5.1/Serilog.dll",
-        "lib/dotnet5.1/Serilog.Sinks.ColoredConsole.dll",
-        "lib/dotnet5.1/Serilog.Sinks.ColoredConsole.xml",
-        "lib/dotnet5.1/Serilog.Sinks.Console.dll",
-        "lib/dotnet5.1/Serilog.Sinks.Console.xml",
         "lib/dotnet5.1/Serilog.Sinks.File.dll",
         "lib/dotnet5.1/Serilog.Sinks.File.xml",
-        "lib/dotnet5.1/Serilog.xml",
-        "lib/net45/Serilog.dll",
-        "lib/net45/Serilog.Sinks.ColoredConsole.dll",
-        "lib/net45/Serilog.Sinks.ColoredConsole.xml",
-        "lib/net45/Serilog.Sinks.Console.dll",
-        "lib/net45/Serilog.Sinks.Console.xml",
         "lib/net45/Serilog.Sinks.File.dll",
         "lib/net45/Serilog.Sinks.File.xml",
-        "lib/net45/Serilog.xml",
-        "Serilog.Sinks.File.2.0.0-beta-465.nupkg",
-        "Serilog.Sinks.File.2.0.0-beta-465.nupkg.sha512",
+        "Serilog.Sinks.File.2.0.0-beta-505.nupkg",
+        "Serilog.Sinks.File.2.0.0-beta-505.nupkg.sha512",
         "Serilog.Sinks.File.nuspec"
       ]
     },
-    "Serilog.Sinks.PeriodicBatching/2.0.0-beta-465": {
+    "Serilog.Sinks.PeriodicBatching/2.0.0-beta-505": {
       "type": "package",
-      "sha512": "KPtLMJfGhsGNkaluN43CRisEqIoOjhpNZdr4NmbOLvPhKauD7deO8n9gwiC7Bmh5ZV8pz2ilaerJ1QY/r+ggDg==",
+      "sha512": "5r8Lh4UW+YNMbIzown4moCLEAPEB/Wo7ug0I5Fd8Tjc6G4398NJqzLJgK2IIShcYsqAmIZiM+pl+ll6gdP1piQ==",
       "files": [
-        "lib/dotnet5.2/Serilog.Sinks.Observable.dll",
-        "lib/dotnet5.2/Serilog.Sinks.Observable.xml",
         "lib/dotnet5.2/Serilog.Sinks.PeriodicBatching.dll",
         "lib/dotnet5.2/Serilog.Sinks.PeriodicBatching.xml",
-        "lib/net45/Serilog.dll",
-        "lib/net45/Serilog.Sinks.ColoredConsole.dll",
-        "lib/net45/Serilog.Sinks.ColoredConsole.xml",
-        "lib/net45/Serilog.Sinks.Console.dll",
-        "lib/net45/Serilog.Sinks.Console.xml",
-        "lib/net45/Serilog.Sinks.File.dll",
-        "lib/net45/Serilog.Sinks.File.xml",
-        "lib/net45/Serilog.Sinks.Observable.dll",
-        "lib/net45/Serilog.Sinks.Observable.xml",
         "lib/net45/Serilog.Sinks.PeriodicBatching.dll",
         "lib/net45/Serilog.Sinks.PeriodicBatching.xml",
-        "lib/net45/Serilog.xml",
-        "Serilog.Sinks.PeriodicBatching.2.0.0-beta-465.nupkg",
-        "Serilog.Sinks.PeriodicBatching.2.0.0-beta-465.nupkg.sha512",
+        "Serilog.Sinks.PeriodicBatching.2.0.0-beta-505.nupkg",
+        "Serilog.Sinks.PeriodicBatching.2.0.0-beta-505.nupkg.sha512",
         "Serilog.Sinks.PeriodicBatching.nuspec"
       ]
     },
-    "Serilog.Sinks.RollingFile/2.0.0-beta-465": {
+    "Serilog.Sinks.RollingFile/2.0.0-beta-505": {
       "type": "package",
-      "sha512": "CLY7hvQCnCYZ9kCFrsgg9VWoMwM3MKv8M78PPbRNxl/uT/BTzH3uQNfPkQnO3SizbvWKrDquubxoWqwS/L/0Hw==",
+      "sha512": "1mSt+NBL2a9xFcJ36atukRLzqHSXtiaREJM8sgF5/0Rc2+HSDWimpLmmrV2qijBe5jPVBHB1ojxQGLbArPeexQ==",
       "files": [
-        "lib/dotnet5.4/Serilog.dll",
         "lib/dotnet5.4/Serilog.Sinks.RollingFile.dll",
         "lib/dotnet5.4/Serilog.Sinks.RollingFile.xml",
-        "lib/dotnet5.4/Serilog.xml",
-        "lib/net45/Serilog.dll",
-        "lib/net45/Serilog.Sinks.ColoredConsole.dll",
-        "lib/net45/Serilog.Sinks.ColoredConsole.xml",
-        "lib/net45/Serilog.Sinks.Console.dll",
-        "lib/net45/Serilog.Sinks.Console.xml",
-        "lib/net45/Serilog.Sinks.File.dll",
-        "lib/net45/Serilog.Sinks.File.xml",
-        "lib/net45/Serilog.Sinks.Observable.dll",
-        "lib/net45/Serilog.Sinks.Observable.xml",
-        "lib/net45/Serilog.Sinks.PeriodicBatching.dll",
-        "lib/net45/Serilog.Sinks.PeriodicBatching.xml",
         "lib/net45/Serilog.Sinks.RollingFile.dll",
         "lib/net45/Serilog.Sinks.RollingFile.xml",
-        "lib/net45/Serilog.xml",
-        "Serilog.Sinks.RollingFile.2.0.0-beta-465.nupkg",
-        "Serilog.Sinks.RollingFile.2.0.0-beta-465.nupkg.sha512",
+        "Serilog.Sinks.RollingFile.2.0.0-beta-505.nupkg",
+        "Serilog.Sinks.RollingFile.2.0.0-beta-505.nupkg.sha512",
         "Serilog.Sinks.RollingFile.nuspec"
       ]
     },
@@ -2152,7 +2034,7 @@
     "System.Collections.Concurrent/4.0.11-beta-23516": {
       "type": "package",
       "serviceable": true,
-      "sha512": "e4FscEk9ugPXPKEIQFYBS/i+0KAkKf/IEe26fiOnqk8JVZQuCLO3gJmJ+IiVD1TxJjvVmh+tayQuo2svVzZV7g==",
+      "sha512": "K+n6bC3jL5nRzwm8IM5WHxPScCnrVoPCJjpkBEmoBYY8/3j4RJdqIng/NYcpGcjvP/GIF6tAwZlh54ao2pWOvQ==",
       "files": [
         "lib/dotnet5.4/System.Collections.Concurrent.dll",
         "lib/MonoAndroid10/_._",
@@ -2211,7 +2093,7 @@
     "System.Console/4.0.0-beta-23516": {
       "type": "package",
       "serviceable": true,
-      "sha512": "0YTzoNamTU+6qfZEYtMuGjtkJHB1MEDyFsZ5L/x97GkZO3Bw91uwdPh0DkFwQ6E8KaQTgZAecSXoboUHAcdSLA==",
+      "sha512": "tzF4Dbbv+5bcbQ7GHuuKafkaDZThiUiwxqCc1ngewnMWZ5YmIgjQZjs+E1DNhoMVAvkH0tSmLJvsDlx9dFg+Aw==",
       "files": [
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -2322,7 +2204,7 @@
     "System.Diagnostics.TraceSource/4.0.0-beta-23516": {
       "type": "package",
       "serviceable": true,
-      "sha512": "OIWB5pvMqOdCraAtiJBhRahrsnP2sNaXbCZNdAadzwiPLzRI7EvLTc7/NlkFDxm3I6YKVGxnJ5aO+YJ/XPC8yw==",
+      "sha512": "gvJNxObthiaV07AKZYjQV69xRBKRR7gTpEVe4qXF4Mta/2zD7sI+Zm//rRCQenLYBuL8nBxVzomtYJ4eT7w8QQ==",
       "files": [
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -2436,7 +2318,7 @@
     "System.Globalization/4.0.11-beta-23516": {
       "type": "package",
       "serviceable": true,
-      "sha512": "htoF4cS3WhCkU3HloMj3mz+h2FHnF8Hz0po/26otT5e46LlJ8p7LpFpxckxVviyYg9Fab9gr8aIB0ZDN9Cjpig==",
+      "sha512": "jctanC1VveBFsgOysiqFN/HH0qX+EvLNelcBU6Fb4w7m3BBu827k8RCNiwW+uAC5f5XZBTRpsXZk4cI15RCdYQ==",
       "files": [
         "lib/DNXCore50/System.Globalization.dll",
         "lib/MonoAndroid10/_._",
@@ -2498,7 +2380,7 @@
     "System.IO/4.0.11-beta-23516": {
       "type": "package",
       "serviceable": true,
-      "sha512": "dR1DaWrF0zsV2z/GVs8xVvMds6xu0ykuwv+VPou8wbpJ1XxGBK9g6v5F84DWL8Q1qi+6Kyb56wbZYdYQO8OMew==",
+      "sha512": "6nJmAk4vYjN+5/haenkKk/BDGCOKw5pk5EjXAOvBnUM5PFIfO8JwUxGbcveOD4vV5Vb6TAxrmRmts/7F+BEuEw==",
       "files": [
         "lib/DNXCore50/System.IO.dll",
         "lib/MonoAndroid10/_._",
@@ -2560,7 +2442,7 @@
     "System.IO.FileSystem/4.0.1-beta-23516": {
       "type": "package",
       "serviceable": true,
-      "sha512": "KOYNQ6FeLQh0HdHVlp6IRjRGPCjyFvZRKfhYSDFi7DR0EHY3cC2rvfVj5HWJEW5KlSaa01Ct25m06yVnqSxwOQ==",
+      "sha512": "xggWMgLzKnBisYTx5HW3og8qRR7TjmorQAdsAQOaMcY4I9CQA6JUxw0r2AvCC1+ToXh0CuO7J6dymX33pkmwbA==",
       "files": [
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -2624,7 +2506,7 @@
     "System.Linq/4.0.1-beta-23516": {
       "type": "package",
       "serviceable": true,
-      "sha512": "uNxm2RB+kMeiKnY26iPvOtJLzTzNaAF4A2qqyzev6j8x8w2Dr+gg7LF7BHCwC55N7OirhHrAWUb3C0n4oi9qYw==",
+      "sha512": "AJaoyeAHLpurbTWnmvOhK/QC2sswKJrIA5RlPea+UdfXpHOw3srPNEPpseZDMV/EviVqAwUfFNkc5QxpGZtsLA==",
       "files": [
         "lib/dotnet5.4/System.Linq.dll",
         "lib/net45/_._",
@@ -2864,7 +2746,7 @@
     "System.Reflection.Extensions/4.0.1-beta-23516": {
       "type": "package",
       "serviceable": true,
-      "sha512": "CiaYbkU2dzOSTSB7X/xLvlae3rop8xz62XjflUSnyCaRPB5XaQR4JasHW07/lRKJowt67Km7K1LMpYEmoRku8w==",
+      "sha512": "Ph0ELqqqz218bGEtnfQ1xegANVQ3v0S/hU12AHpb4HEw8SESssbNCKWEVjeI3y2xDYaVx1aVjM4hZ1QXa4IonQ==",
       "files": [
         "lib/DNXCore50/System.Reflection.Extensions.dll",
         "lib/net45/_._",
@@ -3043,7 +2925,7 @@
     "System.Runtime.Extensions/4.0.11-beta-23516": {
       "type": "package",
       "serviceable": true,
-      "sha512": "HX4wNPrcCV9D+jpbsJCRPuVJbcDM+JobSotQWKq40lCq0WJbJi+0lNQ/T1zHEdWcf4W2PmtMkug1rW7yKW9PiQ==",
+      "sha512": "mpKQVIySlFSvgQkeb9qvXxHOY3jV7H9x5DmPSeNac0APFOG9ROufrMozY3VP/GxBWu4AVS/HDG1lUxg/riE4ew==",
       "files": [
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -3168,6 +3050,67 @@
         "System.Runtime.InteropServices.nuspec"
       ]
     },
+    "System.Runtime.Serialization.Primitives/4.1.0-beta-23516": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "Dsl95PE2vyGIy9voclfTVKSqYD8O4PjsMS+TV0bM3N1xNraS2BBaChGk1stGmf04cn2/xA3cZyh80bkZL+v1/Q==",
+      "files": [
+        "lib/dotnet5.4/System.Runtime.Serialization.Primitives.dll",
+        "lib/MonoAndroid10/_._",
+        "lib/MonoTouch10/_._",
+        "lib/net45/_._",
+        "lib/netcore50/System.Runtime.Serialization.Primitives.dll",
+        "lib/win8/_._",
+        "lib/wp80/_._",
+        "lib/wpa81/_._",
+        "lib/xamarinios10/_._",
+        "lib/xamarinmac20/_._",
+        "ref/dotnet5.1/de/System.Runtime.Serialization.Primitives.xml",
+        "ref/dotnet5.1/es/System.Runtime.Serialization.Primitives.xml",
+        "ref/dotnet5.1/fr/System.Runtime.Serialization.Primitives.xml",
+        "ref/dotnet5.1/it/System.Runtime.Serialization.Primitives.xml",
+        "ref/dotnet5.1/ja/System.Runtime.Serialization.Primitives.xml",
+        "ref/dotnet5.1/ko/System.Runtime.Serialization.Primitives.xml",
+        "ref/dotnet5.1/ru/System.Runtime.Serialization.Primitives.xml",
+        "ref/dotnet5.1/System.Runtime.Serialization.Primitives.dll",
+        "ref/dotnet5.1/System.Runtime.Serialization.Primitives.xml",
+        "ref/dotnet5.1/zh-hans/System.Runtime.Serialization.Primitives.xml",
+        "ref/dotnet5.1/zh-hant/System.Runtime.Serialization.Primitives.xml",
+        "ref/dotnet5.4/de/System.Runtime.Serialization.Primitives.xml",
+        "ref/dotnet5.4/es/System.Runtime.Serialization.Primitives.xml",
+        "ref/dotnet5.4/fr/System.Runtime.Serialization.Primitives.xml",
+        "ref/dotnet5.4/it/System.Runtime.Serialization.Primitives.xml",
+        "ref/dotnet5.4/ja/System.Runtime.Serialization.Primitives.xml",
+        "ref/dotnet5.4/ko/System.Runtime.Serialization.Primitives.xml",
+        "ref/dotnet5.4/ru/System.Runtime.Serialization.Primitives.xml",
+        "ref/dotnet5.4/System.Runtime.Serialization.Primitives.dll",
+        "ref/dotnet5.4/System.Runtime.Serialization.Primitives.xml",
+        "ref/dotnet5.4/zh-hans/System.Runtime.Serialization.Primitives.xml",
+        "ref/dotnet5.4/zh-hant/System.Runtime.Serialization.Primitives.xml",
+        "ref/MonoAndroid10/_._",
+        "ref/MonoTouch10/_._",
+        "ref/net45/_._",
+        "ref/netcore50/de/System.Runtime.Serialization.Primitives.xml",
+        "ref/netcore50/es/System.Runtime.Serialization.Primitives.xml",
+        "ref/netcore50/fr/System.Runtime.Serialization.Primitives.xml",
+        "ref/netcore50/it/System.Runtime.Serialization.Primitives.xml",
+        "ref/netcore50/ja/System.Runtime.Serialization.Primitives.xml",
+        "ref/netcore50/ko/System.Runtime.Serialization.Primitives.xml",
+        "ref/netcore50/ru/System.Runtime.Serialization.Primitives.xml",
+        "ref/netcore50/System.Runtime.Serialization.Primitives.dll",
+        "ref/netcore50/System.Runtime.Serialization.Primitives.xml",
+        "ref/netcore50/zh-hans/System.Runtime.Serialization.Primitives.xml",
+        "ref/netcore50/zh-hant/System.Runtime.Serialization.Primitives.xml",
+        "ref/win8/_._",
+        "ref/wp80/_._",
+        "ref/wpa81/_._",
+        "ref/xamarinios10/_._",
+        "ref/xamarinmac20/_._",
+        "System.Runtime.Serialization.Primitives.4.1.0-beta-23516.nupkg",
+        "System.Runtime.Serialization.Primitives.4.1.0-beta-23516.nupkg.sha512",
+        "System.Runtime.Serialization.Primitives.nuspec"
+      ]
+    },
     "System.Text.Encoding/4.0.0": {
       "type": "package",
       "sha512": "AMxFNOXpA6Ab8swULbXuJmoT2K5w6TnV3ObF5wsmEcIHQUJghoZtDVfVHb08O2wW15mOSI1i9Wg0Dx0pY13o8g==",
@@ -3285,7 +3228,7 @@
     "System.Text.RegularExpressions/4.0.11-beta-23516": {
       "type": "package",
       "serviceable": true,
-      "sha512": "Iz3942FXA47VxsuJTBq4aA/gevsbdMhyUnQD6Y0aHt57oP6KAwZLaxVtrRzB03yxh6oGBlvQfxBlsXWnLLj4gg==",
+      "sha512": "ZtarWBvDF7R6pRqo1jxo+uV46Rzxht8rRTe+qSHrr6SLLiZRL4RMncU+mDEn81wF+WL+v81ug20lnssHNHlV+Q==",
       "files": [
         "lib/dotnet5.4/System.Text.RegularExpressions.dll",
         "lib/MonoAndroid10/_._",
@@ -3346,7 +3289,7 @@
     "System.Threading/4.0.11-beta-23516": {
       "type": "package",
       "serviceable": true,
-      "sha512": "AiuvOzOo6CZpIIw3yGJZcs3IhiCZcy0P/ThubazmWExERHJZoOnD/jB+Bn2gxTAD0rc/ytrRdBur9PuX6DvvvA==",
+      "sha512": "vZNXMOIwejg9jS/AkkCs43BIDrzONbT43yhU7X2217Ypi9EZN5X16DwtqBD7eMjDBsA23IRZxuugzUnV8icaxQ==",
       "files": [
         "lib/MonoAndroid10/_._",
         "lib/MonoTouch10/_._",
@@ -3465,7 +3408,7 @@
     "System.Threading.Thread/4.0.0-beta-23516": {
       "type": "package",
       "serviceable": true,
-      "sha512": "2a5k/EmBXNiIoQZ8hk32KjoCVs1E5OdQtqJCHcW4qThmk+m/siQgB7zYamlRBeQ5zJs7c1l4oN/y5+YRq8oQ2Q==",
+      "sha512": "/yo7KuZ9zLrB3hdWARrvus3YTAdvvuqHWf2oMNpyG1mpoVlmhRwkZ9JqYRC+TL3hSFHa7mvHa8EItA+BBahlsA==",
       "files": [
         "lib/DNXCore50/System.Threading.Thread.dll",
         "lib/MonoAndroid10/_._",
@@ -3497,9 +3440,9 @@
   },
   "projectFileDependencyGroups": {
     "": [
-      "Serilog >= 2.0.0-beta-465",
-      "Serilog.Sinks.PeriodicBatching >= 2.0.0-beta-465",
-      "Serilog.Sinks.RollingFile >= 2.0.0-beta-465"
+      "Serilog >= 2.0.0-beta-505",
+      "Serilog.Sinks.PeriodicBatching >= 2.0.0-beta-505",
+      "Serilog.Sinks.RollingFile >= 2.0.0-beta-505"
     ],
     ".NETFramework,Version=v4.5": [
       "fx/System.Net.Http "

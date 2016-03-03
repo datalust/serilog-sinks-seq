@@ -15,39 +15,40 @@ namespace Serilog.Sinks.Seq
 {
     class HttpLogShipper : IDisposable
     {
+        const string ApiKeyHeaderName = "X-Seq-ApiKey";
+        const string BulkUploadResource = "api/events/raw";
+
+        static readonly TimeSpan RequiredLevelCheckInterval = TimeSpan.FromMinutes(2);
+
         readonly string _apiKey;
         readonly int _batchPostingLimit;
+        readonly long? _eventBodyLimitBytes;
+        readonly string _bookmarkFilename;
+        readonly string _logFolder;
+        readonly HttpClient _httpClient;
+        readonly string _candidateSearchPath;
+        readonly ExponentialBackoffConnectionSchedule _connectionSchedule;
+
+        readonly object _stateLock = new object();
+
 #if !TIMER
         readonly PortableTimer _timer;
 #else
         readonly Timer _timer;
 #endif
-        readonly TimeSpan _period;
-        readonly long? _eventBodyLimitBytes;
-        readonly object _stateLock = new object();
 
-        // As per SeqSink
         LoggingLevelSwitch _levelControlSwitch;
-        static readonly TimeSpan RequiredLevelCheckInterval = TimeSpan.FromMinutes(2);
         DateTime _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
-
         volatile bool _unloading;
-        readonly string _bookmarkFilename;
-        readonly string _logFolder;
-        readonly HttpClient _httpClient;
-        readonly string _candidateSearchPath;
-
-        const string ApiKeyHeaderName = "X-Seq-ApiKey";
-        const string BulkUploadResource = "api/events/raw";
 
         public HttpLogShipper(string serverUrl, string bufferBaseFilename, string apiKey, int batchPostingLimit, TimeSpan period, 
             long? eventBodyLimitBytes, LoggingLevelSwitch levelControlSwitch)
         {
             _apiKey = apiKey;
             _batchPostingLimit = batchPostingLimit;
-            _period = period;
             _eventBodyLimitBytes = eventBodyLimitBytes;
             _levelControlSwitch = levelControlSwitch;
+            _connectionSchedule = new ExponentialBackoffConnectionSchedule(period);
 
             var baseUri = serverUrl;
             if (!baseUri.EndsWith("/"))
@@ -58,7 +59,6 @@ namespace Serilog.Sinks.Seq
             _bookmarkFilename = Path.GetFullPath(bufferBaseFilename + ".bookmark");
             _logFolder = Path.GetDirectoryName(_bookmarkFilename);
             _candidateSearchPath = Path.GetFileName(bufferBaseFilename) + "*.json";
-            _period = period;
 
 #if !TIMER
             _timer = new PortableTimer(c => OnTick());
@@ -142,9 +142,9 @@ namespace Serilog.Sinks.Seq
             // Note, called under _stateLock
 
 #if !TIMER
-            _timer.Start(_period);
+            _timer.Start(_connectionSchedule.NextInterval);
 #else
-            _timer.Change(_period, Timeout.InfiniteTimeSpan);
+            _timer.Change(_connectionSchedule.NextInterval, Timeout.InfiniteTimeSpan);
 #endif
         }
 
@@ -180,36 +180,7 @@ namespace Serilog.Sinks.Seq
                         if (currentFile == null)
                             continue;
 
-                        var payload = new StringWriter();
-                        payload.Write("{\"events\":[");
-                        var delimStart = "";
-
-                        using (var current = IOFile.Open(currentFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                        {
-                            current.Position = nextLineBeginsAtOffset;
-
-                            string nextLine;
-                            while (count < _batchPostingLimit &&
-                                   TryReadLine(current, ref nextLineBeginsAtOffset, out nextLine))
-                            {
-                                // Count is the indicator that work was done, so advances even in the (rare) case an
-                                // oversized event is dropped.
-                                ++count;
-
-                                if (_eventBodyLimitBytes.HasValue && Encoding.UTF8.GetByteCount(nextLine) > _eventBodyLimitBytes.Value)
-                                {
-                                    SelfLog.WriteLine("Event JSON representation exceeds the byte size limit of {0} and will be dropped; data: {1}", _eventBodyLimitBytes, nextLine);
-                                }
-                                else
-                                {
-                                    payload.Write(delimStart);
-                                    payload.Write(nextLine);
-                                    delimStart = ",";
-                                }
-                            }
-
-                            payload.Write("]}");
-                        }
+                        var payload = ReadPayload(currentFile, ref nextLineBeginsAtOffset, ref count);
 
                         if (count > 0 || _levelControlSwitch != null && _nextRequiredLevelCheckUtc < DateTime.UtcNow)
                         {
@@ -218,14 +189,14 @@ namespace Serilog.Sinks.Seq
                                 _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
                             }
 
-                            var payloadText = payload.ToString();
-                            var content = new StringContent(payloadText, Encoding.UTF8, "application/json");
+                            var content = new StringContent(payload, Encoding.UTF8, "application/json");
                             if (!string.IsNullOrWhiteSpace(_apiKey))
                                 content.Headers.Add(ApiKeyHeaderName, _apiKey);
 
                             var result = _httpClient.PostAsync(BulkUploadResource, content).Result;
                             if (result.IsSuccessStatusCode)
                             {
+                                _connectionSchedule.MarkSuccess();
                                 WriteBookmark(bookmark, nextLineBeginsAtOffset, currentFile);
                                 var returned = result.Content.ReadAsStringAsync().Result;
                                 minimumAcceptedLevel = SeqApi.ReadEventInputResult(returned);
@@ -233,19 +204,29 @@ namespace Serilog.Sinks.Seq
                             else if (result.StatusCode == HttpStatusCode.BadRequest ||
                                      result.StatusCode == HttpStatusCode.RequestEntityTooLarge)
                             {
+                                // The connection attempt was successful - the payload we sent was the problem.
+                                _connectionSchedule.MarkSuccess();
+
                                 var invalidPayloadFilename = $"invalid-{result.StatusCode}-{Guid.NewGuid():n}.json";
                                 var invalidPayloadFile = Path.Combine(_logFolder, invalidPayloadFilename);
                                 SelfLog.WriteLine("HTTP shipping failed with {0}: {1}; dumping payload to {2}", result.StatusCode, result.Content.ReadAsStringAsync().Result, invalidPayloadFile);
-                                IOFile.WriteAllText(invalidPayloadFile, payloadText);
+                                IOFile.WriteAllText(invalidPayloadFile, payload);
+
                                 WriteBookmark(bookmark, nextLineBeginsAtOffset, currentFile);
                             }
                             else
                             {
+                                _connectionSchedule.MarkFailure();
                                 SelfLog.WriteLine("Received failed HTTP shipping result {0}: {1}", result.StatusCode, result.Content.ReadAsStringAsync().Result);
+                                break;
                             }
                         }
                         else
                         {
+                            // For whatever reason, there's nothing waiting to send. This means we should try connecting again at the
+                            // regular interval, so mark the attempt as successful.
+                            _connectionSchedule.MarkSuccess();
+
                             // Only advance the bookmark if no other process has the
                             // current file locked, and its length is as we found it.
                                 
@@ -270,23 +251,13 @@ namespace Serilog.Sinks.Seq
             catch (Exception ex)
             {
                 SelfLog.WriteLine("Exception while emitting periodic batch from {0}: {1}", this, ex);
+                _connectionSchedule.MarkFailure();
             }
             finally
             {
                 lock (_stateLock)
                 {
-                    if (minimumAcceptedLevel == null)
-                    {
-                        if (_levelControlSwitch != null)
-                            _levelControlSwitch.MinimumLevel = LevelAlias.Minimum;
-                    }
-                    else
-                    {
-                        if (_levelControlSwitch == null)
-                            _levelControlSwitch = new LoggingLevelSwitch(minimumAcceptedLevel.Value);
-                        else
-                            _levelControlSwitch.MinimumLevel = minimumAcceptedLevel.Value;
-                    }
+                    UpdateLevelControlSwitch(minimumAcceptedLevel);
 
                     if (!_unloading)
                         SetTimer();
@@ -294,7 +265,60 @@ namespace Serilog.Sinks.Seq
             }
         }
 
-        bool IsUnlockedAtLength(string file, long maxLen)
+        void UpdateLevelControlSwitch(LogEventLevel? minimumAcceptedLevel)
+        {
+            if (minimumAcceptedLevel == null)
+            {
+                if (_levelControlSwitch != null)
+                    _levelControlSwitch.MinimumLevel = LevelAlias.Minimum;
+            }
+            else
+            {
+                if (_levelControlSwitch == null)
+                    _levelControlSwitch = new LoggingLevelSwitch(minimumAcceptedLevel.Value);
+                else
+                    _levelControlSwitch.MinimumLevel = minimumAcceptedLevel.Value;
+            }
+        }
+
+        string ReadPayload(string currentFile, ref long nextLineBeginsAtOffset, ref int count)
+        {
+            var payload = new StringWriter();
+            payload.Write("{\"events\":[");
+            var delimStart = "";
+
+            using (var current = IOFile.Open(currentFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                current.Position = nextLineBeginsAtOffset;
+
+                string nextLine;
+                while (count < _batchPostingLimit &&
+                       TryReadLine(current, ref nextLineBeginsAtOffset, out nextLine))
+                {
+                    // Count is the indicator that work was done, so advances even in the (rare) case an
+                    // oversized event is dropped.
+                    ++count;
+
+                    if (_eventBodyLimitBytes.HasValue && Encoding.UTF8.GetByteCount(nextLine) > _eventBodyLimitBytes.Value)
+                    {
+                        SelfLog.WriteLine(
+                            "Event JSON representation exceeds the byte size limit of {0} and will be dropped; data: {1}",
+                            _eventBodyLimitBytes, nextLine);
+                    }
+                    else
+                    {
+                        payload.Write(delimStart);
+                        payload.Write(nextLine);
+                        delimStart = ",";
+                    }
+                }
+
+                payload.Write("]}");
+            }
+            return payload.ToString();
+        }
+
+        static bool IsUnlockedAtLength(string file, long maxLen)
         {
             try
             {

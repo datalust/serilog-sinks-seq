@@ -284,7 +284,7 @@ namespace Serilog.Sinks.Seq
         string ReadPayload(string currentFile, ref long nextLineBeginsAtOffset, ref int count)
         {
             var payload = new StringWriter();
-            payload.Write("{\"events\":[");
+            payload.Write("{\"Events\":[");
             var delimStart = "";
 
             using (var current = IOFile.Open(currentFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))

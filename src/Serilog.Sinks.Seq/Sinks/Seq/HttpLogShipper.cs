@@ -1,4 +1,20 @@
-﻿using System;
+﻿// Serilog.Sinks.Seq Copyright 2016 Serilog Contributors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#if DURABLE
+
+using System;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -31,7 +47,7 @@ namespace Serilog.Sinks.Seq
 
         readonly object _stateLock = new object();
 
-#if !TIMER
+#if !WAITABLE_TIMER
         readonly PortableTimer _timer;
 #else
         readonly Timer _timer;
@@ -60,15 +76,10 @@ namespace Serilog.Sinks.Seq
             _logFolder = Path.GetDirectoryName(_bookmarkFilename);
             _candidateSearchPath = Path.GetFileName(bufferBaseFilename) + "*.json";
 
-#if !TIMER
+#if !WAITABLE_TIMER
             _timer = new PortableTimer(c => OnTick());
 #else
             _timer = new Timer(s => OnTick());
-#endif
-
-#if APPDOMAIN
-            AppDomain.CurrentDomain.DomainUnload += OnAppDomainUnloading;
-            AppDomain.CurrentDomain.ProcessExit += OnAppDomainUnloading;
 #endif
 
             SetTimer();
@@ -88,13 +99,7 @@ namespace Serilog.Sinks.Seq
 
                 _unloading = true;
             }
-
-#if APPDOMAIN
-            AppDomain.CurrentDomain.DomainUnload -= OnAppDomainUnloading;
-            AppDomain.CurrentDomain.ProcessExit -= OnAppDomainUnloading;
-#endif
-
-#if !TIMER
+#if !WAITABLE_TIMER
             _timer.Dispose();
 #else
             var wh = new ManualResetEvent(false);
@@ -141,7 +146,7 @@ namespace Serilog.Sinks.Seq
         {
             // Note, called under _stateLock
 
-#if !TIMER
+#if !WAITABLE_TIMER
             _timer.Start(_connectionSchedule.NextInterval);
 #else
             _timer.Change(_connectionSchedule.NextInterval, Timeout.InfiniteTimeSpan);
@@ -411,3 +416,5 @@ namespace Serilog.Sinks.Seq
         }
     }
 }
+
+#endif

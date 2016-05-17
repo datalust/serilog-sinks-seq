@@ -1,11 +1,11 @@
-﻿// Seq Client for .NET - Copyright 2014 Continuous IT Pty Ltd
-//
+﻿// Serilog.Sinks.Seq Copyright 2016 Serilog Contributors
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
-//    http://www.apache.org/licenses/LICENSE-2.0
-//
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -67,10 +67,22 @@ namespace Serilog
             var defaultedPeriod = period ?? SeqSink.DefaultPeriod;
 
             ILogEventSink sink;
+
             if (bufferBaseFilename == null)
-                sink = new SeqSink(serverUrl, apiKey, batchPostingLimit, defaultedPeriod, eventBodyLimitBytes, controlLevelSwitch);
+            {
+                sink = new SeqSink(serverUrl, apiKey, batchPostingLimit, defaultedPeriod, eventBodyLimitBytes,
+                    controlLevelSwitch);
+            }
             else
-                sink = new DurableSeqSink(serverUrl, bufferBaseFilename, apiKey, batchPostingLimit, defaultedPeriod, bufferFileSizeLimitBytes, eventBodyLimitBytes, controlLevelSwitch);
+            {
+#if DURABLE
+                sink = new DurableSeqSink(serverUrl, bufferBaseFilename, apiKey, batchPostingLimit, defaultedPeriod,
+                    bufferFileSizeLimitBytes, eventBodyLimitBytes, controlLevelSwitch);
+#else
+                // We keep the API consistent for easier packaging and to support bait-and-switch.
+                throw new NotSupportedException("Durable log shipping is not supported on this platform.");
+#endif
+            }
 
             return loggerSinkConfiguration.Sink(sink, restrictedToMinimumLevel);
         }

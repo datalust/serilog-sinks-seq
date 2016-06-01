@@ -17,6 +17,7 @@ using Serilog.Configuration;
 using Serilog.Core;
 using Serilog.Events;
 using Serilog.Sinks.Seq;
+using System.Net.Http;
 
 namespace Serilog
 {
@@ -49,8 +50,9 @@ namespace Serilog
         /// <returns>Logger configuration, allowing configuration to continue.</returns>
         /// <exception cref="ArgumentNullException">A required parameter is null.</exception>
         public static LoggerConfiguration Seq(
-            this LoggerSinkConfiguration loggerSinkConfiguration,
+            this LoggerSinkConfiguration loggerSinkConfiguration,            
             string serverUrl,
+            HttpMessageHandler messageHandler = null,
             LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
             int batchPostingLimit = SeqSink.DefaultBatchPostingLimit,
             TimeSpan? period = null,
@@ -70,7 +72,7 @@ namespace Serilog
 
             if (bufferBaseFilename == null)
             {
-                sink = new SeqSink(serverUrl, apiKey, batchPostingLimit, defaultedPeriod, eventBodyLimitBytes,
+                sink = new SeqSink(serverUrl, messageHandler, apiKey, batchPostingLimit, defaultedPeriod, eventBodyLimitBytes,
                     controlLevelSwitch);
             }
             else

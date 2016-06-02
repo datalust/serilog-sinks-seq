@@ -50,9 +50,8 @@ namespace Serilog
         /// <returns>Logger configuration, allowing configuration to continue.</returns>
         /// <exception cref="ArgumentNullException">A required parameter is null.</exception>
         public static LoggerConfiguration Seq(
-            this LoggerSinkConfiguration loggerSinkConfiguration,            
+            this LoggerSinkConfiguration loggerSinkConfiguration,
             string serverUrl,
-            HttpMessageHandler messageHandler = null,
             LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
             int batchPostingLimit = SeqSink.DefaultBatchPostingLimit,
             TimeSpan? period = null,
@@ -60,7 +59,8 @@ namespace Serilog
             string bufferBaseFilename = null,
             long? bufferFileSizeLimitBytes = null,
             long? eventBodyLimitBytes = 256 * 1024,
-            LoggingLevelSwitch controlLevelSwitch = null)
+            LoggingLevelSwitch controlLevelSwitch = null,
+            HttpMessageHandler messageHandler = null)
         {
             if (loggerSinkConfiguration == null) throw new ArgumentNullException(nameof(loggerSinkConfiguration));
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
@@ -72,14 +72,28 @@ namespace Serilog
 
             if (bufferBaseFilename == null)
             {
-                sink = new SeqSink(serverUrl, messageHandler, apiKey, batchPostingLimit, defaultedPeriod, eventBodyLimitBytes,
-                    controlLevelSwitch);
+                sink = new SeqSink(
+                    serverUrl, 
+                    apiKey, 
+                    batchPostingLimit, 
+                    defaultedPeriod, 
+                    eventBodyLimitBytes,
+                    controlLevelSwitch,
+                    messageHandler);
             }
             else
             {
 #if DURABLE
-                sink = new DurableSeqSink(serverUrl, bufferBaseFilename, apiKey, batchPostingLimit, defaultedPeriod,
-                    bufferFileSizeLimitBytes, eventBodyLimitBytes, controlLevelSwitch);
+                sink = new DurableSeqSink(
+                    serverUrl,
+                    bufferBaseFilename,
+                    apiKey,
+                    batchPostingLimit,
+                    defaultedPeriod,
+                    bufferFileSizeLimitBytes,
+                    eventBodyLimitBytes,
+                    controlLevelSwitch,
+                    messageHandler);
 #else
                 // We keep the API consistent for easier packaging and to support bait-and-switch.
                 throw new NotSupportedException("Durable log shipping is not supported on this platform.");

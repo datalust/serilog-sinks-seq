@@ -57,8 +57,15 @@ namespace Serilog.Sinks.Seq
         DateTime _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
         volatile bool _unloading;
 
-        public HttpLogShipper(string serverUrl, string bufferBaseFilename, string apiKey, int batchPostingLimit, TimeSpan period, 
-            long? eventBodyLimitBytes, LoggingLevelSwitch levelControlSwitch)
+        public HttpLogShipper(
+            string serverUrl,
+            string bufferBaseFilename,
+            string apiKey,
+            int batchPostingLimit,
+            TimeSpan period,
+            long? eventBodyLimitBytes,
+            LoggingLevelSwitch levelControlSwitch,
+            HttpMessageHandler messageHandler)
         {
             _apiKey = apiKey;
             _batchPostingLimit = batchPostingLimit;
@@ -70,7 +77,10 @@ namespace Serilog.Sinks.Seq
             if (!baseUri.EndsWith("/"))
                 baseUri += "/";
 
-            _httpClient = new HttpClient { BaseAddress = new Uri(baseUri) };
+            _httpClient = messageHandler != null ? 
+                new HttpClient(messageHandler) : 
+                new HttpClient();
+            _httpClient.BaseAddress = new Uri(baseUri);
 
             _bookmarkFilename = Path.GetFullPath(bufferBaseFilename + ".bookmark");
             _logFolder = Path.GetDirectoryName(_bookmarkFilename);

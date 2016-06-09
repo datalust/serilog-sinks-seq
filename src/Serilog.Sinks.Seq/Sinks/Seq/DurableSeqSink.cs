@@ -19,6 +19,7 @@ using Serilog.Core;
 using Serilog.Events;
 using Serilog.Formatting.Json;
 using Serilog.Sinks.RollingFile;
+using System.Net.Http;
 
 namespace Serilog.Sinks.Seq
 {
@@ -27,14 +28,30 @@ namespace Serilog.Sinks.Seq
         readonly HttpLogShipper _shipper;
         readonly RollingFileSink _sink;
 
-        public DurableSeqSink(string serverUrl, string bufferBaseFilename, string apiKey, 
-            int batchPostingLimit, TimeSpan period, long? bufferFileSizeLimitBytes,
-            long? eventBodyLimitBytes, LoggingLevelSwitch levelControlSwitch)
+        public DurableSeqSink(
+            string serverUrl,
+            string bufferBaseFilename,
+            string apiKey,
+            int batchPostingLimit,
+            TimeSpan period,
+            long? bufferFileSizeLimitBytes,
+            long? eventBodyLimitBytes,
+            LoggingLevelSwitch levelControlSwitch,
+            HttpMessageHandler messageHandler)
         {
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
             if (bufferBaseFilename == null) throw new ArgumentNullException(nameof(bufferBaseFilename));
 
-            _shipper = new HttpLogShipper(serverUrl, bufferBaseFilename, apiKey, batchPostingLimit, period, eventBodyLimitBytes, levelControlSwitch);
+            _shipper = new HttpLogShipper(
+                serverUrl, 
+                bufferBaseFilename, 
+                apiKey, 
+                batchPostingLimit, 
+                period, 
+                eventBodyLimitBytes, 
+                levelControlSwitch,
+                messageHandler);
+
             _sink = new RollingFileSink(
                 bufferBaseFilename + "-{Date}.json",
                 new JsonFormatter(),

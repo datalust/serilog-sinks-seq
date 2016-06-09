@@ -17,6 +17,7 @@ using Serilog.Configuration;
 using Serilog.Core;
 using Serilog.Events;
 using Serilog.Sinks.Seq;
+using System.Net.Http;
 
 namespace Serilog
 {
@@ -58,7 +59,8 @@ namespace Serilog
             string bufferBaseFilename = null,
             long? bufferFileSizeLimitBytes = null,
             long? eventBodyLimitBytes = 256 * 1024,
-            LoggingLevelSwitch controlLevelSwitch = null)
+            LoggingLevelSwitch controlLevelSwitch = null,
+            HttpMessageHandler messageHandler = null)
         {
             if (loggerSinkConfiguration == null) throw new ArgumentNullException(nameof(loggerSinkConfiguration));
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
@@ -70,14 +72,28 @@ namespace Serilog
 
             if (bufferBaseFilename == null)
             {
-                sink = new SeqSink(serverUrl, apiKey, batchPostingLimit, defaultedPeriod, eventBodyLimitBytes,
-                    controlLevelSwitch);
+                sink = new SeqSink(
+                    serverUrl, 
+                    apiKey, 
+                    batchPostingLimit, 
+                    defaultedPeriod, 
+                    eventBodyLimitBytes,
+                    controlLevelSwitch,
+                    messageHandler);
             }
             else
             {
 #if DURABLE
-                sink = new DurableSeqSink(serverUrl, bufferBaseFilename, apiKey, batchPostingLimit, defaultedPeriod,
-                    bufferFileSizeLimitBytes, eventBodyLimitBytes, controlLevelSwitch);
+                sink = new DurableSeqSink(
+                    serverUrl,
+                    bufferBaseFilename,
+                    apiKey,
+                    batchPostingLimit,
+                    defaultedPeriod,
+                    bufferFileSizeLimitBytes,
+                    eventBodyLimitBytes,
+                    controlLevelSwitch,
+                    messageHandler);
 #else
                 // We keep the API consistent for easier packaging and to support bait-and-switch.
                 throw new NotSupportedException("Durable log shipping is not supported on this platform.");

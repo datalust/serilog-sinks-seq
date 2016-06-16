@@ -47,6 +47,10 @@ namespace Serilog
         /// <param name="controlLevelSwitch">If provided, the switch will be updated based on the Seq server's level setting
         /// for the corresponding API key. Passing the same key to MinimumLevel.ControlledBy() will make the whole pipeline
         /// dynamically controlled. Do not specify <paramref name="restrictedToMinimumLevel"/> with this setting.</param>
+        /// <param name="messageHandler">Used to construct the HttpClient that will be used to send the log meesages to Seq.</param>
+        /// <param name="errorFilesSizeLimitBytes">A soft limit for the number of bytes to use for storing failed requests.  
+        /// The limit is soft in that it can be exceeded by any single error payload, but in that case only that single error
+        /// payload will be retained.</param>
         /// <returns>Logger configuration, allowing configuration to continue.</returns>
         /// <exception cref="ArgumentNullException">A required parameter is null.</exception>
         public static LoggerConfiguration Seq(

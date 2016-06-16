@@ -227,7 +227,7 @@ namespace Serilog.Sinks.Seq
                                 // The connection attempt was successful - the payload we sent was the problem.
                                 _connectionSchedule.MarkSuccess();
 
-                                FailResponse(result, payload).Wait();
+                                DumpInvalidPayload(result, payload).Wait();
 
                                 WriteBookmark(bookmark, nextLineBeginsAtOffset, currentFile);
                             }
@@ -282,26 +282,26 @@ namespace Serilog.Sinks.Seq
             }
         }
 
-        private const string _invalidPayloadFilePrefix = "invalid-";
-        private async Task FailResponse(HttpResponseMessage result, string payload)
+        const string InvalidPayloadFilePrefix = "invalid-";
+        async Task DumpInvalidPayload(HttpResponseMessage result, string payload)
         {
-            var invalidPayloadFilename = $"{_invalidPayloadFilePrefix}{result.StatusCode}-{Guid.NewGuid():n}.json";
+            var invalidPayloadFilename = $"{InvalidPayloadFilePrefix}{result.StatusCode}-{Guid.NewGuid():n}.json";
             var invalidPayloadFile = Path.Combine(_logFolder, invalidPayloadFilename);
             var resultContent = await result.Content.ReadAsStringAsync();
             SelfLog.WriteLine("HTTP shipping failed with {0}: {1}; dumping payload to {2}", result.StatusCode, resultContent, invalidPayloadFile);
             var bytesToWrite = Encoding.UTF8.GetBytes(payload);
             if (_errorFileSizeLimitBytes.HasValue)
             {
-                CleanupErrorFiles(_errorFileSizeLimitBytes.Value - bytesToWrite.Length, _logFolder);
+                CleanUpInvalidPayloadFiles(_errorFileSizeLimitBytes.Value - bytesToWrite.Length, _logFolder);
             }
             IOFile.WriteAllBytes(invalidPayloadFile, bytesToWrite);
         }
 
-        private static void CleanupErrorFiles(long maxNumberOfBytesToRetain, string logFolder)
+        static void CleanUpInvalidPayloadFiles(long maxNumberOfBytesToRetain, string logFolder)
         {
             try
             {
-                var candiateFiles = Directory.EnumerateFiles(logFolder, $"{_invalidPayloadFilePrefix}*.json");
+                var candiateFiles = Directory.EnumerateFiles(logFolder, $"{InvalidPayloadFilePrefix}*.json");
                 DeleteOldFiles(maxNumberOfBytesToRetain, candiateFiles);
             }
             catch (Exception ex)
@@ -310,16 +310,28 @@ namespace Serilog.Sinks.Seq
             }
         }
 
-        private static void DeleteOldFiles(long maxNumberOfBytesToRetain, IEnumerable<string> files)
+        static IEnumerable<FileInfo> WhereCumulativeSizeLessThanOrEqual(IEnumerable<FileInfo> files, long maxCumulativeSize)
         {
-            long runningTotal = 0L;
+            long cumulative = 0;
+            foreach (var file in files)
+            {
+                cumulative += file.Length;
+                if (cumulative > maxCumulativeSize)
+                {
+                    yield break;
+                }
+                yield return file;
+            }
+        }
 
-            var invalidPayloadFilesToDelete = from candiateFile in files
-                                              let candiateFileInfo = new FileInfo(candiateFile)
-                                              orderby candiateFileInfo.LastAccessTimeUtc descending
-                                              let cumulative = runningTotal += candiateFileInfo.Length
-                                              where cumulative > maxNumberOfBytesToRetain
-                                              select candiateFileInfo;
+        static void DeleteOldFiles(long maxNumberOfBytesToRetain, IEnumerable<string> files)
+        {
+            var orderedFileInfos = from candiateFile in files
+                                   let candiateFileInfo = new FileInfo(candiateFile)
+                                   orderby candiateFileInfo.LastAccessTimeUtc descending
+                                   select candiateFileInfo;
+
+            var invalidPayloadFilesToDelete = WhereCumulativeSizeLessThanOrEqual(orderedFileInfos, maxNumberOfBytesToRetain);
 
             foreach (var fileToDelete in invalidPayloadFilesToDelete)
             {

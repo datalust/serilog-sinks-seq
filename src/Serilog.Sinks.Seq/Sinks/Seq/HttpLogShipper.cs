@@ -26,6 +26,8 @@ using Serilog.Core;
 using Serilog.Debugging;
 using Serilog.Events;
 using IOFile = System.IO.File;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace Serilog.Sinks.Seq
 {
@@ -44,6 +46,7 @@ namespace Serilog.Sinks.Seq
         readonly HttpClient _httpClient;
         readonly string _candidateSearchPath;
         readonly ExponentialBackoffConnectionSchedule _connectionSchedule;
+        readonly long? _errorFileSizeLimitBytes;
 
         readonly object _stateLock = new object();
 
@@ -65,20 +68,22 @@ namespace Serilog.Sinks.Seq
             TimeSpan period,
             long? eventBodyLimitBytes,
             LoggingLevelSwitch levelControlSwitch,
-            HttpMessageHandler messageHandler)
+            HttpMessageHandler messageHandler,
+            long? errorFilesSizeLimitBytes)
         {
             _apiKey = apiKey;
             _batchPostingLimit = batchPostingLimit;
             _eventBodyLimitBytes = eventBodyLimitBytes;
             _levelControlSwitch = levelControlSwitch;
             _connectionSchedule = new ExponentialBackoffConnectionSchedule(period);
+            _errorFileSizeLimitBytes = errorFilesSizeLimitBytes;
 
             var baseUri = serverUrl;
             if (!baseUri.EndsWith("/"))
                 baseUri += "/";
 
-            _httpClient = messageHandler != null ? 
-                new HttpClient(messageHandler) : 
+            _httpClient = messageHandler != null ?
+                new HttpClient(messageHandler) :
                 new HttpClient();
             _httpClient.BaseAddress = new Uri(baseUri);
 
@@ -222,10 +227,7 @@ namespace Serilog.Sinks.Seq
                                 // The connection attempt was successful - the payload we sent was the problem.
                                 _connectionSchedule.MarkSuccess();
 
-                                var invalidPayloadFilename = $"invalid-{result.StatusCode}-{Guid.NewGuid():n}.json";
-                                var invalidPayloadFile = Path.Combine(_logFolder, invalidPayloadFilename);
-                                SelfLog.WriteLine("HTTP shipping failed with {0}: {1}; dumping payload to {2}", result.StatusCode, result.Content.ReadAsStringAsync().Result, invalidPayloadFile);
-                                IOFile.WriteAllText(invalidPayloadFile, payload);
+                                FailResponse(result, payload).Wait();
 
                                 WriteBookmark(bookmark, nextLineBeginsAtOffset, currentFile);
                             }
@@ -244,7 +246,7 @@ namespace Serilog.Sinks.Seq
 
                             // Only advance the bookmark if no other process has the
                             // current file locked, and its length is as we found it.
-                                
+
                             if (fileSet.Length == 2 && fileSet.First() == currentFile && IsUnlockedAtLength(currentFile, nextLineBeginsAtOffset))
                             {
                                 WriteBookmark(bookmark, 0, fileSet[1]);
@@ -276,6 +278,58 @@ namespace Serilog.Sinks.Seq
 
                     if (!_unloading)
                         SetTimer();
+                }
+            }
+        }
+
+        private const string _invalidPayloadFilePrefix = "invalid-";
+        private async Task FailResponse(HttpResponseMessage result, string payload)
+        {
+            var invalidPayloadFilename = $"{_invalidPayloadFilePrefix}{result.StatusCode}-{Guid.NewGuid():n}.json";
+            var invalidPayloadFile = Path.Combine(_logFolder, invalidPayloadFilename);
+            var resultContent = await result.Content.ReadAsStringAsync();
+            SelfLog.WriteLine("HTTP shipping failed with {0}: {1}; dumping payload to {2}", result.StatusCode, resultContent, invalidPayloadFile);
+            var bytesToWrite = Encoding.UTF8.GetBytes(payload);
+            if (_errorFileSizeLimitBytes.HasValue)
+            {
+                CleanupErrorFiles(_errorFileSizeLimitBytes.Value - bytesToWrite.Length, _logFolder);
+            }
+            IOFile.WriteAllBytes(invalidPayloadFile, bytesToWrite);
+        }
+
+        private static void CleanupErrorFiles(long maxNumberOfBytesToRetain, string logFolder)
+        {
+            try
+            {
+                var candiateFiles = Directory.EnumerateFiles(logFolder, $"{_invalidPayloadFilePrefix}*.json");
+                DeleteOldFiles(maxNumberOfBytesToRetain, candiateFiles);
+            }
+            catch (Exception ex)
+            {
+                SelfLog.WriteLine("Exception thrown while trying to CleanupErrorFiles: {0}", ex);
+            }
+        }
+
+        private static void DeleteOldFiles(long maxNumberOfBytesToRetain, IEnumerable<string> files)
+        {
+            long runningTotal = 0L;
+
+            var invalidPayloadFilesToDelete = from candiateFile in files
+                                              let candiateFileInfo = new FileInfo(candiateFile)
+                                              orderby candiateFileInfo.LastAccessTimeUtc descending
+                                              let cumulative = runningTotal += candiateFileInfo.Length
+                                              where cumulative > maxNumberOfBytesToRetain
+                                              select candiateFileInfo;
+
+            foreach (var fileToDelete in invalidPayloadFilesToDelete)
+            {
+                try
+                {
+                    fileToDelete.Delete();
+                }
+                catch (Exception ex)
+                {
+                    SelfLog.WriteLine("Exception '{0}' thrown while trying to delete file {1}", ex.Message, fileToDelete.FullName);
                 }
             }
         }
@@ -382,7 +436,7 @@ namespace Serilog.Sinks.Seq
             // Important not to dispose this StreamReader as the stream must remain open.
             var reader = new StreamReader(current, Encoding.UTF8, false, 128);
             nextLine = reader.ReadLine();
- 
+
             if (nextLine == null)
                 return false;
 
@@ -414,7 +468,7 @@ namespace Serilog.Sinks.Seq
                         currentFile = parts[1];
                     }
                 }
-                
+
             }
         }
 

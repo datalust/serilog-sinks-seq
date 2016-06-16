@@ -60,7 +60,8 @@ namespace Serilog
             long? bufferFileSizeLimitBytes = null,
             long? eventBodyLimitBytes = 256 * 1024,
             LoggingLevelSwitch controlLevelSwitch = null,
-            HttpMessageHandler messageHandler = null)
+            HttpMessageHandler messageHandler = null,
+            long? errorFilesSizeLimitBytes = null)
         {
             if (loggerSinkConfiguration == null) throw new ArgumentNullException(nameof(loggerSinkConfiguration));
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
@@ -93,7 +94,8 @@ namespace Serilog
                     bufferFileSizeLimitBytes,
                     eventBodyLimitBytes,
                     controlLevelSwitch,
-                    messageHandler);
+                    messageHandler,
+                    errorFilesSizeLimitBytes);
 #else
                 // We keep the API consistent for easier packaging and to support bait-and-switch.
                 throw new NotSupportedException("Durable log shipping is not supported on this platform.");

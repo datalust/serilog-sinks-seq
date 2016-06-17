@@ -306,7 +306,7 @@ namespace Serilog.Sinks.Seq
             }
             catch (Exception ex)
             {
-                SelfLog.WriteLine("Exception thrown while trying to CleanupErrorFiles: {0}", ex);
+                SelfLog.WriteLine("Exception thrown while trying to clean up invalid payload files: {0}", ex);
             }
         }
 

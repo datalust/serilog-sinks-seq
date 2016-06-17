@@ -46,7 +46,7 @@ namespace Serilog.Sinks.Seq
         readonly HttpClient _httpClient;
         readonly string _candidateSearchPath;
         readonly ExponentialBackoffConnectionSchedule _connectionSchedule;
-        readonly long? _errorFileSizeLimitBytes;
+        readonly long? _retainedInvalidPayloadsLimitBytes;
 
         readonly object _stateLock = new object();
 
@@ -69,14 +69,14 @@ namespace Serilog.Sinks.Seq
             long? eventBodyLimitBytes,
             LoggingLevelSwitch levelControlSwitch,
             HttpMessageHandler messageHandler,
-            long? errorFilesSizeLimitBytes)
+            long? retainedInvalidPayloadsLimitBytes)
         {
             _apiKey = apiKey;
             _batchPostingLimit = batchPostingLimit;
             _eventBodyLimitBytes = eventBodyLimitBytes;
             _levelControlSwitch = levelControlSwitch;
             _connectionSchedule = new ExponentialBackoffConnectionSchedule(period);
-            _errorFileSizeLimitBytes = errorFilesSizeLimitBytes;
+            _retainedInvalidPayloadsLimitBytes = retainedInvalidPayloadsLimitBytes;
 
             var baseUri = serverUrl;
             if (!baseUri.EndsWith("/"))
@@ -290,9 +290,9 @@ namespace Serilog.Sinks.Seq
             var resultContent = await result.Content.ReadAsStringAsync();
             SelfLog.WriteLine("HTTP shipping failed with {0}: {1}; dumping payload to {2}", result.StatusCode, resultContent, invalidPayloadFile);
             var bytesToWrite = Encoding.UTF8.GetBytes(payload);
-            if (_errorFileSizeLimitBytes.HasValue)
+            if (_retainedInvalidPayloadsLimitBytes.HasValue)
             {
-                CleanUpInvalidPayloadFiles(_errorFileSizeLimitBytes.Value - bytesToWrite.Length, _logFolder);
+                CleanUpInvalidPayloadFiles(_retainedInvalidPayloadsLimitBytes.Value - bytesToWrite.Length, _logFolder);
             }
             IOFile.WriteAllBytes(invalidPayloadFile, bytesToWrite);
         }

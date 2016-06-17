@@ -38,7 +38,7 @@ namespace Serilog.Sinks.Seq
             long? eventBodyLimitBytes,
             LoggingLevelSwitch levelControlSwitch,
             HttpMessageHandler messageHandler,
-            long? errorFilesSizeLimitBytes)
+            long? retainedInvalidPayloadsLimitBytes)
         {
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
             if (bufferBaseFilename == null) throw new ArgumentNullException(nameof(bufferBaseFilename));
@@ -52,7 +52,7 @@ namespace Serilog.Sinks.Seq
                 eventBodyLimitBytes, 
                 levelControlSwitch,
                 messageHandler,
-                errorFilesSizeLimitBytes);
+                retainedInvalidPayloadsLimitBytes);
 
             _sink = new RollingFileSink(
                 bufferBaseFilename + "-{Date}.json",

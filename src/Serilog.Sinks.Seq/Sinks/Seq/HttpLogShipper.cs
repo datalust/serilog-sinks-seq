@@ -310,7 +310,7 @@ namespace Serilog.Sinks.Seq
             }
         }
 
-        static IEnumerable<FileInfo> WhereCumulativeSizeLessThanOrEqual(IEnumerable<FileInfo> files, long maxCumulativeSize)
+        static IEnumerable<FileInfo> WhereCumulativeSizeGreaterThan(IEnumerable<FileInfo> files, long maxCumulativeSize)
         {
             long cumulative = 0;
             foreach (var file in files)
@@ -318,9 +318,8 @@ namespace Serilog.Sinks.Seq
                 cumulative += file.Length;
                 if (cumulative > maxCumulativeSize)
                 {
-                    yield break;
+                    yield return file;
                 }
-                yield return file;
             }
         }
 
@@ -331,7 +330,7 @@ namespace Serilog.Sinks.Seq
                                    orderby candiateFileInfo.LastAccessTimeUtc descending
                                    select candiateFileInfo;
 
-            var invalidPayloadFilesToDelete = WhereCumulativeSizeLessThanOrEqual(orderedFileInfos, maxNumberOfBytesToRetain);
+            var invalidPayloadFilesToDelete = WhereCumulativeSizeGreaterThan(orderedFileInfos, maxNumberOfBytesToRetain);
 
             foreach (var fileToDelete in invalidPayloadFilesToDelete)
             {

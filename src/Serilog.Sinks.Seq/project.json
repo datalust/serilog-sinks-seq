@@ -9,7 +9,7 @@
     "iconUrl": "http://serilog.net/images/serilog-sink-seq-nuget.png"
   },
   "dependencies": {
-    "Serilog": "2.0.0-rc-556",
+    "Serilog": "2.0.0-rc-633",
     "Serilog.Sinks.PeriodicBatching": "2.0.0-rc-707"
   },
   "buildOptions": {

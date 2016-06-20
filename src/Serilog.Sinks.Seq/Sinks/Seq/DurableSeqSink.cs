@@ -17,7 +17,6 @@
 using System;
 using Serilog.Core;
 using Serilog.Events;
-using Serilog.Formatting.Json;
 using Serilog.Sinks.RollingFile;
 using System.Net.Http;
 
@@ -56,7 +55,7 @@ namespace Serilog.Sinks.Seq
 
             _sink = new RollingFileSink(
                 bufferBaseFilename + "-{Date}.json",
-                new JsonFormatter(),
+                new RawJsonFormatter(),
                 bufferFileSizeLimitBytes,
                 null);
         }

@@ -22,7 +22,6 @@ using System.Threading.Tasks;
 using Serilog.Core;
 using Serilog.Debugging;
 using Serilog.Events;
-using Serilog.Formatting.Json;
 using Serilog.Sinks.PeriodicBatching;
 
 namespace Serilog.Sinks.Seq
@@ -93,14 +92,13 @@ namespace Serilog.Sinks.Seq
             var payload = new StringWriter();
             payload.Write("{\"Events\":[");
 
-            var formatter = new JsonFormatter(closingDelimiter: "");
             var delimStart = "";
             foreach (var logEvent in events)
             {
                 if (_eventBodyLimitBytes.HasValue)
                 {
                     var scratch = new StringWriter();
-                    formatter.Format(logEvent, scratch);
+                    RawJsonFormatter.FormatContent(logEvent, scratch);
                     var buffered = scratch.ToString();
 
                     if (Encoding.UTF8.GetByteCount(buffered) > _eventBodyLimitBytes.Value)
@@ -117,7 +115,7 @@ namespace Serilog.Sinks.Seq
                 else
                 {
                     payload.Write(delimStart);
-                    formatter.Format(logEvent, payload);
+                    RawJsonFormatter.FormatContent(logEvent, payload);
                     delimStart = ",";
                 }
             }

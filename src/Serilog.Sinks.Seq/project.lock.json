@@ -3,7 +3,7 @@
   "version": 2,
   "targets": {
     ".NETFramework,Version=v4.5": {
-      "Serilog/2.0.0-rc-556": {
+      "Serilog/2.0.0-rc-633": {
         "type": "package",
         "compile": {
           "lib/net45/Serilog.dll": {}
@@ -71,7 +71,7 @@
       "runtime.native.System.Security.Cryptography/4.0.0-rc2-24027": {
         "type": "package"
       },
-      "Serilog/2.0.0-rc-556": {
+      "Serilog/2.0.0-rc-633": {
         "type": "package",
         "dependencies": {
           "Microsoft.CSharp": "4.0.1-rc2-24027",
@@ -343,7 +343,7 @@
       "runtime.native.System.Security.Cryptography/4.0.0-rc2-24027": {
         "type": "package"
       },
-      "Serilog/2.0.0-rc-556": {
+      "Serilog/2.0.0-rc-633": {
         "type": "package",
         "dependencies": {
           "Microsoft.CSharp": "4.0.1-rc2-24027",
@@ -1075,11 +1075,11 @@
         "runtime.native.System.Security.Cryptography.nuspec"
       ]
     },
-    "Serilog/2.0.0-rc-556": {
-      "sha512": "dN6N6snvoyIUGUDzlc1qgDNcSye+rqLT8Vat6ehCc/79E/0+CQzhOHikAnqigJh3fJKTzLulE4k4GlhcFge7bQ==",
+    "Serilog/2.0.0-rc-633": {
+      "sha512": "TWUoIL4YL+iCP8lNG9k5R6M+UOYOQ0xs+bMQLSt2FQJDRzDUuaJonvkmauU5qVABhcFqWyAS2tZZGYgLefrNkQ==",
       "type": "package",
       "files": [
-        "Serilog.2.0.0-rc-556.nupkg.sha512",
+        "Serilog.2.0.0-rc-633.nupkg.sha512",
         "Serilog.nuspec",
         "lib/net45/Serilog.dll",
         "lib/net45/Serilog.xml",
@@ -3230,7 +3230,7 @@
   },
   "projectFileDependencyGroups": {
     "": [
-      "Serilog >= 2.0.0-rc-556",
+      "Serilog >= 2.0.0-rc-633",
       "Serilog.Sinks.PeriodicBatching >= 2.0.0-rc-707"
     ],
     ".NETFramework,Version=v4.5": [

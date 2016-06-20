@@ -100,11 +100,6 @@ namespace Serilog.Sinks.Seq
             SetTimer();
         }
 
-        void OnAppDomainUnloading(object sender, EventArgs args)
-        {
-            CloseAndFlush();
-        }
-
         void CloseAndFlush()
         {
             lock (_stateLock)

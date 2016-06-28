@@ -8,7 +8,7 @@
 
   "dependencies": {
     "Serilog.Sinks.Seq": {"target": "project"},
-    "Serilog.Sinks.Literate": "2.0.0-rc-25"
+    "Serilog.Sinks.Literate": "2.0.0"
   },
   "frameworks": {
     "net4.5.2": {},
@@ -16,7 +16,7 @@
       "dependencies": {
         "Microsoft.NETCore.App": {
           "type": "platform",
-          "version": "1.0.0-rc2-3002702"
+          "version": "1.0.0"
         }
       },
       "imports": [

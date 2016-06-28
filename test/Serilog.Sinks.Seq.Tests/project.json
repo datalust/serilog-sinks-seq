@@ -3,7 +3,7 @@
   "dependencies": {
     "Serilog.Sinks.Seq": { "target": "project" },
     "xunit": "2.1.0",
-    "dotnet-test-xunit": "1.0.0-rc2-build10015",
+    "dotnet-test-xunit": "1.0.0-rc2-build10025",
     "Newtonsoft.Json": "8.0.3"
   },
   "buildOptions": {
@@ -15,7 +15,7 @@
       "dependencies": {
         "Microsoft.NETCore.App": {
           "type": "platform",
-          "version": "1.0.0-rc2-3002702"
+          "version": "1.0.0"
         }
       },
       "imports": [

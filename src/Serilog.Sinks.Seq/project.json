@@ -1,0 +1,45 @@
+﻿{
+  "version": "2.0.0",
+  "description": "Serilog sink that writes to the Seq event server over HTTP/S.",
+  "authors": [ "Serilog Contributors" ],
+  "packOptions": {
+    "tags": [ "serilog", "seq", "structured logging" ],
+    "projectUrl": "https://github.com/serilog/serilog-sinks-seq",
+    "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0",
+    "iconUrl": "http://serilog.net/images/serilog-sink-seq-nuget.png"
+  },
+  "dependencies": {
+    "Serilog": "2.0.0",
+    "Serilog.Sinks.PeriodicBatching": "2.0.0"
+  },
+  "buildOptions": {
+    "keyFile": "../../assets/Serilog.snk"
+  },
+  "frameworks": {
+    "net4.5": {
+      "buildOptions": {
+        "define": [ "DURABLE", "WAITABLE_TIMER" ]
+      },
+      "frameworkAssemblies": {
+        "System.Net.Http": ""
+      },
+      "dependencies": {
+        "Serilog.Sinks.RollingFile": "2.0.0"
+      }
+    },
+    "netstandard1.1": {
+      "dependencies": {
+        "System.Net.Http": "4.1.0"
+      }
+    },
+    "netstandard1.3": {
+      "buildOptions": {
+        "define": [ "DURABLE" ]
+      },
+      "dependencies": {
+        "System.Net.Http": "4.1.0",
+        "Serilog.Sinks.RollingFile": "2.0.0"
+      }
+    }
+  }
+}

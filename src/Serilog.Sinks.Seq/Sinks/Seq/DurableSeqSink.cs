@@ -1,4 +1,4 @@
-﻿// Seq Client for .NET - Copyright 2014 Continuous IT Pty Ltd
+﻿// Serilog.Sinks.Seq Copyright 2016 Serilog Contributors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#if DURABLE
+
 using System;
 using Serilog.Core;
 using Serilog.Events;
-using Serilog.Formatting.Json;
 using Serilog.Sinks.RollingFile;
+using System.Net.Http;
 
 namespace Serilog.Sinks.Seq
 {
@@ -25,15 +27,35 @@ namespace Serilog.Sinks.Seq
         readonly HttpLogShipper _shipper;
         readonly RollingFileSink _sink;
 
-        public DurableSeqSink(string serverUrl, string bufferBaseFilename, string apiKey, int batchPostingLimit, TimeSpan period, long? bufferFileSizeLimitBytes)
+        public DurableSeqSink(
+            string serverUrl,
+            string bufferBaseFilename,
+            string apiKey,
+            int batchPostingLimit,
+            TimeSpan period,
+            long? bufferFileSizeLimitBytes,
+            long? eventBodyLimitBytes,
+            LoggingLevelSwitch levelControlSwitch,
+            HttpMessageHandler messageHandler,
+            long? retainedInvalidPayloadsLimitBytes)
         {
-            if (serverUrl == null) throw new ArgumentNullException("serverUrl");
-            if (bufferBaseFilename == null) throw new ArgumentNullException("bufferBaseFilename");
+            if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
+            if (bufferBaseFilename == null) throw new ArgumentNullException(nameof(bufferBaseFilename));
 
-            _shipper = new HttpLogShipper(serverUrl, bufferBaseFilename, apiKey, batchPostingLimit, period);
+            _shipper = new HttpLogShipper(
+                serverUrl, 
+                bufferBaseFilename, 
+                apiKey, 
+                batchPostingLimit, 
+                period, 
+                eventBodyLimitBytes, 
+                levelControlSwitch,
+                messageHandler,
+                retainedInvalidPayloadsLimitBytes);
+
             _sink = new RollingFileSink(
                 bufferBaseFilename + "-{Date}.json",
-                new JsonFormatter(),
+                new RawJsonFormatter(),
                 bufferFileSizeLimitBytes,
                 null);
         }
@@ -57,3 +79,5 @@ namespace Serilog.Sinks.Seq
         }
     }
 }
+
+#endif

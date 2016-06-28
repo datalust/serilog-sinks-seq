@@ -1,11 +1,11 @@
-﻿// Seq Client for .NET - Copyright 2014 Continuous IT Pty Ltd
-//
+﻿// Serilog.Sinks.Seq Copyright 2016 Serilog Contributors
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
-//    http://www.apache.org/licenses/LICENSE-2.0
-//
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,6 +17,7 @@ using Serilog.Configuration;
 using Serilog.Core;
 using Serilog.Events;
 using Serilog.Sinks.Seq;
+using System.Net.Http;
 
 namespace Serilog
 {
@@ -40,6 +41,16 @@ namespace Serilog
         /// <param name="apiKey">A Seq <i>API key</i> that authenticates the client to the Seq server.</param>
         /// <param name="bufferFileSizeLimitBytes">The maximum size, in bytes, to which the buffer
         /// log file for a specific date will be allowed to grow. By default no limit will be applied.</param>
+        /// <param name="eventBodyLimitBytes">The maximum size, in bytes, that the JSON representation of
+        /// an event may take before it is dropped rather than being sent to the Seq server. Specify null for no limit.
+        /// The default is 265 KB.</param>
+        /// <param name="controlLevelSwitch">If provided, the switch will be updated based on the Seq server's level setting
+        /// for the corresponding API key. Passing the same key to MinimumLevel.ControlledBy() will make the whole pipeline
+        /// dynamically controlled. Do not specify <paramref name="restrictedToMinimumLevel"/> with this setting.</param>
+        /// <param name="messageHandler">Used to construct the HttpClient that will be used to send the log meesages to Seq.</param>
+        /// <param name="retainedInvalidPayloadsLimitBytes">A soft limit for the number of bytes to use for storing failed requests.  
+        /// The limit is soft in that it can be exceeded by any single error payload, but in that case only that single error
+        /// payload will be retained.</param>
         /// <returns>Logger configuration, allowing configuration to continue.</returns>
         /// <exception cref="ArgumentNullException">A required parameter is null.</exception>
         public static LoggerConfiguration Seq(
@@ -50,19 +61,50 @@ namespace Serilog
             TimeSpan? period = null,
             string apiKey = null,
             string bufferBaseFilename = null,
-            long? bufferFileSizeLimitBytes = null)
+            long? bufferFileSizeLimitBytes = null,
+            long? eventBodyLimitBytes = 256 * 1024,
+            LoggingLevelSwitch controlLevelSwitch = null,
+            HttpMessageHandler messageHandler = null,
+            long? retainedInvalidPayloadsLimitBytes = null)
         {
-            if (loggerSinkConfiguration == null) throw new ArgumentNullException("loggerSinkConfiguration");
-            if (serverUrl == null) throw new ArgumentNullException("serverUrl");
+            if (loggerSinkConfiguration == null) throw new ArgumentNullException(nameof(loggerSinkConfiguration));
+            if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
             if (bufferFileSizeLimitBytes.HasValue && bufferFileSizeLimitBytes < 0) throw new ArgumentException("Negative value provided; file size limit must be non-negative");
 
             var defaultedPeriod = period ?? SeqSink.DefaultPeriod;
 
             ILogEventSink sink;
+
             if (bufferBaseFilename == null)
-                sink = new SeqSink(serverUrl, apiKey, batchPostingLimit, defaultedPeriod);
+            {
+                sink = new SeqSink(
+                    serverUrl, 
+                    apiKey, 
+                    batchPostingLimit, 
+                    defaultedPeriod, 
+                    eventBodyLimitBytes,
+                    controlLevelSwitch,
+                    messageHandler);
+            }
             else
-                sink = new DurableSeqSink(serverUrl, bufferBaseFilename, apiKey, batchPostingLimit, defaultedPeriod, bufferFileSizeLimitBytes);
+            {
+#if DURABLE
+                sink = new DurableSeqSink(
+                    serverUrl,
+                    bufferBaseFilename,
+                    apiKey,
+                    batchPostingLimit,
+                    defaultedPeriod,
+                    bufferFileSizeLimitBytes,
+                    eventBodyLimitBytes,
+                    controlLevelSwitch,
+                    messageHandler,
+                    retainedInvalidPayloadsLimitBytes);
+#else
+                // We keep the API consistent for easier packaging and to support bait-and-switch.
+                throw new NotSupportedException("Durable log shipping is not supported on this platform.");
+#endif
+            }
 
             return loggerSinkConfiguration.Sink(sink, restrictedToMinimumLevel);
         }

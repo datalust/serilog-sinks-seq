@@ -1,66 +1,21 @@
-param(
-    [String] $majorMinor = "0.0",  # 2.0
-    [String] $patch = "0",         # $env:APPVEYOR_BUILD_VERSION
-    [String] $customLogger = "",   # C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll
-    [Switch] $notouch
-)
+Push-Location $PSScriptRoot
 
-function Set-AssemblyVersions($informational, $assembly)
-{
-    (Get-Content assets/CommonAssemblyInfo.cs) |
-        ForEach-Object { $_ -replace """1.0.0.0""", """$assembly""" } |
-        ForEach-Object { $_ -replace """1.0.0""", """$informational""" } |
-        ForEach-Object { $_ -replace """1.1.1.1""", """$($informational).0""" } |
-        Set-Content assets/CommonAssemblyInfo.cs
-}
+if(Test-Path .\artifacts) { Remove-Item .\artifacts -Force -Recurse }
 
-function Install-NuGetPackages($solution)
-{
-    nuget restore "$solution"
-}
+& dotnet restore
 
-function Invoke-MSBuild($solution, $customLogger)
-{
-    if ($customLogger)
-    {
-        msbuild "$solution" /verbosity:minimal /p:Configuration=Release /logger:"$customLogger"
-    }
-    else
-    {
-        msbuild "$solution" /verbosity:minimal /p:Configuration=Release
-    }
-}
+$revision = @{ $true = $env:APPVEYOR_BUILD_NUMBER; $false = 1 }[$env:APPVEYOR_BUILD_NUMBER -ne $NULL];
 
-function Invoke-NuGetPackSpec($nuspec, $version)
-{
-    nuget pack $nuspec -Version $version
-}
+Push-Location src/Serilog.Sinks.Seq
 
-function Invoke-Build($majorMinor, $patch, $customLogger, $notouch)
-{
-    $project = "serilog-sinks-seq"
+& dotnet pack -c Release -o ..\..\.\artifacts --version-suffix=$revision
+if($LASTEXITCODE -ne 0) { exit 1 }    
 
-    $solution = "$project.sln"
-    $solution4 = "$project-net40.sln"
-    $package="$majorMinor.$patch"
+Pop-Location
+Push-Location test/Serilog.Sinks.Seq.Tests
 
-    Write-Output "Building $project $package"
+& dotnet test -c Release
+if($LASTEXITCODE -ne 0) { exit 2 }
 
-    if (-not $notouch)
-    {
-        $assembly = "$majorMinor.0.0"
-
-        Write-Output "Assembly version will be set to $assembly"
-        Set-AssemblyVersions $package $assembly
-    }
-
-    Install-NuGetPackages $solution
-    
-    Invoke-MSBuild $solution4 $customLogger
-    Invoke-MSBuild $solution $customLogger
-
-    Invoke-NuGetPackSpec "src/Serilog.Sinks.Seq/Serilog.Sinks.Seq.nuspec" $package
-}
-
-$ErrorActionPreference = "Stop"
-Invoke-Build $majorMinor $patch $customLogger $notouch
+Pop-Location
+Pop-Location

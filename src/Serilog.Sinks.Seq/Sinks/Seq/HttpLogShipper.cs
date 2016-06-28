@@ -1,63 +1,103 @@
-﻿using System;
+﻿// Serilog.Sinks.Seq Copyright 2016 Serilog Contributors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#if DURABLE
+
+using System;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using Serilog.Core;
 using Serilog.Debugging;
 using Serilog.Events;
+using IOFile = System.IO.File;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace Serilog.Sinks.Seq
 {
     class HttpLogShipper : IDisposable
     {
+        const string ApiKeyHeaderName = "X-Seq-ApiKey";
+        const string BulkUploadResource = "api/events/raw";
+
+        static readonly TimeSpan RequiredLevelCheckInterval = TimeSpan.FromMinutes(2);
+
         readonly string _apiKey;
         readonly int _batchPostingLimit;
-        readonly Timer _timer;
-        readonly TimeSpan _period;
-        readonly object _stateLock = new object();
-
-        LogEventLevel? _minimumAcceptedLevel;
-        static readonly TimeSpan RequiredLevelCheckInterval = TimeSpan.FromMinutes(2);
-        DateTime _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
-
-        volatile bool _unloading;
+        readonly long? _eventBodyLimitBytes;
         readonly string _bookmarkFilename;
         readonly string _logFolder;
         readonly HttpClient _httpClient;
         readonly string _candidateSearchPath;
+        readonly ExponentialBackoffConnectionSchedule _connectionSchedule;
+        readonly long? _retainedInvalidPayloadsLimitBytes;
 
-        const string ApiKeyHeaderName = "X-Seq-ApiKey";
-        const string BulkUploadResource = "api/events/raw";
+        readonly object _stateLock = new object();
 
-        public HttpLogShipper(string serverUrl, string bufferBaseFilename, string apiKey, int batchPostingLimit, TimeSpan period)
+#if !WAITABLE_TIMER
+        readonly PortableTimer _timer;
+#else
+        readonly Timer _timer;
+#endif
+
+        LoggingLevelSwitch _levelControlSwitch;
+        DateTime _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
+        volatile bool _unloading;
+
+        public HttpLogShipper(
+            string serverUrl,
+            string bufferBaseFilename,
+            string apiKey,
+            int batchPostingLimit,
+            TimeSpan period,
+            long? eventBodyLimitBytes,
+            LoggingLevelSwitch levelControlSwitch,
+            HttpMessageHandler messageHandler,
+            long? retainedInvalidPayloadsLimitBytes)
         {
             _apiKey = apiKey;
             _batchPostingLimit = batchPostingLimit;
-            _period = period;
+            _eventBodyLimitBytes = eventBodyLimitBytes;
+            _levelControlSwitch = levelControlSwitch;
+            _connectionSchedule = new ExponentialBackoffConnectionSchedule(period);
+            _retainedInvalidPayloadsLimitBytes = retainedInvalidPayloadsLimitBytes;
 
             var baseUri = serverUrl;
             if (!baseUri.EndsWith("/"))
                 baseUri += "/";
 
-            _httpClient = new HttpClient { BaseAddress = new Uri(baseUri) };
+            _httpClient = messageHandler != null ?
+                new HttpClient(messageHandler) :
+                new HttpClient();
+            _httpClient.BaseAddress = new Uri(baseUri);
 
             _bookmarkFilename = Path.GetFullPath(bufferBaseFilename + ".bookmark");
             _logFolder = Path.GetDirectoryName(_bookmarkFilename);
             _candidateSearchPath = Path.GetFileName(bufferBaseFilename) + "*.json";
-            _timer = new Timer(s => OnTick());
-            _period = period;
 
-            AppDomain.CurrentDomain.DomainUnload += OnAppDomainUnloading;
-            AppDomain.CurrentDomain.ProcessExit += OnAppDomainUnloading;
+#if !WAITABLE_TIMER
+            _timer = new PortableTimer(c => OnTick());
+#else
+            _timer = new Timer(s => OnTick());
+#endif
 
             SetTimer();
-        }
-
-        void OnAppDomainUnloading(object sender, EventArgs args)
-        {
-            CloseAndFlush();
         }
 
         void CloseAndFlush()
@@ -69,13 +109,13 @@ namespace Serilog.Sinks.Seq
 
                 _unloading = true;
             }
-
-            AppDomain.CurrentDomain.DomainUnload -= OnAppDomainUnloading;
-            AppDomain.CurrentDomain.ProcessExit -= OnAppDomainUnloading;
-
+#if !WAITABLE_TIMER
+            _timer.Dispose();
+#else
             var wh = new ManualResetEvent(false);
             if (_timer.Dispose(wh))
                 wh.WaitOne();
+#endif
 
             OnTick();
         }
@@ -88,7 +128,7 @@ namespace Serilog.Sinks.Seq
             get
             {
                 lock (_stateLock)
-                    return _minimumAcceptedLevel;
+                    return _levelControlSwitch?.MinimumLevel;
             }
         }
 
@@ -116,7 +156,11 @@ namespace Serilog.Sinks.Seq
         {
             // Note, called under _stateLock
 
-            _timer.Change(_period, Timeout.InfiniteTimeSpan);
+#if !WAITABLE_TIMER
+            _timer.Start(_connectionSchedule.NextInterval);
+#else
+            _timer.Change(_connectionSchedule.NextInterval, Timeout.InfiniteTimeSpan);
+#endif
         }
 
         void OnTick()
@@ -133,7 +177,7 @@ namespace Serilog.Sinks.Seq
                     // Locking the bookmark ensures that though there may be multiple instances of this
                     // class running, only one will ship logs at a time.
 
-                    using (var bookmark = File.Open(_bookmarkFilename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
+                    using (var bookmark = IOFile.Open(_bookmarkFilename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
                     {
                         long nextLineBeginsAtOffset;
                         string currentFile;
@@ -142,7 +186,7 @@ namespace Serilog.Sinks.Seq
 
                         var fileSet = GetFileSet();
 
-                        if (currentFile == null || !File.Exists(currentFile))
+                        if (currentFile == null || !IOFile.Exists(currentFile))
                         {
                             nextLineBeginsAtOffset = 0;
                             currentFile = fileSet.FirstOrDefault();
@@ -151,56 +195,53 @@ namespace Serilog.Sinks.Seq
                         if (currentFile == null)
                             continue;
 
-                        var payload = new StringWriter();
-                        payload.Write("{\"events\":[");
-                        var delimStart = "";
+                        var payload = ReadPayload(currentFile, ref nextLineBeginsAtOffset, ref count);
 
-                        using (var current = File.Open(currentFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                        {
-                            current.Position = nextLineBeginsAtOffset;
-
-                            string nextLine;
-                            while (count < _batchPostingLimit &&
-                                   TryReadLine(current, ref nextLineBeginsAtOffset, out nextLine))
-                            {
-                                ++count;
-                                payload.Write(delimStart);
-                                payload.Write(nextLine);
-                                delimStart = ",";
-                            }
-
-                            payload.Write("]}");
-                        }
-
-                        if (count > 0 || _minimumAcceptedLevel != null && _nextRequiredLevelCheckUtc < DateTime.UtcNow)
+                        if (count > 0 || _levelControlSwitch != null && _nextRequiredLevelCheckUtc < DateTime.UtcNow)
                         {
                             lock (_stateLock)
                             {
                                 _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
                             }
 
-                            var content = new StringContent(payload.ToString(), Encoding.UTF8, "application/json");
+                            var content = new StringContent(payload, Encoding.UTF8, "application/json");
                             if (!string.IsNullOrWhiteSpace(_apiKey))
                                 content.Headers.Add(ApiKeyHeaderName, _apiKey);
 
                             var result = _httpClient.PostAsync(BulkUploadResource, content).Result;
                             if (result.IsSuccessStatusCode)
                             {
+                                _connectionSchedule.MarkSuccess();
                                 WriteBookmark(bookmark, nextLineBeginsAtOffset, currentFile);
                                 var returned = result.Content.ReadAsStringAsync().Result;
                                 minimumAcceptedLevel = SeqApi.ReadEventInputResult(returned);
                             }
+                            else if (result.StatusCode == HttpStatusCode.BadRequest ||
+                                     result.StatusCode == HttpStatusCode.RequestEntityTooLarge)
+                            {
+                                // The connection attempt was successful - the payload we sent was the problem.
+                                _connectionSchedule.MarkSuccess();
+
+                                DumpInvalidPayload(result, payload).Wait();
+
+                                WriteBookmark(bookmark, nextLineBeginsAtOffset, currentFile);
+                            }
                             else
                             {
+                                _connectionSchedule.MarkFailure();
                                 SelfLog.WriteLine("Received failed HTTP shipping result {0}: {1}", result.StatusCode, result.Content.ReadAsStringAsync().Result);
                                 break;
                             }
                         }
                         else
                         {
+                            // For whatever reason, there's nothing waiting to send. This means we should try connecting again at the
+                            // regular interval, so mark the attempt as successful.
+                            _connectionSchedule.MarkSuccess();
+
                             // Only advance the bookmark if no other process has the
                             // current file locked, and its length is as we found it.
-                                
+
                             if (fileSet.Length == 2 && fileSet.First() == currentFile && IsUnlockedAtLength(currentFile, nextLineBeginsAtOffset))
                             {
                                 WriteBookmark(bookmark, 0, fileSet[1]);
@@ -212,7 +253,7 @@ namespace Serilog.Sinks.Seq
                                 // best to move on, though a lock on the current file
                                 // will delay this.
 
-                                File.Delete(fileSet[0]);
+                                IOFile.Delete(fileSet[0]);
                             }
                         }
                     }
@@ -222,23 +263,141 @@ namespace Serilog.Sinks.Seq
             catch (Exception ex)
             {
                 SelfLog.WriteLine("Exception while emitting periodic batch from {0}: {1}", this, ex);
+                _connectionSchedule.MarkFailure();
             }
             finally
             {
                 lock (_stateLock)
                 {
-                    _minimumAcceptedLevel = minimumAcceptedLevel;
+                    UpdateLevelControlSwitch(minimumAcceptedLevel);
+
                     if (!_unloading)
                         SetTimer();
                 }
             }
         }
 
-        bool IsUnlockedAtLength(string file, long maxLen)
+        const string InvalidPayloadFilePrefix = "invalid-";
+        async Task DumpInvalidPayload(HttpResponseMessage result, string payload)
+        {
+            var invalidPayloadFilename = $"{InvalidPayloadFilePrefix}{result.StatusCode}-{Guid.NewGuid():n}.json";
+            var invalidPayloadFile = Path.Combine(_logFolder, invalidPayloadFilename);
+            var resultContent = await result.Content.ReadAsStringAsync();
+            SelfLog.WriteLine("HTTP shipping failed with {0}: {1}; dumping payload to {2}", result.StatusCode, resultContent, invalidPayloadFile);
+            var bytesToWrite = Encoding.UTF8.GetBytes(payload);
+            if (_retainedInvalidPayloadsLimitBytes.HasValue)
+            {
+                CleanUpInvalidPayloadFiles(_retainedInvalidPayloadsLimitBytes.Value - bytesToWrite.Length, _logFolder);
+            }
+            IOFile.WriteAllBytes(invalidPayloadFile, bytesToWrite);
+        }
+
+        static void CleanUpInvalidPayloadFiles(long maxNumberOfBytesToRetain, string logFolder)
         {
             try
             {
-                using (var fileStream = File.Open(file, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
+                var candiateFiles = Directory.EnumerateFiles(logFolder, $"{InvalidPayloadFilePrefix}*.json");
+                DeleteOldFiles(maxNumberOfBytesToRetain, candiateFiles);
+            }
+            catch (Exception ex)
+            {
+                SelfLog.WriteLine("Exception thrown while trying to clean up invalid payload files: {0}", ex);
+            }
+        }
+
+        static IEnumerable<FileInfo> WhereCumulativeSizeGreaterThan(IEnumerable<FileInfo> files, long maxCumulativeSize)
+        {
+            long cumulative = 0;
+            foreach (var file in files)
+            {
+                cumulative += file.Length;
+                if (cumulative > maxCumulativeSize)
+                {
+                    yield return file;
+                }
+            }
+        }
+
+        static void DeleteOldFiles(long maxNumberOfBytesToRetain, IEnumerable<string> files)
+        {
+            var orderedFileInfos = from candiateFile in files
+                                   let candiateFileInfo = new FileInfo(candiateFile)
+                                   orderby candiateFileInfo.LastAccessTimeUtc descending
+                                   select candiateFileInfo;
+
+            var invalidPayloadFilesToDelete = WhereCumulativeSizeGreaterThan(orderedFileInfos, maxNumberOfBytesToRetain);
+
+            foreach (var fileToDelete in invalidPayloadFilesToDelete)
+            {
+                try
+                {
+                    fileToDelete.Delete();
+                }
+                catch (Exception ex)
+                {
+                    SelfLog.WriteLine("Exception '{0}' thrown while trying to delete file {1}", ex.Message, fileToDelete.FullName);
+                }
+            }
+        }
+
+        void UpdateLevelControlSwitch(LogEventLevel? minimumAcceptedLevel)
+        {
+            if (minimumAcceptedLevel == null)
+            {
+                if (_levelControlSwitch != null)
+                    _levelControlSwitch.MinimumLevel = LevelAlias.Minimum;
+            }
+            else
+            {
+                if (_levelControlSwitch == null)
+                    _levelControlSwitch = new LoggingLevelSwitch(minimumAcceptedLevel.Value);
+                else
+                    _levelControlSwitch.MinimumLevel = minimumAcceptedLevel.Value;
+            }
+        }
+
+        string ReadPayload(string currentFile, ref long nextLineBeginsAtOffset, ref int count)
+        {
+            var payload = new StringWriter();
+            payload.Write("{\"Events\":[");
+            var delimStart = "";
+
+            using (var current = IOFile.Open(currentFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                current.Position = nextLineBeginsAtOffset;
+
+                string nextLine;
+                while (count < _batchPostingLimit &&
+                       TryReadLine(current, ref nextLineBeginsAtOffset, out nextLine))
+                {
+                    // Count is the indicator that work was done, so advances even in the (rare) case an
+                    // oversized event is dropped.
+                    ++count;
+
+                    if (_eventBodyLimitBytes.HasValue && Encoding.UTF8.GetByteCount(nextLine) > _eventBodyLimitBytes.Value)
+                    {
+                        SelfLog.WriteLine(
+                            "Event JSON representation exceeds the byte size limit of {0} and will be dropped; data: {1}",
+                            _eventBodyLimitBytes, nextLine);
+                    }
+                    else
+                    {
+                        payload.Write(delimStart);
+                        payload.Write(nextLine);
+                        delimStart = ",";
+                    }
+                }
+
+                payload.Write("]}");
+            }
+            return payload.ToString();
+        }
+
+        static bool IsUnlockedAtLength(string file, long maxLen)
+        {
+            try
+            {
+                using (var fileStream = IOFile.Open(file, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
                 {
                     return fileStream.Length <= maxLen;
                 }
@@ -280,10 +439,9 @@ namespace Serilog.Sinks.Seq
 
             current.Position = nextStart;
 
-            using (var reader = new StreamReader(current, Encoding.UTF8, false, 128, true))
-            {
-                nextLine = reader.ReadLine();
-            }
+            // Important not to dispose this StreamReader as the stream must remain open.
+            var reader = new StreamReader(current, Encoding.UTF8, false, 128);
+            nextLine = reader.ReadLine();
 
             if (nextLine == null)
                 return false;
@@ -302,11 +460,9 @@ namespace Serilog.Sinks.Seq
 
             if (bookmark.Length != 0)
             {
-                string current;
-                using (var reader = new StreamReader(bookmark, Encoding.UTF8, false, 128, true))
-                {
-                    current = reader.ReadLine();
-                }
+                // Important not to dispose this StreamReader as the stream must remain open.
+                var reader = new StreamReader(bookmark, Encoding.UTF8, false, 128);
+                var current = reader.ReadLine();
 
                 if (current != null)
                 {
@@ -318,7 +474,7 @@ namespace Serilog.Sinks.Seq
                         currentFile = parts[1];
                     }
                 }
-                
+
             }
         }
 
@@ -330,3 +486,5 @@ namespace Serilog.Sinks.Seq
         }
     }
 }
+
+#endif

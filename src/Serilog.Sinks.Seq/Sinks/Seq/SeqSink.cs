@@ -89,40 +89,9 @@ namespace Serilog.Sinks.Seq
         {
             _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
 
-            var payload = new StringWriter();
-            payload.Write("{\"Events\":[");
+            var payload = FormatPayload(events, _eventBodyLimitBytes);
 
-            var delimStart = "";
-            foreach (var logEvent in events)
-            {
-                if (_eventBodyLimitBytes.HasValue)
-                {
-                    var scratch = new StringWriter();
-                    RawJsonFormatter.FormatContent(logEvent, scratch);
-                    var buffered = scratch.ToString();
-
-                    if (Encoding.UTF8.GetByteCount(buffered) > _eventBodyLimitBytes.Value)
-                    {
-                        SelfLog.WriteLine("Event JSON representation exceeds the byte size limit of {0} set for this sink and will be dropped; data: {1}", _eventBodyLimitBytes, buffered);
-                    }
-                    else
-                    {
-                        payload.Write(delimStart);
-                        payload.Write(buffered);
-                        delimStart = ",";
-                    }
-                }
-                else
-                {
-                    payload.Write(delimStart);
-                    RawJsonFormatter.FormatContent(logEvent, payload);
-                    delimStart = ",";
-                }
-            }
-
-            payload.Write("]}");
-
-            var content = new StringContent(payload.ToString(), Encoding.UTF8, "application/json");
+            var content = new StringContent(payload, Encoding.UTF8, "application/json");
             if (!string.IsNullOrWhiteSpace(_apiKey))
                 content.Headers.Add(ApiKeyHeaderName, _apiKey);
     
@@ -144,6 +113,50 @@ namespace Serilog.Sinks.Seq
                 else
                     _levelControlSwitch.MinimumLevel = minimumAcceptedLevel.Value;
             }
+        }
+
+        internal static string FormatPayload(IEnumerable<LogEvent> events, long? eventBodyLimitBytes)
+        {
+            var payload = new StringWriter();
+            payload.Write("{\"Events\":[");
+
+            var delimStart = "";
+            foreach (var logEvent in events)
+            {
+                var buffer = new StringWriter();
+
+                try
+                {
+                    RawJsonFormatter.FormatContent(logEvent, buffer);
+                }
+                catch (Exception ex)
+                {
+                    SelfLog.WriteLine(
+                        "Event at {0} with message template {1} could not be formatted into JSON for Seq and will be dropped: {2}",
+                        logEvent.Timestamp.ToString("o"), logEvent.MessageTemplate.Text, ex);
+
+                    continue;
+                }
+
+                var json = buffer.ToString();
+
+                if (eventBodyLimitBytes.HasValue &&
+                    Encoding.UTF8.GetByteCount(json) > eventBodyLimitBytes.Value)
+                {
+                    SelfLog.WriteLine(
+                        "Event JSON representation exceeds the byte size limit of {0} set for this Seq sink and will be dropped; data: {1}",
+                        eventBodyLimitBytes, json);
+                }
+                else
+                {
+                    payload.Write(delimStart);
+                    payload.Write(json);
+                    delimStart = ",";
+                }
+            }
+
+            payload.Write("]}");
+            return payload.ToString();
         }
 
         protected override bool CanInclude(LogEvent evt)

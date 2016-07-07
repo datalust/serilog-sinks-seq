@@ -36,7 +36,7 @@ The sink supports durable (disk-buffered) log shipping, and can take advantage o
 
 To adjust the Seq server URL at deployment time, it's often convenient to configure it using XML `<appSettings>`, in the `App.config` or `Web.config` file.
 
-Before Serilog can be configured in XML, it must be enabled using the `LoggerConfiguration`:
+Before Serilog can be configured using XML, the [Serilog.Settings.AppSettings](https://nuget.org/packages/serilog.settings.appsettings) package must be installed and enabled using the `LoggerConfiguration`:
 
 ```csharp
 Log.Logger = new LoggerConfiguration()
@@ -46,12 +46,14 @@ Log.Logger = new LoggerConfiguration()
 
 When XML is used for configuration, it's not necessary to include the `WriteTo.Seq()` method. It is important however that the _Serilog.Sinks.Seq.dll_ assembly is present alongside the app's binaries.
 
-The two settings typically included are:
+The settings typically included are:
 
 ```xml
-<add key="serilog:using:Seq" value="Serilog.Sinks.Seq" />
-<add key="serilog:write-to:Seq.serverUrl" value="http://localhost:5341" />
-<add key="serilog:write-to:Seq.apiKey" value="[optional API key here]" />
+<configuration>
+  <appSettings>
+    <add key="serilog:using:Seq" value="Serilog.Sinks.Seq" />
+    <add key="serilog:write-to:Seq.serverUrl" value="http://localhost:5341" />
+    <add key="serilog:write-to:Seq.apiKey" value="[optional API key here]" />
 ```
 
 Serilog's XML configuration has several other capabilities that are described on the [Serilog wiki](https://github.com/serilog/serilog/wiki/AppSettings).

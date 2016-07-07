@@ -30,6 +30,8 @@ namespace Sample
                 Thread.Sleep(1000);
                 Log.Debug("Loop iteration done");
             }
+
+            Log.CloseAndFlush();
         }
     }
 }

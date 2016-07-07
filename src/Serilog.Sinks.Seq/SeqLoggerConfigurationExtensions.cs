@@ -51,6 +51,9 @@ namespace Serilog
         /// <param name="retainedInvalidPayloadsLimitBytes">A soft limit for the number of bytes to use for storing failed requests.  
         /// The limit is soft in that it can be exceeded by any single error payload, but in that case only that single error
         /// payload will be retained.</param>
+        /// <param name="useCompactFormat">Use the compact log event format defined by
+        /// <a href="https://github.com/serilog/serilog-formatting-compact">Serilog.Formatting.Compact</a>. Has no effect on
+        /// durable log shipping. Requires Seq 3.3+.</param>
         /// <returns>Logger configuration, allowing configuration to continue.</returns>
         /// <exception cref="ArgumentNullException">A required parameter is null.</exception>
         public static LoggerConfiguration Seq(
@@ -65,7 +68,8 @@ namespace Serilog
             long? eventBodyLimitBytes = 256 * 1024,
             LoggingLevelSwitch controlLevelSwitch = null,
             HttpMessageHandler messageHandler = null,
-            long? retainedInvalidPayloadsLimitBytes = null)
+            long? retainedInvalidPayloadsLimitBytes = null,
+            bool useCompactFormat = false)
         {
             if (loggerSinkConfiguration == null) throw new ArgumentNullException(nameof(loggerSinkConfiguration));
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
@@ -84,7 +88,8 @@ namespace Serilog
                     defaultedPeriod, 
                     eventBodyLimitBytes,
                     controlLevelSwitch,
-                    messageHandler);
+                    messageHandler,
+                    useCompactFormat);
             }
             else
             {

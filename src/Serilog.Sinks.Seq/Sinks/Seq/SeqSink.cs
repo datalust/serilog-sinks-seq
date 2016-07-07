@@ -22,6 +22,8 @@ using System.Threading.Tasks;
 using Serilog.Core;
 using Serilog.Debugging;
 using Serilog.Events;
+using Serilog.Formatting.Compact;
+using Serilog.Formatting.Json;
 using Serilog.Sinks.PeriodicBatching;
 
 namespace Serilog.Sinks.Seq
@@ -31,12 +33,13 @@ namespace Serilog.Sinks.Seq
         readonly string _apiKey;
         readonly long? _eventBodyLimitBytes;
         readonly HttpClient _httpClient;
-        const string BulkUploadResource = "api/events/raw";
-        const string ApiKeyHeaderName = "X-Seq-ApiKey";
+
+        static readonly JsonValueFormatter JsonValueFormatter = new JsonValueFormatter();
 
         // If non-null, then background level checks will be performed; set either through the constructor
         // or in response to a level specification from the server. Never set to null after being made non-null.
         LoggingLevelSwitch _levelControlSwitch;
+        readonly bool _useCompactFormat;
         static readonly TimeSpan RequiredLevelCheckInterval = TimeSpan.FromMinutes(2);
         DateTime _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
 
@@ -50,13 +53,15 @@ namespace Serilog.Sinks.Seq
             TimeSpan period,
             long? eventBodyLimitBytes,
             LoggingLevelSwitch levelControlSwitch,
-            HttpMessageHandler messageHandler)
+            HttpMessageHandler messageHandler,
+            bool useCompactFormat)
             : base(batchPostingLimit, period)
         {
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
             _apiKey = apiKey;
             _eventBodyLimitBytes = eventBodyLimitBytes;
             _levelControlSwitch = levelControlSwitch;
+            _useCompactFormat = useCompactFormat;
 
             var baseUri = serverUrl;
             if (!baseUri.EndsWith("/"))
@@ -89,13 +94,23 @@ namespace Serilog.Sinks.Seq
         {
             _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
 
-            var payload = FormatPayload(events, _eventBodyLimitBytes);
+            string payload, payloadContentType;
+            if (_useCompactFormat)
+            {
+                payloadContentType = SeqApi.CompactLogEventFormatMimeType;
+                payload = FormatCompactPayload(events, _eventBodyLimitBytes);
+            }
+            else
+            {
+                payloadContentType = SeqApi.RawEventFormatMimeType;
+                payload = FormatRawPayload(events, _eventBodyLimitBytes);
+            }
 
-            var content = new StringContent(payload, Encoding.UTF8, "application/json");
+            var content = new StringContent(payload, Encoding.UTF8, payloadContentType);
             if (!string.IsNullOrWhiteSpace(_apiKey))
-                content.Headers.Add(ApiKeyHeaderName, _apiKey);
+                content.Headers.Add(SeqApi.ApiKeyHeaderName, _apiKey);
     
-            var result = await _httpClient.PostAsync(BulkUploadResource, content).ConfigureAwait(false);
+            var result = await _httpClient.PostAsync(SeqApi.BulkUploadResource, content).ConfigureAwait(false);
             if (!result.IsSuccessStatusCode)
                 throw new LoggingFailedException($"Received failed result {result.StatusCode} when posting events to Seq");
 
@@ -115,7 +130,35 @@ namespace Serilog.Sinks.Seq
             }
         }
 
-        internal static string FormatPayload(IEnumerable<LogEvent> events, long? eventBodyLimitBytes)
+        internal static string FormatCompactPayload(IEnumerable<LogEvent> events, long? eventBodyLimitBytes)
+        {
+            var payload = new StringWriter();
+
+            foreach (var logEvent in events)
+            {
+                var buffer = new StringWriter();
+
+                try
+                {
+                    CompactJsonFormatter.FormatEvent(logEvent, buffer, JsonValueFormatter);
+                }
+                catch (Exception ex)
+                {
+                    LogNonFormattableEvent(logEvent, ex);
+                    continue;
+                }
+
+                var json = buffer.ToString();
+                if (CheckEventBodySize(json, eventBodyLimitBytes))
+                {
+                    payload.WriteLine(json);
+                }
+            }
+
+            return payload.ToString();
+        }
+
+        internal static string FormatRawPayload(IEnumerable<LogEvent> events, long? eventBodyLimitBytes)
         {
             var payload = new StringWriter();
             payload.Write("{\"Events\":[");
@@ -131,23 +174,12 @@ namespace Serilog.Sinks.Seq
                 }
                 catch (Exception ex)
                 {
-                    SelfLog.WriteLine(
-                        "Event at {0} with message template {1} could not be formatted into JSON for Seq and will be dropped: {2}",
-                        logEvent.Timestamp.ToString("o"), logEvent.MessageTemplate.Text, ex);
-
+                    LogNonFormattableEvent(logEvent, ex);
                     continue;
                 }
 
                 var json = buffer.ToString();
-
-                if (eventBodyLimitBytes.HasValue &&
-                    Encoding.UTF8.GetByteCount(json) > eventBodyLimitBytes.Value)
-                {
-                    SelfLog.WriteLine(
-                        "Event JSON representation exceeds the byte size limit of {0} set for this Seq sink and will be dropped; data: {1}",
-                        eventBodyLimitBytes, json);
-                }
-                else
+                if (CheckEventBodySize(json, eventBodyLimitBytes))
                 {
                     payload.Write(delimStart);
                     payload.Write(json);
@@ -164,6 +196,27 @@ namespace Serilog.Sinks.Seq
             var levelControlSwitch = _levelControlSwitch;
             return levelControlSwitch == null ||
                 (int)levelControlSwitch.MinimumLevel <= (int)evt.Level;
+        }
+
+        static bool CheckEventBodySize(string json, long? eventBodyLimitBytes)
+        {
+            if (eventBodyLimitBytes.HasValue &&
+                Encoding.UTF8.GetByteCount(json) > eventBodyLimitBytes.Value)
+            {
+                SelfLog.WriteLine(
+                    "Event JSON representation exceeds the byte size limit of {0} set for this Seq sink and will be dropped; data: {1}",
+                    eventBodyLimitBytes, json);
+                return false;
+            }
+
+            return true;
+        }
+
+        static void LogNonFormattableEvent(LogEvent logEvent, Exception ex)
+        {
+            SelfLog.WriteLine(
+                "Event at {0} with message template {1} could not be formatted into JSON for Seq and will be dropped: {2}",
+                logEvent.Timestamp.ToString("o"), logEvent.MessageTemplate.Text, ex);
         }
     }
 }

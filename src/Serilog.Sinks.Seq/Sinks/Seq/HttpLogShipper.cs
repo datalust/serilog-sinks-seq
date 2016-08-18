@@ -74,15 +74,10 @@ namespace Serilog.Sinks.Seq
             _levelControlSwitch = levelControlSwitch;
             _connectionSchedule = new ExponentialBackoffConnectionSchedule(period);
             _retainedInvalidPayloadsLimitBytes = retainedInvalidPayloadsLimitBytes;
-
-            var baseUri = serverUrl;
-            if (!baseUri.EndsWith("/"))
-                baseUri += "/";
-
             _httpClient = messageHandler != null ?
                 new HttpClient(messageHandler) :
                 new HttpClient();
-            _httpClient.BaseAddress = new Uri(baseUri);
+            _httpClient.BaseAddress = new Uri(SeqApi.NormalizeServerBaseAddress(serverUrl));
 
             _bookmarkFilename = Path.GetFullPath(bufferBaseFilename + ".bookmark");
             _logFolder = Path.GetDirectoryName(_bookmarkFilename);

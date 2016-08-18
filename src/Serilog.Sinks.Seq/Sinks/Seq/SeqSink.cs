@@ -62,13 +62,8 @@ namespace Serilog.Sinks.Seq
             _eventBodyLimitBytes = eventBodyLimitBytes;
             _levelControlSwitch = levelControlSwitch;
             _useCompactFormat = useCompactFormat;
-
-            var baseUri = serverUrl;
-            if (!baseUri.EndsWith("/"))
-                baseUri += "/";
-
             _httpClient = messageHandler != null ? new HttpClient(messageHandler) : new HttpClient();
-            _httpClient.BaseAddress = new Uri(baseUri);
+            _httpClient.BaseAddress = new Uri(SeqApi.NormalizeServerBaseAddress(serverUrl));
         }
 
         protected override void Dispose(bool disposing)

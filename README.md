@@ -14,7 +14,7 @@ PM> Install-Package Serilog.Sinks.Seq
 
 Point the logger to Seq:
 
-```powershell
+```csharp
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Seq("http://localhost:5341")
     .CreateLogger();
@@ -80,3 +80,11 @@ Log.Logger = new LoggerConfiguration()
 ```
 
 For further information see the [Seq documentation](http://docs.getseq.net/docs/using-serilog#dynamic-level-control).
+
+### Compact event format
+
+Seq 3.3 accepts Serilog's more efficient [compact JSON format](https://github.com/serilog/serilog-formatting-compact/). To use this, configure the sink with `compact: true`:
+
+```csharp
+    .WriteTo.Seq("http://localhost:5341", compact: true)
+```

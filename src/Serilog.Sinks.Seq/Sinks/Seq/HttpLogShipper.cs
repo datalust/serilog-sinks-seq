@@ -33,9 +33,6 @@ namespace Serilog.Sinks.Seq
 {
     class HttpLogShipper : IDisposable
     {
-        const string ApiKeyHeaderName = "X-Seq-ApiKey";
-        const string BulkUploadResource = "api/events/raw";
-
         static readonly TimeSpan RequiredLevelCheckInterval = TimeSpan.FromMinutes(2);
 
         readonly string _apiKey;
@@ -77,15 +74,10 @@ namespace Serilog.Sinks.Seq
             _levelControlSwitch = levelControlSwitch;
             _connectionSchedule = new ExponentialBackoffConnectionSchedule(period);
             _retainedInvalidPayloadsLimitBytes = retainedInvalidPayloadsLimitBytes;
-
-            var baseUri = serverUrl;
-            if (!baseUri.EndsWith("/"))
-                baseUri += "/";
-
             _httpClient = messageHandler != null ?
                 new HttpClient(messageHandler) :
                 new HttpClient();
-            _httpClient.BaseAddress = new Uri(baseUri);
+            _httpClient.BaseAddress = new Uri(SeqApi.NormalizeServerBaseAddress(serverUrl));
 
             _bookmarkFilename = Path.GetFullPath(bufferBaseFilename + ".bookmark");
             _logFolder = Path.GetDirectoryName(_bookmarkFilename);
@@ -206,9 +198,9 @@ namespace Serilog.Sinks.Seq
 
                             var content = new StringContent(payload, Encoding.UTF8, "application/json");
                             if (!string.IsNullOrWhiteSpace(_apiKey))
-                                content.Headers.Add(ApiKeyHeaderName, _apiKey);
+                                content.Headers.Add(SeqApi.ApiKeyHeaderName, _apiKey);
 
-                            var result = _httpClient.PostAsync(BulkUploadResource, content).Result;
+                            var result = _httpClient.PostAsync(SeqApi.BulkUploadResource, content).Result;
                             if (result.IsSuccessStatusCode)
                             {
                                 _connectionSchedule.MarkSuccess();

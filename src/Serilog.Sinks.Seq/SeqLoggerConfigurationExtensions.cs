@@ -27,7 +27,7 @@ namespace Serilog
     public static class SeqLoggerConfigurationExtensions
     {
         /// <summary>
-        /// Adds a sink that writes log events to a http://getseq.net Seq event server.
+        /// Adds a sink that writes log events to a <a href="https://getseq.net">Seq</a> server.
         /// </summary>
         /// <param name="loggerSinkConfiguration">The logger configuration.</param>
         /// <param name="serverUrl">The base URL of the Seq server that log events will be written to.</param>
@@ -47,10 +47,13 @@ namespace Serilog
         /// <param name="controlLevelSwitch">If provided, the switch will be updated based on the Seq server's level setting
         /// for the corresponding API key. Passing the same key to MinimumLevel.ControlledBy() will make the whole pipeline
         /// dynamically controlled. Do not specify <paramref name="restrictedToMinimumLevel"/> with this setting.</param>
-        /// <param name="messageHandler">Used to construct the HttpClient that will be used to send the log meesages to Seq.</param>
+        /// <param name="messageHandler">Used to construct the HttpClient that will send the log meesages to Seq.</param>
         /// <param name="retainedInvalidPayloadsLimitBytes">A soft limit for the number of bytes to use for storing failed requests.  
         /// The limit is soft in that it can be exceeded by any single error payload, but in that case only that single error
         /// payload will be retained.</param>
+        /// <param name="compact">Use the compact log event format defined by
+        /// <a href="https://github.com/serilog/serilog-formatting-compact">Serilog.Formatting.Compact</a>. Has no effect on
+        /// durable log shipping. Requires Seq 3.3+.</param>
         /// <returns>Logger configuration, allowing configuration to continue.</returns>
         /// <exception cref="ArgumentNullException">A required parameter is null.</exception>
         public static LoggerConfiguration Seq(
@@ -62,14 +65,16 @@ namespace Serilog
             string apiKey = null,
             string bufferBaseFilename = null,
             long? bufferFileSizeLimitBytes = null,
-            long? eventBodyLimitBytes = 256 * 1024,
+            long? eventBodyLimitBytes = 256*1024,
             LoggingLevelSwitch controlLevelSwitch = null,
             HttpMessageHandler messageHandler = null,
-            long? retainedInvalidPayloadsLimitBytes = null)
+            long? retainedInvalidPayloadsLimitBytes = null,
+            bool compact = false)
         {
             if (loggerSinkConfiguration == null) throw new ArgumentNullException(nameof(loggerSinkConfiguration));
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
-            if (bufferFileSizeLimitBytes.HasValue && bufferFileSizeLimitBytes < 0) throw new ArgumentException("Negative value provided; file size limit must be non-negative");
+            if (bufferFileSizeLimitBytes.HasValue && bufferFileSizeLimitBytes < 0)
+                throw new ArgumentException("Negative value provided; file size limit must be non-negative");
 
             var defaultedPeriod = period ?? SeqSink.DefaultPeriod;
 
@@ -78,13 +83,14 @@ namespace Serilog
             if (bufferBaseFilename == null)
             {
                 sink = new SeqSink(
-                    serverUrl, 
-                    apiKey, 
-                    batchPostingLimit, 
-                    defaultedPeriod, 
+                    serverUrl,
+                    apiKey,
+                    batchPostingLimit,
+                    defaultedPeriod,
                     eventBodyLimitBytes,
                     controlLevelSwitch,
-                    messageHandler);
+                    messageHandler,
+                    compact);
             }
             else
             {
@@ -107,6 +113,37 @@ namespace Serilog
             }
 
             return loggerSinkConfiguration.Sink(sink, restrictedToMinimumLevel);
+        }
+
+        /// <summary>
+        /// Adds a sink that writes audit log events to a <a href="https://getseq.net">Seq</a> server. Auditing writes are
+        /// synchronous and non-batched; any failures will propagate to the caller immediately as exceptions.
+        /// </summary>
+        /// <param name="loggerAuditSinkConfiguration">The logger configuration.</param>
+        /// <param name="serverUrl">The base URL of the Seq server that log events will be written to.</param>
+        /// <param name="restrictedToMinimumLevel">The minimum log event level required 
+        /// in order to write an event to the sink.</param>
+        /// <param name="apiKey">A Seq <i>API key</i> that authenticates the client to the Seq server.</param>
+        /// <param name="messageHandler">Used to construct the HttpClient that will send the log meesages to Seq.</param>
+        /// <param name="compact">Use the compact log event format defined by
+        /// <a href="https://github.com/serilog/serilog-formatting-compact">Serilog.Formatting.Compact</a>. Has no effect on
+        /// durable log shipping. Requires Seq 3.3+.</param>
+        /// <returns>Logger configuration, allowing configuration to continue.</returns>
+        /// <exception cref="ArgumentNullException">A required parameter is null.</exception>
+        public static LoggerConfiguration Seq(
+            this LoggerAuditSinkConfiguration loggerAuditSinkConfiguration,
+            string serverUrl,
+            LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
+            string apiKey = null,
+            HttpMessageHandler messageHandler = null,
+            bool compact = false)
+        {
+            if (loggerAuditSinkConfiguration == null) throw new ArgumentNullException(nameof(loggerAuditSinkConfiguration));
+            if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
+
+            return loggerAuditSinkConfiguration.Sink(
+                new SeqAuditSink(serverUrl, apiKey, messageHandler, compact),
+                restrictedToMinimumLevel);
         }
     }
 }

@@ -19,6 +19,11 @@ namespace Serilog.Sinks.Seq
 {
     class SeqApi
     {
+        public const string BulkUploadResource = "api/events/raw";
+        public const string ApiKeyHeaderName = "X-Seq-ApiKey";
+        public const string RawEventFormatMimeType = "application/json";
+        public const string CompactLogEventFormatMimeType = "application/vnd.serilog.clef";
+
         // Why not use a JSON parser here? For a very small case, it's not
         // worth taking on the extra payload/dependency management issues that
         // a full-fledged parser will entail. If things get more sophisticated
@@ -49,6 +54,14 @@ namespace Serilog.Sinks.Seq
                 return null;
 
             return minimumLevel;
+        }
+
+        public static string NormalizeServerBaseAddress(string serverUrl)
+        {
+            var baseUri = serverUrl;
+            if (!baseUri.EndsWith("/"))
+                baseUri += "/";
+            return baseUri;
         }
     }
 }

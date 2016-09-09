@@ -1,5 +1,5 @@
 {
-  "version": "3.0.0-*",
+  "version": "3.0.1-*",
   "description": "Serilog sink that writes to the Seq event server over HTTP/S.",
   "authors": [ "Serilog Contributors" ],
   "packOptions": {
@@ -25,7 +25,7 @@
         "System.Net.Http": ""
       },
       "dependencies": {
-        "Serilog.Sinks.RollingFile": "2.0.0"
+        "Serilog.Sinks.RollingFile": "3.0.0"
       }
     },
     "netstandard1.1": {
@@ -39,7 +39,7 @@
       },
       "dependencies": {
         "System.Net.Http": "4.1.0",
-        "Serilog.Sinks.RollingFile": "2.0.0"
+        "Serilog.Sinks.RollingFile": "3.0.0"
       }
     }
   }

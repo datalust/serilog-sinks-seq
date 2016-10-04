@@ -19,7 +19,7 @@
   "frameworks": {
     "net4.5": {
       "buildOptions": {
-        "define": [ "DURABLE", "WAITABLE_TIMER" ]
+        "define": [ "DURABLE", "WAITABLE_TIMER", "HRESULTS" ]
       },
       "frameworkAssemblies": {
         "System.Net.Http": ""

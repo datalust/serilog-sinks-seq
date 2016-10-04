@@ -125,5 +125,5 @@ Serilog.Debugging.SelfLog.Enable(message => {
  * Turn on the Serilog `SelfLog` as described above to check for connectivity problems and other issues on the client side.
  * Make sure your application calls `Log.CloseAndFlush()`, or disposes the root `Logger`, before it exits - otherwise, buffered events may be lost.
  * If your app is a Windows console application, it is also important to close the console window by exiting the app; Windows console apps are terminated "hard" if the close button in the title bar is used, so events buffered for sending to Seq may be lost if you use it.
- * Ask for help on the [Seq support forum](http://docs.getseq.net/discuss) or email **support@getseq.net**.
+ * [Raise an issue](https://github.com/serilog/serilog-sinks-seq/issues), ask for help on the [Seq support forum](http://docs.getseq.net/discuss) or email **support@getseq.net**.
  

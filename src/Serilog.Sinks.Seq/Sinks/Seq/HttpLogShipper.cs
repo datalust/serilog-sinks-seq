@@ -19,7 +19,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using Serilog.Core;
@@ -28,6 +27,10 @@ using Serilog.Events;
 using IOFile = System.IO.File;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+
+#if HRESULTS
+using System.Runtime.InteropServices;
+#endif
 
 namespace Serilog.Sinks.Seq
 {
@@ -394,6 +397,7 @@ namespace Serilog.Sinks.Seq
                     return fileStream.Length <= maxLen;
                 }
             }
+#if HRESULTS
             catch (IOException ex)
             {
                 var errorCode = Marshal.GetHRForException(ex) & ((1 << 16) - 1);
@@ -402,6 +406,12 @@ namespace Serilog.Sinks.Seq
                     SelfLog.WriteLine("Unexpected I/O exception while testing locked status of {0}: {1}", file, ex);
                 }
             }
+#else
+            catch (IOException)
+            {
+                // Where no HRESULT is available, assume IOExceptions indicate a locked file
+            }
+#endif
             catch (Exception ex)
             {
                 SelfLog.WriteLine("Unexpected exception while testing locked status of {0}: {1}", file, ex);

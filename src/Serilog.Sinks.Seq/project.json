@@ -10,11 +10,13 @@
   },
   "dependencies": {
     "Serilog": "2.2.0",
-    "Serilog.Sinks.PeriodicBatching": "2.0.0",
+    "Serilog.Sinks.PeriodicBatching": "2.1.0",
     "Serilog.Formatting.Compact": "1.0.0"
   },
   "buildOptions": {
-    "keyFile": "../../assets/Serilog.snk"
+    "keyFile": "../../assets/Serilog.snk",
+    "warningsAsErrors": true,
+    "xmlDoc": true
   },
   "frameworks": {
     "net4.5": {
@@ -39,6 +41,7 @@
       },
       "dependencies": {
         "System.Net.Http": "4.1.0",
+        "System.Threading.Thread": "4.0.0",
         "Serilog.Sinks.RollingFile": "3.0.0"
       }
     }

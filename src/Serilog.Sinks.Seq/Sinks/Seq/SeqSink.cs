@@ -45,6 +45,7 @@ namespace Serilog.Sinks.Seq
 
         public const int DefaultBatchPostingLimit = 1000;
         public static readonly TimeSpan DefaultPeriod = TimeSpan.FromSeconds(2);
+        public const int DefaultQueueSizeLimit = 100000;
 
         public SeqSink(
             string serverUrl,
@@ -54,8 +55,9 @@ namespace Serilog.Sinks.Seq
             long? eventBodyLimitBytes,
             LoggingLevelSwitch levelControlSwitch,
             HttpMessageHandler messageHandler,
-            bool useCompactFormat)
-            : base(batchPostingLimit, period)
+            bool useCompactFormat,
+            int queueSizeLimit)
+            : base(batchPostingLimit, period, queueSizeLimit)
         {
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
             _apiKey = apiKey;

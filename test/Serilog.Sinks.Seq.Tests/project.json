@@ -7,7 +7,8 @@
     "Newtonsoft.Json": "8.0.3"
   },
   "buildOptions": {
-    "keyFile": "../../assets/Serilog.snk"
+    "keyFile": "../../assets/Serilog.snk",
+    "warningsAsErrors": true
   },
   "frameworks": {
     "net4.5.2": { },

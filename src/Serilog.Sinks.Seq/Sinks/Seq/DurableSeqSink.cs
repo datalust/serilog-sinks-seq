@@ -72,9 +72,7 @@ namespace Serilog.Sinks.Seq
         {
             // This is a lagging indicator, but the network bandwidth usage benefits
             // are worth the ambiguity.
-            var minimumAcceptedLevel = _shipper.MinimumAcceptedLevel;
-            if (minimumAcceptedLevel == null ||
-                (int)minimumAcceptedLevel <= (int)logEvent.Level)
+            if (_shipper.IsIncluded(logEvent))
             {
                 _sink.Emit(logEvent);
             }

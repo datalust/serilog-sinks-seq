@@ -50,7 +50,7 @@ namespace Serilog.Sinks.Seq
         readonly object _stateLock = new object();
         readonly PortableTimer _timer;
 
-        LoggingLevelSwitch _levelControlSwitch;
+        ControlledLevelSwitch _controlledSwitch;
         DateTime _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
         volatile bool _unloading;
 
@@ -68,7 +68,7 @@ namespace Serilog.Sinks.Seq
             _apiKey = apiKey;
             _batchPostingLimit = batchPostingLimit;
             _eventBodyLimitBytes = eventBodyLimitBytes;
-            _levelControlSwitch = levelControlSwitch;
+            _controlledSwitch = new ControlledLevelSwitch(levelControlSwitch);
             _connectionSchedule = new ExponentialBackoffConnectionSchedule(period);
             _retainedInvalidPayloadsLimitBytes = retainedInvalidPayloadsLimitBytes;
             _httpClient = messageHandler != null ?
@@ -100,35 +100,14 @@ namespace Serilog.Sinks.Seq
             OnTick().ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
-        /// <summary>
-        /// Get the last "minimum level" indicated by the Seq server, if any.
-        /// </summary>
-        public LogEventLevel? MinimumAcceptedLevel
+        public bool IsIncluded(LogEvent logEvent)
         {
-            get
-            {
-                lock (_stateLock)
-                    return _levelControlSwitch?.MinimumLevel;
-            }
+            return _controlledSwitch.IsIncluded(logEvent);
         }
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        /// <filterpriority>2</filterpriority>
+        /// <inheritdoc/>
         public void Dispose()
         {
-            Dispose(true);
-        }
-
-        /// <summary>
-        /// Free resources held by the sink.
-        /// </summary>
-        /// <param name="disposing">If true, called because the object is being disposed; if false,
-        /// the object is being disposed from the finalizer.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposing) return;
             CloseAndFlush();
         }
 
@@ -172,7 +151,7 @@ namespace Serilog.Sinks.Seq
 
                         var payload = ReadPayload(currentFile, ref nextLineBeginsAtOffset, ref count);
 
-                        if (count > 0 || _levelControlSwitch != null && _nextRequiredLevelCheckUtc < DateTime.UtcNow)
+                        if (count > 0 || _controlledSwitch.IsActive && _nextRequiredLevelCheckUtc < DateTime.UtcNow)
                         {
                             lock (_stateLock)
                             {
@@ -244,7 +223,7 @@ namespace Serilog.Sinks.Seq
             {
                 lock (_stateLock)
                 {
-                    UpdateLevelControlSwitch(minimumAcceptedLevel);
+                    _controlledSwitch.Update(minimumAcceptedLevel);
 
                     if (!_unloading)
                         SetTimer();
@@ -312,22 +291,6 @@ namespace Serilog.Sinks.Seq
                 {
                     SelfLog.WriteLine("Exception '{0}' thrown while trying to delete file {1}", ex.Message, fileToDelete.FullName);
                 }
-            }
-        }
-
-        void UpdateLevelControlSwitch(LogEventLevel? minimumAcceptedLevel)
-        {
-            if (minimumAcceptedLevel == null)
-            {
-                if (_levelControlSwitch != null)
-                    _levelControlSwitch.MinimumLevel = LevelAlias.Minimum;
-            }
-            else
-            {
-                if (_levelControlSwitch == null)
-                    _levelControlSwitch = new LoggingLevelSwitch(minimumAcceptedLevel.Value);
-                else
-                    _levelControlSwitch.MinimumLevel = minimumAcceptedLevel.Value;
             }
         }
 

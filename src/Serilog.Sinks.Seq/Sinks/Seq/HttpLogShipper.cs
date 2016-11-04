@@ -97,7 +97,7 @@ namespace Serilog.Sinks.Seq
 
             _timer.Dispose();
 
-            OnTick().ConfigureAwait(false).GetAwaiter().GetResult();
+            OnTick().GetAwaiter().GetResult();
         }
 
         public bool IsIncluded(LogEvent logEvent)
@@ -162,12 +162,12 @@ namespace Serilog.Sinks.Seq
                             if (!string.IsNullOrWhiteSpace(_apiKey))
                                 content.Headers.Add(SeqApi.ApiKeyHeaderName, _apiKey);
 
-                            var result = await _httpClient.PostAsync(SeqApi.BulkUploadResource, content);
+                            var result = await _httpClient.PostAsync(SeqApi.BulkUploadResource, content).ConfigureAwait(false);
                             if (result.IsSuccessStatusCode)
                             {
                                 _connectionSchedule.MarkSuccess();
                                 WriteBookmark(bookmark, nextLineBeginsAtOffset, currentFile);
-                                var returned = await result.Content.ReadAsStringAsync();
+                                var returned = await result.Content.ReadAsStringAsync().ConfigureAwait(false);
                                 minimumAcceptedLevel = SeqApi.ReadEventInputResult(returned);
                             }
                             else if (result.StatusCode == HttpStatusCode.BadRequest ||
@@ -176,14 +176,14 @@ namespace Serilog.Sinks.Seq
                                 // The connection attempt was successful - the payload we sent was the problem.
                                 _connectionSchedule.MarkSuccess();
 
-                                await DumpInvalidPayload(result, payload);
+                                await DumpInvalidPayload(result, payload).ConfigureAwait(false);
 
                                 WriteBookmark(bookmark, nextLineBeginsAtOffset, currentFile);
                             }
                             else
                             {
                                 _connectionSchedule.MarkFailure();
-                                SelfLog.WriteLine("Received failed HTTP shipping result {0}: {1}", result.StatusCode, await result.Content.ReadAsStringAsync());
+                                SelfLog.WriteLine("Received failed HTTP shipping result {0}: {1}", result.StatusCode, await result.Content.ReadAsStringAsync().ConfigureAwait(false));
                                 break;
                             }
                         }

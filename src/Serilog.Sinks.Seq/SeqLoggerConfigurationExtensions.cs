@@ -54,6 +54,9 @@ namespace Serilog
         /// <param name="compact">Use the compact log event format defined by
         /// <a href="https://github.com/serilog/serilog-formatting-compact">Serilog.Formatting.Compact</a>. Has no effect on
         /// durable log shipping. Requires Seq 3.3+.</param>
+        /// <param name="queueSizeLimit">The maximum number of events that will be held in-memory while waiting to ship them to
+        /// Seq. Beyond this limit, events will be dropped. The default is 100,000. Has no effect on
+        /// durable log shipping.</param>
         /// <returns>Logger configuration, allowing configuration to continue.</returns>
         /// <exception cref="ArgumentNullException">A required parameter is null.</exception>
         public static LoggerConfiguration Seq(
@@ -69,12 +72,15 @@ namespace Serilog
             LoggingLevelSwitch controlLevelSwitch = null,
             HttpMessageHandler messageHandler = null,
             long? retainedInvalidPayloadsLimitBytes = null,
-            bool compact = false)
+            bool compact = false,
+            int queueSizeLimit = SeqSink.DefaultQueueSizeLimit)
         {
             if (loggerSinkConfiguration == null) throw new ArgumentNullException(nameof(loggerSinkConfiguration));
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
             if (bufferFileSizeLimitBytes.HasValue && bufferFileSizeLimitBytes < 0)
-                throw new ArgumentException("Negative value provided; file size limit must be non-negative");
+                throw new ArgumentOutOfRangeException(nameof(bufferFileSizeLimitBytes), "Negative value provided; file size limit must be non-negative.");
+            if (queueSizeLimit < 0)
+                throw new ArgumentOutOfRangeException(nameof(queueSizeLimit), "Queue size limit must be non-zero.");
 
             var defaultedPeriod = period ?? SeqSink.DefaultPeriod;
 
@@ -90,7 +96,8 @@ namespace Serilog
                     eventBodyLimitBytes,
                     controlLevelSwitch,
                     messageHandler,
-                    compact);
+                    compact,
+                    queueSizeLimit);
             }
             else
             {

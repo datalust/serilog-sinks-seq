@@ -88,3 +88,42 @@ Seq 3.3 accepts Serilog's more efficient [compact JSON format](https://github.co
 ```csharp
     .WriteTo.Seq("http://localhost:5341", compact: true)
 ```
+
+### Troubleshooting
+
+> Nothing showed up, what can I do?
+
+If events don't appear in Seq after pressing the refresh button in the _filter bar_, either your application was unable to contact the Seq server, or else the Seq server rejected the log events for some reason.
+
+#### Server-side issues
+
+The Seq server may reject incoming events if they're missing a required API key, if the payload is corrupted somehow, or if the log events are too large to accept.
+
+Server-side issues are diagnosed using the Seq _Ingestion Log_, which shows the details of any problems detected on the server side. The ingestion log is linked from the _Settings_ > _Diagnostics_ page in the Seq user interface.
+
+#### Client-side issues
+
+If there's no information in the ingestion log, the application was probably unable to reach the server because of network configuration or connectivity issues. These are reported to the application through Serilog's `SelfLog`.
+
+Add the following line after the logger is configured to print any error information to the console:
+
+```csharp
+Serilog.Debugging.SelfLog.Enable(Console.Error);
+```
+
+If the console is not available, you can pass a delegate into `SelfLog.Enable()` that will be called with each error message:
+
+```csharp
+Serilog.Debugging.SelfLog.Enable(message => {
+    // Do something with `message`
+});
+```
+
+#### Troubleshooting checklist
+
+ * Check the Seq _Ingestion Log_, as described in the _Server-side issues_ section above.
+ * Turn on the Serilog `SelfLog` as described above to check for connectivity problems and other issues on the client side.
+ * Make sure your application calls `Log.CloseAndFlush()`, or disposes the root `Logger`, before it exits - otherwise, buffered events may be lost.
+ * If your app is a Windows console application, it is also important to close the console window by exiting the app; Windows console apps are terminated "hard" if the close button in the title bar is used, so events buffered for sending to Seq may be lost if you use it.
+ * [Raise an issue](https://github.com/serilog/serilog-sinks-seq/issues), ask for help on the [Seq support forum](http://docs.getseq.net/discuss) or email **support@getseq.net**.
+ 

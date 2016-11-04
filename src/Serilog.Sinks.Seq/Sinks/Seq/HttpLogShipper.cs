@@ -19,15 +19,17 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading;
 using Serilog.Core;
 using Serilog.Debugging;
 using Serilog.Events;
 using IOFile = System.IO.File;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+
+#if HRESULTS
+using System.Runtime.InteropServices;
+#endif
 
 namespace Serilog.Sinks.Seq
 {
@@ -46,14 +48,9 @@ namespace Serilog.Sinks.Seq
         readonly long? _retainedInvalidPayloadsLimitBytes;
 
         readonly object _stateLock = new object();
-
-#if !WAITABLE_TIMER
         readonly PortableTimer _timer;
-#else
-        readonly Timer _timer;
-#endif
 
-        LoggingLevelSwitch _levelControlSwitch;
+        ControlledLevelSwitch _controlledSwitch;
         DateTime _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
         volatile bool _unloading;
 
@@ -71,7 +68,7 @@ namespace Serilog.Sinks.Seq
             _apiKey = apiKey;
             _batchPostingLimit = batchPostingLimit;
             _eventBodyLimitBytes = eventBodyLimitBytes;
-            _levelControlSwitch = levelControlSwitch;
+            _controlledSwitch = new ControlledLevelSwitch(levelControlSwitch);
             _connectionSchedule = new ExponentialBackoffConnectionSchedule(period);
             _retainedInvalidPayloadsLimitBytes = retainedInvalidPayloadsLimitBytes;
             _httpClient = messageHandler != null ?
@@ -83,11 +80,7 @@ namespace Serilog.Sinks.Seq
             _logFolder = Path.GetDirectoryName(_bookmarkFilename);
             _candidateSearchPath = Path.GetFileName(bufferBaseFilename) + "*.json";
 
-#if !WAITABLE_TIMER
             _timer = new PortableTimer(c => OnTick());
-#else
-            _timer = new Timer(s => OnTick());
-#endif
 
             SetTimer();
         }
@@ -101,61 +94,30 @@ namespace Serilog.Sinks.Seq
 
                 _unloading = true;
             }
-#if !WAITABLE_TIMER
+
             _timer.Dispose();
-#else
-            var wh = new ManualResetEvent(false);
-            if (_timer.Dispose(wh))
-                wh.WaitOne();
-#endif
 
-            OnTick();
+            OnTick().ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
-        /// <summary>
-        /// Get the last "minimum level" indicated by the Seq server, if any.
-        /// </summary>
-        public LogEventLevel? MinimumAcceptedLevel
+        public bool IsIncluded(LogEvent logEvent)
         {
-            get
-            {
-                lock (_stateLock)
-                    return _levelControlSwitch?.MinimumLevel;
-            }
+            return _controlledSwitch.IsIncluded(logEvent);
         }
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        /// <filterpriority>2</filterpriority>
+        /// <inheritdoc/>
         public void Dispose()
         {
-            Dispose(true);
-        }
-
-        /// <summary>
-        /// Free resources held by the sink.
-        /// </summary>
-        /// <param name="disposing">If true, called because the object is being disposed; if false,
-        /// the object is being disposed from the finalizer.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposing) return;
             CloseAndFlush();
         }
 
         void SetTimer()
         {
             // Note, called under _stateLock
-
-#if !WAITABLE_TIMER
             _timer.Start(_connectionSchedule.NextInterval);
-#else
-            _timer.Change(_connectionSchedule.NextInterval, Timeout.InfiniteTimeSpan);
-#endif
         }
 
-        void OnTick()
+        async Task OnTick()
         {
             LogEventLevel? minimumAcceptedLevel = null;
 
@@ -189,7 +151,7 @@ namespace Serilog.Sinks.Seq
 
                         var payload = ReadPayload(currentFile, ref nextLineBeginsAtOffset, ref count);
 
-                        if (count > 0 || _levelControlSwitch != null && _nextRequiredLevelCheckUtc < DateTime.UtcNow)
+                        if (count > 0 || _controlledSwitch.IsActive && _nextRequiredLevelCheckUtc < DateTime.UtcNow)
                         {
                             lock (_stateLock)
                             {
@@ -200,12 +162,12 @@ namespace Serilog.Sinks.Seq
                             if (!string.IsNullOrWhiteSpace(_apiKey))
                                 content.Headers.Add(SeqApi.ApiKeyHeaderName, _apiKey);
 
-                            var result = _httpClient.PostAsync(SeqApi.BulkUploadResource, content).Result;
+                            var result = await _httpClient.PostAsync(SeqApi.BulkUploadResource, content);
                             if (result.IsSuccessStatusCode)
                             {
                                 _connectionSchedule.MarkSuccess();
                                 WriteBookmark(bookmark, nextLineBeginsAtOffset, currentFile);
-                                var returned = result.Content.ReadAsStringAsync().Result;
+                                var returned = await result.Content.ReadAsStringAsync();
                                 minimumAcceptedLevel = SeqApi.ReadEventInputResult(returned);
                             }
                             else if (result.StatusCode == HttpStatusCode.BadRequest ||
@@ -214,14 +176,14 @@ namespace Serilog.Sinks.Seq
                                 // The connection attempt was successful - the payload we sent was the problem.
                                 _connectionSchedule.MarkSuccess();
 
-                                DumpInvalidPayload(result, payload).Wait();
+                                await DumpInvalidPayload(result, payload);
 
                                 WriteBookmark(bookmark, nextLineBeginsAtOffset, currentFile);
                             }
                             else
                             {
                                 _connectionSchedule.MarkFailure();
-                                SelfLog.WriteLine("Received failed HTTP shipping result {0}: {1}", result.StatusCode, result.Content.ReadAsStringAsync().Result);
+                                SelfLog.WriteLine("Received failed HTTP shipping result {0}: {1}", result.StatusCode, await result.Content.ReadAsStringAsync());
                                 break;
                             }
                         }
@@ -261,7 +223,7 @@ namespace Serilog.Sinks.Seq
             {
                 lock (_stateLock)
                 {
-                    UpdateLevelControlSwitch(minimumAcceptedLevel);
+                    _controlledSwitch.Update(minimumAcceptedLevel);
 
                     if (!_unloading)
                         SetTimer();
@@ -332,22 +294,6 @@ namespace Serilog.Sinks.Seq
             }
         }
 
-        void UpdateLevelControlSwitch(LogEventLevel? minimumAcceptedLevel)
-        {
-            if (minimumAcceptedLevel == null)
-            {
-                if (_levelControlSwitch != null)
-                    _levelControlSwitch.MinimumLevel = LevelAlias.Minimum;
-            }
-            else
-            {
-                if (_levelControlSwitch == null)
-                    _levelControlSwitch = new LoggingLevelSwitch(minimumAcceptedLevel.Value);
-                else
-                    _levelControlSwitch.MinimumLevel = minimumAcceptedLevel.Value;
-            }
-        }
-
         string ReadPayload(string currentFile, ref long nextLineBeginsAtOffset, ref int count)
         {
             var payload = new StringWriter();
@@ -394,6 +340,7 @@ namespace Serilog.Sinks.Seq
                     return fileStream.Length <= maxLen;
                 }
             }
+#if HRESULTS
             catch (IOException ex)
             {
                 var errorCode = Marshal.GetHRForException(ex) & ((1 << 16) - 1);
@@ -402,6 +349,12 @@ namespace Serilog.Sinks.Seq
                     SelfLog.WriteLine("Unexpected I/O exception while testing locked status of {0}: {1}", file, ex);
                 }
             }
+#else
+            catch (IOException)
+            {
+                // Where no HRESULT is available, assume IOExceptions indicate a locked file
+            }
+#endif
             catch (Exception ex)
             {
                 SelfLog.WriteLine("Unexpected exception while testing locked status of {0}: {1}", file, ex);

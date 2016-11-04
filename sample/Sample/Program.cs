@@ -23,7 +23,7 @@ namespace Sample
 
             Log.Information("Sample starting up");
 
-            foreach (var i in Enumerable.Range(0, 1000))
+            foreach (var i in Enumerable.Range(0, 10))
             {
                 Log.Information("Running loop {Counter}", i);
 

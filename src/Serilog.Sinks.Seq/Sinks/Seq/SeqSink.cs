@@ -30,21 +30,20 @@ namespace Serilog.Sinks.Seq
 {
     class SeqSink : PeriodicBatchingSink
     {
+        public const int DefaultBatchPostingLimit = 1000;
+        public static readonly TimeSpan DefaultPeriod = TimeSpan.FromSeconds(2);
+        public const int DefaultQueueSizeLimit = 100000;
+
+        static readonly TimeSpan RequiredLevelCheckInterval = TimeSpan.FromMinutes(2);
+        static readonly JsonValueFormatter JsonValueFormatter = new JsonValueFormatter();
+
         readonly string _apiKey;
         readonly long? _eventBodyLimitBytes;
         readonly HttpClient _httpClient;
-
-        static readonly JsonValueFormatter JsonValueFormatter = new JsonValueFormatter();
-
-        // If non-null, then background level checks will be performed; set either through the constructor
-        // or in response to a level specification from the server. Never set to null after being made non-null.
-        LoggingLevelSwitch _levelControlSwitch;
         readonly bool _useCompactFormat;
-        static readonly TimeSpan RequiredLevelCheckInterval = TimeSpan.FromMinutes(2);
-        DateTime _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
 
-        public const int DefaultBatchPostingLimit = 1000;
-        public static readonly TimeSpan DefaultPeriod = TimeSpan.FromSeconds(2);
+        DateTime _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
+        ControlledLevelSwitch _controlledSwitch;
 
         public SeqSink(
             string serverUrl,
@@ -54,13 +53,14 @@ namespace Serilog.Sinks.Seq
             long? eventBodyLimitBytes,
             LoggingLevelSwitch levelControlSwitch,
             HttpMessageHandler messageHandler,
-            bool useCompactFormat)
-            : base(batchPostingLimit, period)
+            bool useCompactFormat,
+            int queueSizeLimit)
+            : base(batchPostingLimit, period, queueSizeLimit)
         {
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
             _apiKey = apiKey;
             _eventBodyLimitBytes = eventBodyLimitBytes;
-            _levelControlSwitch = levelControlSwitch;
+            _controlledSwitch = new ControlledLevelSwitch(levelControlSwitch);
             _useCompactFormat = useCompactFormat;
             _httpClient = messageHandler != null ? new HttpClient(messageHandler) : new HttpClient();
             _httpClient.BaseAddress = new Uri(SeqApi.NormalizeServerBaseAddress(serverUrl));
@@ -78,7 +78,7 @@ namespace Serilog.Sinks.Seq
         // configured to set a specific level, before background level checks will be performed.
         protected override void OnEmptyBatch()
         {
-            if (_levelControlSwitch != null &&
+            if (_controlledSwitch.IsActive &&
                 _nextRequiredLevelCheckUtc < DateTime.UtcNow)
             {
                 EmitBatch(Enumerable.Empty<LogEvent>());
@@ -110,19 +110,7 @@ namespace Serilog.Sinks.Seq
                 throw new LoggingFailedException($"Received failed result {result.StatusCode} when posting events to Seq");
 
             var returned = await result.Content.ReadAsStringAsync();
-            var minimumAcceptedLevel = SeqApi.ReadEventInputResult(returned);
-            if (minimumAcceptedLevel == null)
-            {
-                if (_levelControlSwitch != null)
-                    _levelControlSwitch.MinimumLevel = LevelAlias.Minimum;
-            }
-            else
-            {
-                if (_levelControlSwitch == null)
-                    _levelControlSwitch = new LoggingLevelSwitch(minimumAcceptedLevel.Value);
-                else
-                    _levelControlSwitch.MinimumLevel = minimumAcceptedLevel.Value;
-            }
+            _controlledSwitch.Update(SeqApi.ReadEventInputResult(returned));
         }
 
         internal static string FormatCompactPayload(IEnumerable<LogEvent> events, long? eventBodyLimitBytes)
@@ -188,9 +176,7 @@ namespace Serilog.Sinks.Seq
 
         protected override bool CanInclude(LogEvent evt)
         {
-            var levelControlSwitch = _levelControlSwitch;
-            return levelControlSwitch == null ||
-                (int)levelControlSwitch.MinimumLevel <= (int)evt.Level;
+            return _controlledSwitch.IsIncluded(evt);
         }
 
         static bool CheckEventBodySize(string json, long? eventBodyLimitBytes)

@@ -1,5 +1,5 @@
 {
-  "version": "3.1.2-*",
+  "version": "3.2.0-*",
   "description": "Serilog sink that writes to the Seq log server over HTTP/S.",
   "authors": [ "Serilog Contributors" ],
   "packOptions": {
@@ -27,8 +27,8 @@
         "System.Net.Http": ""
       },
       "dependencies": {
-        "Serilog.Sinks.File": "3.1.1",
-        "Serilog.Sinks.RollingFile": "3.0.0"
+        "Serilog.Sinks.File": "3.2.0",
+        "Serilog.Sinks.RollingFile": "3.3.0"
       }
     },
     "netstandard1.1": {
@@ -42,8 +42,8 @@
       },
       "dependencies": {
         "System.Net.Http": "4.1.0",
-        "Serilog.Sinks.File": "3.1.1",
-        "Serilog.Sinks.RollingFile": "3.0.0",
+        "Serilog.Sinks.File": "3.2.0",
+        "Serilog.Sinks.RollingFile": "3.3.0",
         "System.Threading.Timer": "4.0.1"
       }
     }

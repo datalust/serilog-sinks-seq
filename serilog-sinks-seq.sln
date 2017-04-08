@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{037440DE-440B-4129-9F7A-09B42D00397E}"
 EndProject
@@ -10,20 +10,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "assets", "assets", "{E9D1B5
 		.editorconfig = .editorconfig
 		appveyor.yml = appveyor.yml
 		Build.ps1 = Build.ps1
-		global.json = global.json
 		README.md = README.md
 		assets\Serilog.snk = assets\Serilog.snk
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Serilog.Sinks.Seq", "src\Serilog.Sinks.Seq\Serilog.Sinks.Seq.xproj", "{D8A74F4C-981B-41F1-B807-FE08DFCC06D4}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sample", "sample", "{88A3ECD1-D91A-49A2-A6D7-5A70973A0E3F}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Sample", "sample\Sample\Sample.xproj", "{17497155-5D94-45DF-81D9-BD960E8CF217}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{67B1C971-75EE-4ABE-B184-66AAC8D9D572}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Serilog.Sinks.Seq.Tests", "test\Serilog.Sinks.Seq.Tests\Serilog.Sinks.Seq.Tests.xproj", "{3C2D8E01-5580-426A-BDD9-EC59CD98E618}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serilog.Sinks.Seq", "src\Serilog.Sinks.Seq\Serilog.Sinks.Seq.csproj", "{D8A74F4C-981B-41F1-B807-FE08DFCC06D4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample", "sample\Sample\Sample.csproj", "{17497155-5D94-45DF-81D9-BD960E8CF217}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serilog.Sinks.Seq.Tests", "test\Serilog.Sinks.Seq.Tests\Serilog.Sinks.Seq.Tests.csproj", "{3C2D8E01-5580-426A-BDD9-EC59CD98E618}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -43,7 +43,7 @@ namespace Serilog.Sinks.Seq
         readonly bool _useCompactFormat;
 
         DateTime _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
-        ControlledLevelSwitch _controlledSwitch;
+        readonly ControlledLevelSwitch _controlledSwitch;
 
         public SeqSink(
             string serverUrl,

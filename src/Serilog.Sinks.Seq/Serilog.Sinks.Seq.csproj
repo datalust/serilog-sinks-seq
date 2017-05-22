@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Serilog sink that writes to the Seq log server over HTTP/HTTPS.</Description>
-    <VersionPrefix>3.3.0</VersionPrefix>
+    <VersionPrefix>3.3.1</VersionPrefix>
     <Authors>Serilog Contributors</Authors>
     <Copyright>Copyright © Serilog Contributors 2013-2017</Copyright>
     <TargetFrameworks>netstandard1.1;netstandard1.3;net45;net46</TargetFrameworks>
@@ -17,7 +17,7 @@
     <PackageIconUrl>https://serilog.net/images/serilog-sink-seq-nuget.png</PackageIconUrl>
     <PackageProjectUrl>https://github.com/serilog/serilog-sinks-seq</PackageProjectUrl>
     <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
-    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyVersionAttribute>true</GenerateAssemblyVersionAttribute>
   </PropertyGroup>
   
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">

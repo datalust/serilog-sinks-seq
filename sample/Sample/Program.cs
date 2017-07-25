@@ -17,7 +17,7 @@ namespace Sample
                 .MinimumLevel.ControlledBy(levelSwitch)
                 .WriteTo.LiterateConsole()
                 .WriteTo.Seq("http://localhost:5341",
-                             apiKey: "yeEZyL3SMcxEKUijBjN",
+                             apiKey: "o6nYf3WWnzF43Uu5PZWJ",
                              controlLevelSwitch: levelSwitch)
                 .CreateLogger();
 
@@ -25,7 +25,7 @@ namespace Sample
 
             foreach (var i in Enumerable.Range(0, 1000))
             {
-                Log.Information("Running loop {Counter}", i);
+                Log.Information("Running loop {Counter}, switch is at {Level}", i, levelSwitch.MinimumLevel);
 
                 Thread.Sleep(1000);
                 Log.Debug("Loop iteration done");

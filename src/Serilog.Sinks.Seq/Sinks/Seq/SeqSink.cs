@@ -76,12 +76,12 @@ namespace Serilog.Sinks.Seq
 
         // The sink must emit at least one event on startup, and the server be
         // configured to set a specific level, before background level checks will be performed.
-        protected override void OnEmptyBatch()
+        protected override async Task OnEmptyBatchAsync()
         {
             if (_controlledSwitch.IsActive &&
                 _nextRequiredLevelCheckUtc < DateTime.UtcNow)
             {
-                EmitBatch(Enumerable.Empty<LogEvent>());
+                await EmitBatchAsync(Enumerable.Empty<LogEvent>());
             }
         }
 

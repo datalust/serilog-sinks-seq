@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Serilog sink that writes to the Seq log server over HTTP/HTTPS.</Description>
-    <VersionPrefix>3.3.3</VersionPrefix>
+    <VersionPrefix>3.3.4</VersionPrefix>
     <Authors>Serilog Contributors</Authors>
     <Copyright>Copyright © Serilog Contributors 2013-2017</Copyright>
     <TargetFrameworks>netstandard1.1;netstandard1.3;net45;net46</TargetFrameworks>

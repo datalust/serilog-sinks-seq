@@ -42,16 +42,20 @@ namespace Serilog.Sinks.Seq
         readonly long? _eventBodyLimitBytes;
         readonly string _bookmarkFilename;
         readonly string _logFolder;
-        readonly HttpClient _httpClient;
         readonly string _candidateSearchPath;
-        readonly ExponentialBackoffConnectionSchedule _connectionSchedule;
         readonly long? _retainedInvalidPayloadsLimitBytes;
 
+        // Timer thread only
+        readonly HttpClient _httpClient;
+        readonly ExponentialBackoffConnectionSchedule _connectionSchedule;
+        DateTime _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
+
+        // Synchronized
         readonly object _stateLock = new object();
         readonly PortableTimer _timer;
 
-        ControlledLevelSwitch _controlledSwitch;
-        DateTime _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
+        // Concurrent
+        readonly ControlledLevelSwitch _controlledSwitch;
         volatile bool _unloading;
 
         public HttpLogShipper(
@@ -119,8 +123,6 @@ namespace Serilog.Sinks.Seq
 
         async Task OnTick()
         {
-            LogEventLevel? minimumAcceptedLevel = null;
-
             try
             {
                 int count;
@@ -153,10 +155,7 @@ namespace Serilog.Sinks.Seq
 
                         if (count > 0 || _controlledSwitch.IsActive && _nextRequiredLevelCheckUtc < DateTime.UtcNow)
                         {
-                            lock (_stateLock)
-                            {
-                                _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
-                            }
+                            _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
 
                             var content = new StringContent(payload, Encoding.UTF8, "application/json");
                             if (!string.IsNullOrWhiteSpace(_apiKey))
@@ -168,7 +167,8 @@ namespace Serilog.Sinks.Seq
                                 _connectionSchedule.MarkSuccess();
                                 WriteBookmark(bookmark, nextLineBeginsAtOffset, currentFile);
                                 var returned = await result.Content.ReadAsStringAsync().ConfigureAwait(false);
-                                minimumAcceptedLevel = SeqApi.ReadEventInputResult(returned);
+                                var minimumAcceptedLevel = SeqApi.ReadEventInputResult(returned);
+                                _controlledSwitch.Update(minimumAcceptedLevel);
                             }
                             else if (result.StatusCode == HttpStatusCode.BadRequest ||
                                      result.StatusCode == HttpStatusCode.RequestEntityTooLarge)
@@ -223,8 +223,6 @@ namespace Serilog.Sinks.Seq
             {
                 lock (_stateLock)
                 {
-                    _controlledSwitch.Update(minimumAcceptedLevel);
-
                     if (!_unloading)
                         SetTimer();
                 }

@@ -17,7 +17,6 @@ namespace Sample
                 .MinimumLevel.ControlledBy(levelSwitch)
                 .WriteTo.LiterateConsole()
                 .WriteTo.Seq("http://localhost:5341",
-                             apiKey: "o6nYf3WWnzF43Uu5PZWJ",
                              controlLevelSwitch: levelSwitch)
                 .CreateLogger();
 

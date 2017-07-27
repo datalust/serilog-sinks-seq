@@ -3,7 +3,7 @@ using System.Net.Http;
 using Serilog.Debugging;
 using Xunit;
 
-namespace Serilog.Sinks.Seq.Tests
+namespace Serilog.Sinks.Seq.Tests.Audit
 {
     public class SeqAuditSinkTests
     {

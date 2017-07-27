@@ -23,7 +23,7 @@ using Serilog.Events;
 using Serilog.Formatting.Compact;
 using Serilog.Formatting.Json;
 
-namespace Serilog.Sinks.Seq
+namespace Serilog.Sinks.Seq.Audit
 {
     sealed class SeqAuditSink : ILogEventSink, IDisposable
     {

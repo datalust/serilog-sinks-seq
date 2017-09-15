@@ -15,7 +15,7 @@ namespace Sample
 
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.ControlledBy(levelSwitch)
-                .WriteTo.LiterateConsole()
+                .WriteTo.Console()
                 .WriteTo.Seq("http://localhost:5341",
                              controlLevelSwitch: levelSwitch)
                 .CreateLogger();

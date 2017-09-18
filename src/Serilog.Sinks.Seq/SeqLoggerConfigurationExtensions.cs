@@ -18,6 +18,11 @@ using Serilog.Core;
 using Serilog.Events;
 using Serilog.Sinks.Seq;
 using System.Net.Http;
+using Serilog.Sinks.Seq.Audit;
+
+#if DURABLE
+using Serilog.Sinks.Seq.Durable;
+#endif
 
 namespace Serilog
 {

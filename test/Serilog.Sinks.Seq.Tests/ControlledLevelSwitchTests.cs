@@ -3,6 +3,8 @@ using Serilog.Events;
 using Serilog.Sinks.Seq.Tests.Support;
 using Xunit;
 
+// ReSharper disable RedundantArgumentDefaultValue
+
 namespace Serilog.Sinks.Seq.Tests
 {
     public class ControlledLevelSwitchTests

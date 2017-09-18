@@ -38,7 +38,7 @@ Log.CloseAndFlush();
 
 The sink can take advantage of Seq's [API keys](http://docs.getseq.net/docs/api-keys) to authenticate clients and dynamically attach properties to events at the server-side. To use an API key, specify it in the `apiKey` parameter of `WriteTo.Seq()`.
 
-### Configuring with XML
+### XML `<appSettings>` configuration
 
 To adjust the Seq server URL at deployment time, it's often convenient to configure it using XML `<appSettings>`, in the `App.config` or `Web.config` file.
 
@@ -63,6 +63,41 @@ The settings typically included are:
 ```
 
 Serilog's XML configuration has several other capabilities that are described on the [Serilog wiki](https://github.com/serilog/serilog/wiki/AppSettings).
+
+### JSON `appsettings.json` configuration
+
+To use the Seq sink with _Microsoft.Extensions.Configuration_, for example with ASP.NET Core or .NET Core, use the [Serilog.Settings.Configuration](https://github.com/serilog/serilog-settings-configuration) package. First install that package if you have not already done so:
+
+```powershell
+Install-Package Serilog.Settings.Configuration
+```
+
+Instead of configuring the Seq sink directly in code, call `ReadFrom.Configuration()`:
+
+```csharp
+var configuration = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json")
+    .Build();
+
+var logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(configuration)
+    .CreateLogger();
+```
+
+In your `appsettings.json` file, under the `Serilog` node, :
+
+```json
+{
+  "Serilog": {
+    "WriteTo": [
+      { "Name": "Seq", "Args": { "serverUrl": "http://localhost:5341" } }
+    ]
+  }
+}
+```
+
+See the XML `<appSettings>` example above for a discussion of available `Args` options.
+
 
 ### Dynamic log level control
 

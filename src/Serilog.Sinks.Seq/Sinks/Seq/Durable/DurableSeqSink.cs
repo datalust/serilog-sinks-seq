@@ -21,7 +21,7 @@ using Serilog.Sinks.RollingFile;
 using System.Net.Http;
 using System.Text;
 
-namespace Serilog.Sinks.Seq
+namespace Serilog.Sinks.Seq.Durable
 {
     class DurableSeqSink : ILogEventSink, IDisposable
     {

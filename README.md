@@ -79,6 +79,22 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 ```
 
+The equivalent configuration in XML would be
+
+```xml
+<configuration>
+  <appSettings>
+    <!-- declare the switch -->
+    <add key="serilog:level-switch:$controlSwitch" value="Information" />
+    <!-- use it to control the root logger -->
+    <add key="serilog:minimum-level:controlled-by" value="$controlSwitch" />
+    <add key="serilog:using:Seq" value="Serilog.Sinks.Seq" />
+    <add key="serilog:write-to:Seq.serverUrl" value="http://localhost:5341" />
+    <add key="serilog:write-to:Seq.apiKey" value="yeEZyL3SMcxEKUijBjN" />
+    <!-- give the sink access to the switch -->
+    <add key="serilog:write-to:Seq.controlLevelSwitch" value="$controlSwitch" />
+```
+
 For further information see the [Seq documentation](http://docs.getseq.net/docs/using-serilog#dynamic-level-control).
 
 ### Compact event format

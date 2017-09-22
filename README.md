@@ -79,7 +79,7 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 ```
 
-The equivalent configuration in XML would be
+The equivalent configuration in XML (Serilog 2.6+) is:
 
 ```xml
 <configuration>

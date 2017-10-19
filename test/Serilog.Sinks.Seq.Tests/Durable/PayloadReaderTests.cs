@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.IO;
+using System.Text;
 using Newtonsoft.Json;
 using Serilog.Sinks.Seq.Durable;
 using Serilog.Sinks.Seq.Tests.Support;
@@ -15,7 +16,8 @@ namespace Serilog.Sinks.Seq.Tests.Durable
             using (var tmp = new TempFolder())
             {
                 var fn = tmp.AllocateFilename("json");
-                IOFile.WriteAllText(fn, Resources.ThreeBufferedEvents_json, Encoding.UTF8);
+                var lines = IOFile.ReadAllText(Path.Combine("Resources", "ThreeBufferedEvents.json.txt"));
+                IOFile.WriteAllText(fn, lines, Encoding.UTF8);
                 var position = new FileSetPosition(0, fn);
                 var count = 0;
                 var payload = PayloadReader.ReadPayload(1000, null, ref position, ref count);

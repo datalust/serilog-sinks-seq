@@ -16,7 +16,7 @@ namespace Serilog.Sinks.Seq.Tests.Durable
             using (var tmp = new TempFolder())
             {
                 var fn = tmp.AllocateFilename("json");
-                var lines = IOFile.ReadAllText(Path.Combine("Resources", "ThreeBufferedEvents.json.txt"));
+                var lines = IOFile.ReadAllText(Path.Combine("Resources", "ThreeBufferedEvents.json.txt"), Encoding.UTF8);
                 IOFile.WriteAllText(fn, lines, Encoding.UTF8);
                 var position = new FileSetPosition(0, fn);
                 var count = 0;

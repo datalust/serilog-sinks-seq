@@ -11,7 +11,11 @@ $suffix = @{ $true = ""; $false = "$branch-$revision"}[$branch -eq "master" -and
 foreach ($src in ls src/Serilog.*) {
     Push-Location $src
 
-    & dotnet pack -c Release -o ..\..\.\artifacts --version-suffix=$suffix --include-source
+	if ($suffix) {
+		& dotnet pack -c Release -o ..\..\.\artifacts --version-suffix=$suffix --include-source
+	} else {
+	    & dotnet pack -c Release -o ..\..\.\artifacts --include-source
+	}
     if($LASTEXITCODE -ne 0) { exit 1 }    
 
     Pop-Location

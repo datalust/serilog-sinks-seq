@@ -45,5 +45,10 @@ namespace Serilog.Sinks.Seq.Tests.Support
         {
             return LogEvent(LogEventLevel.Error, null, "Error event");
         }
+
+        public static string String()
+        {
+            return Guid.NewGuid().ToString("n");
+        }
     }
 }

@@ -7,6 +7,14 @@
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Resources\ThreeBufferedEvents.json.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\ThreeBufferedEvents.json.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\..\src\Serilog.Sinks.Seq\Serilog.Sinks.Seq.csproj" />

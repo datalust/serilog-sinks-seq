@@ -32,4 +32,8 @@
     <ProjectReference Include="..\..\src\Serilog.Sinks.Seq\Serilog.Sinks.Seq.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="logs\" />
+  </ItemGroup>
+
 </Project>

@@ -57,6 +57,7 @@ namespace Serilog.Sinks.Seq.Durable
 
             const long individualFileSizeLimitBytes = 100L * 1024 * 1024;
             _sink = new LoggerConfiguration()
+                .MinimumLevel.Verbose()
                 .WriteTo.File(new RawJsonFormatter(),
                         bufferBaseFilename + "-.json",
                         rollingInterval: RollingInterval.Day,

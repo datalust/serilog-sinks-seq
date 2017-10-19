@@ -31,7 +31,7 @@ namespace Serilog.Sinks.Seq.Tests.Durable
                 var payload = PayloadReader.ReadPayload(1000, null, ref position, ref count);
 
                 Assert.Equal(3, count);
-                Assert.Equal(576 + 3 * Environment.NewLine.Length - 1, position.NextLineStart);
+                Assert.Equal(579, position.NextLineStart);
                 Assert.Equal(fn, position.File);
 
                 var data = JsonConvert.DeserializeObject<dynamic>(payload);

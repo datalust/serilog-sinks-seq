@@ -33,13 +33,14 @@ namespace Serilog.Sinks.Seq.Durable
         {
             if (_bookmark.Length != 0)
             {
+                _bookmark.Position = 0;
+
                 // Important not to dispose this StreamReader as the stream must remain open.
                 var reader = new StreamReader(_bookmark, Encoding.UTF8, false, 128);
                 var current = reader.ReadLine();
 
                 if (current != null)
                 {
-                    _bookmark.Position = 0;
                     var parts = current.Split(new[] { ":::" }, StringSplitOptions.RemoveEmptyEntries);
                     if (parts.Length == 2)
                     {
@@ -56,10 +57,14 @@ namespace Serilog.Sinks.Seq.Durable
             if (bookmark.File == null)
                 return;
 
-            using (var writer = new StreamWriter(_bookmark))
-            {
-                writer.WriteLine("{0}:::{1}", bookmark.NextLineStart, bookmark.File);
-            }
+            // Don't need to truncate, since we only ever read a single line and
+            // writes are always newline-terminated
+            _bookmark.Position = 0;
+
+            // Cannot dispose, as `leaveOpen` is not available on all target platforms
+            var writer = new StreamWriter(_bookmark);
+            writer.WriteLine("{0}:::{1}", bookmark.NextLineStart, bookmark.File);
+            writer.Flush();
         }
 
         public void Dispose()

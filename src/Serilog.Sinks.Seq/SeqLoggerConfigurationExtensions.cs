@@ -42,9 +42,10 @@ namespace Serilog
         /// <param name="period">The time to wait between checking for event batches.</param>
         /// <param name="bufferBaseFilename">Path for a set of files that will be used to buffer events until they
         /// can be successfully transmitted across the network. Individual files will be created using the
-        /// pattern <paramref name="bufferBaseFilename"/>-{Date}.json.</param>
+        /// pattern <paramref name="bufferBaseFilename"/>*.json, which should not clash with any other filenames
+        /// in the same directory.</param>
         /// <param name="apiKey">A Seq <i>API key</i> that authenticates the client to the Seq server.</param>
-        /// <param name="bufferFileSizeLimitBytes">The maximum size, in bytes, to which the buffer
+        /// <param name="bufferSizeLimitBytes">The maximum amount of data, in bytes, to which the buffer
         /// log file for a specific date will be allowed to grow. By default no limit will be applied.</param>
         /// <param name="eventBodyLimitBytes">The maximum size, in bytes, that the JSON representation of
         /// an event may take before it is dropped rather than being sent to the Seq server. Specify null for no limit.
@@ -72,7 +73,7 @@ namespace Serilog
             TimeSpan? period = null,
             string apiKey = null,
             string bufferBaseFilename = null,
-            long? bufferFileSizeLimitBytes = null,
+            long? bufferSizeLimitBytes = null,
             long? eventBodyLimitBytes = 256*1024,
             LoggingLevelSwitch controlLevelSwitch = null,
             HttpMessageHandler messageHandler = null,
@@ -82,8 +83,8 @@ namespace Serilog
         {
             if (loggerSinkConfiguration == null) throw new ArgumentNullException(nameof(loggerSinkConfiguration));
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
-            if (bufferFileSizeLimitBytes.HasValue && bufferFileSizeLimitBytes < 0)
-                throw new ArgumentOutOfRangeException(nameof(bufferFileSizeLimitBytes), "Negative value provided; file size limit must be non-negative.");
+            if (bufferSizeLimitBytes.HasValue && bufferSizeLimitBytes < 0)
+                throw new ArgumentOutOfRangeException(nameof(bufferSizeLimitBytes), "Negative value provided; buffer size limit must be non-negative.");
             if (queueSizeLimit < 0)
                 throw new ArgumentOutOfRangeException(nameof(queueSizeLimit), "Queue size limit must be non-zero.");
 
@@ -113,7 +114,7 @@ namespace Serilog
                     apiKey,
                     batchPostingLimit,
                     defaultedPeriod,
-                    bufferFileSizeLimitBytes,
+                    bufferSizeLimitBytes,
                     eventBodyLimitBytes,
                     controlLevelSwitch,
                     messageHandler,

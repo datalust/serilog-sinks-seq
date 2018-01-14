@@ -18,16 +18,14 @@ namespace Serilog.Sinks.Seq.Durable
 {
     struct FileSetPosition
     {
-        readonly string _file;
-        readonly long _nextLineStart;
+        public string File { get; }
 
-        public string File => _file;
-        public long NextLineStart => _nextLineStart;
+        public long NextLineStart { get; }
 
         public FileSetPosition(long nextLineStart, string file)
         {
-            _nextLineStart = nextLineStart;
-            _file = file;
+            NextLineStart = nextLineStart;
+            File = file;
         }
 
         public static readonly FileSetPosition None = default(FileSetPosition);

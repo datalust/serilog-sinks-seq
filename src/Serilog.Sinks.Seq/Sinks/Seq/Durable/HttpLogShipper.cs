@@ -41,6 +41,7 @@ namespace Serilog.Sinks.Seq.Durable
         readonly long? _eventBodyLimitBytes;
         readonly FileSet _fileSet;
         readonly long? _retainedInvalidPayloadsLimitBytes;
+        readonly long? _bufferSizeLimitBytes;
 
         // Timer thread only
         readonly HttpClient _httpClient;
@@ -67,7 +68,8 @@ namespace Serilog.Sinks.Seq.Durable
             long? eventBodyLimitBytes,
             LoggingLevelSwitch levelControlSwitch,
             HttpMessageHandler messageHandler,
-            long? retainedInvalidPayloadsLimitBytes)
+            long? retainedInvalidPayloadsLimitBytes,
+            long? bufferSizeLimitBytes)
         {
             _apiKey = apiKey;
             _batchPostingLimit = batchPostingLimit;
@@ -75,6 +77,7 @@ namespace Serilog.Sinks.Seq.Durable
             _controlledSwitch = new ControlledLevelSwitch(levelControlSwitch);
             _connectionSchedule = new ExponentialBackoffConnectionSchedule(period);
             _retainedInvalidPayloadsLimitBytes = retainedInvalidPayloadsLimitBytes;
+            _bufferSizeLimitBytes = bufferSizeLimitBytes;
             _httpClient = messageHandler != null ? new HttpClient(messageHandler) : new HttpClient();
             _httpClient.BaseAddress = new Uri(SeqApi.NormalizeServerBaseAddress(serverUrl));
             _fileSet = new FileSet(bufferBaseFilename);
@@ -124,13 +127,10 @@ namespace Serilog.Sinks.Seq.Durable
                 {
                     count = 0;
 
-                    // Locking the bookmark ensures that though there may be multiple instances of this
-                    // class running, only one will ship logs at a time.
-
                     using (var bookmarkFile = _fileSet.OpenBookmarkFile())
                     {
                         var position = bookmarkFile.TryReadBookmark();
-                        var files = _fileSet.GetFiles();
+                        var files = _fileSet.GetBufferFiles();
 
                         if (position.File == null || !IOFile.Exists(position.File))
                         {
@@ -180,6 +180,10 @@ namespace Serilog.Sinks.Seq.Durable
                                 _connectionSchedule.MarkFailure();
                                 SelfLog.WriteLine("Received failed HTTP shipping result {0}: {1}", result.StatusCode,
                                     await result.Content.ReadAsStringAsync().ConfigureAwait(false));
+
+                                if (_bufferSizeLimitBytes.HasValue)
+                                    _fileSet.CleanUpBufferFiles(_bufferSizeLimitBytes.Value, 2);
+
                                 break;
                             }
                         }
@@ -195,7 +199,6 @@ namespace Serilog.Sinks.Seq.Durable
 
                             // Only advance the bookmark if no other process has the
                             // current file locked, and its length is as we found it.
-
                             if (files.Length == 2 && files.First() == position.File &&
                                 FileIsUnlockedAndUnextended(position))
                             {
@@ -204,10 +207,8 @@ namespace Serilog.Sinks.Seq.Durable
 
                             if (files.Length > 2)
                             {
-                                // Once there's a third file waiting to ship, we do our
-                                // best to move on, though a lock on the current file
-                                // will delay this.
-
+                                // By this point, we expect writers to have relinquished locks
+                                // on the oldest file.
                                 IOFile.Delete(files[0]);
                             }
                         }
@@ -216,8 +217,11 @@ namespace Serilog.Sinks.Seq.Durable
             }
             catch (Exception ex)
             {
-                SelfLog.WriteLine("Exception while emitting periodic batch from {0}: {1}", this, ex);
                 _connectionSchedule.MarkFailure();
+                SelfLog.WriteLine("Exception while emitting periodic batch from {0}: {1}", this, ex);
+
+                if (_bufferSizeLimitBytes.HasValue)
+                    _fileSet.CleanUpBufferFiles(_bufferSizeLimitBytes.Value, 2);
             }
             finally
             {

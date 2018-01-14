@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using Serilog.Debugging;
 
 namespace Serilog.Sinks.Seq.Durable
@@ -28,6 +29,7 @@ namespace Serilog.Sinks.Seq.Durable
         readonly string _bookmarkFilename;
         readonly string _candidateSearchPath;
         readonly string _logFolder;
+        readonly Regex _filenameMatcher;
 
         const string InvalidPayloadFilePrefix = "invalid-";
 
@@ -37,12 +39,38 @@ namespace Serilog.Sinks.Seq.Durable
 
             _bookmarkFilename = Path.GetFullPath(bufferBaseFilename + ".bookmark");
             _logFolder = Path.GetDirectoryName(_bookmarkFilename);
-            _candidateSearchPath = Path.GetFileName(bufferBaseFilename) + "*.json";
+            _candidateSearchPath = Path.GetFileName(bufferBaseFilename) + "-*.json";
+            _filenameMatcher = new Regex("^" + Regex.Escape(Path.GetFileName(bufferBaseFilename)) + "-(?<date>\\d{8})(?<sequence>_[0-9]{3,}){0,1}\\.json$");
         }
 
         public BookmarkFile OpenBookmarkFile()
         {
             return new BookmarkFile(_bookmarkFilename);
+        }
+
+        public string[] GetBufferFiles()
+        {
+            return Directory.GetFiles(_logFolder, _candidateSearchPath)
+                .Select(n => new KeyValuePair<string, Match>(n, _filenameMatcher.Match(Path.GetFileName(n))))
+                .Where(nm => nm.Value.Success)
+                .OrderBy(nm => nm.Value.Groups["date"].Value, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(nm => int.Parse("0" + nm.Value.Groups["sequence"].Value.Replace("_", "")))
+                .Select(nm => nm.Key)
+                .ToArray();
+        }
+
+        public void CleanUpBufferFiles(long bufferSizeLimitBytes, int alwaysRetainCount)
+        {
+            try
+            {
+                var bufferFiles = GetBufferFiles();
+                Array.Reverse(bufferFiles);
+                DeleteExceedingCumulativeSize(bufferFiles.Select(f => new FileInfo(f)), bufferSizeLimitBytes, 2);
+            }
+            catch (Exception ex)
+            {
+                SelfLog.WriteLine("Exception thrown while cleaning up buffer files: {0}", ex);
+            }
         }
 
         public string MakeInvalidPayloadFilename(HttpStatusCode statusCode)
@@ -55,57 +83,43 @@ namespace Serilog.Sinks.Seq.Durable
         {
             try
             {
-                var candiateFiles = Directory.EnumerateFiles(_logFolder, $"{InvalidPayloadFilePrefix}*.json");
-                DeleteOldFiles(maxNumberOfBytesToRetain, candiateFiles);
+                var candidateFiles = from file in Directory.EnumerateFiles(_logFolder, $"{InvalidPayloadFilePrefix}*.json")
+                                     let candiateFileInfo = new FileInfo(file)
+                                     orderby candiateFileInfo.LastWriteTimeUtc descending
+                                     select candiateFileInfo;
+
+                DeleteExceedingCumulativeSize(candidateFiles, maxNumberOfBytesToRetain, 0);
             }
             catch (Exception ex)
             {
-                SelfLog.WriteLine("Exception thrown while trying to clean up invalid payload files: {0}", ex);
+                SelfLog.WriteLine("Exception thrown while cleaning up invalid payload files: {0}", ex);
             }
         }
 
-        public string[] GetFiles()
-        {
-            return Directory.GetFiles(_logFolder, _candidateSearchPath)
-                .OrderBy(n => n)
-                .ToArray();
-        }
-
-        static void DeleteOldFiles(long maxNumberOfBytesToRetain, IEnumerable<string> files)
-        {
-            var orderedFileInfos = from candiateFile in files
-                let candiateFileInfo = new FileInfo(candiateFile)
-                orderby candiateFileInfo.LastAccessTimeUtc descending
-                select candiateFileInfo;
-
-            var invalidPayloadFilesToDelete = WhereCumulativeSizeGreaterThan(orderedFileInfos, maxNumberOfBytesToRetain);
-
-            foreach (var fileToDelete in invalidPayloadFilesToDelete)
-            {
-                try
-                {
-                    fileToDelete.Delete();
-                }
-                catch (Exception ex)
-                {
-                    SelfLog.WriteLine("Exception '{0}' thrown while trying to delete file {1}", ex.Message, fileToDelete.FullName);
-                }
-            }
-        }
-        
-        static IEnumerable<FileInfo> WhereCumulativeSizeGreaterThan(IEnumerable<FileInfo> files, long maxCumulativeSize)
+        static void DeleteExceedingCumulativeSize(IEnumerable<FileInfo> files, long maxNumberOfBytesToRetain, int alwaysRetainCount)
         {
             long cumulative = 0;
+            var i = 0;
             foreach (var file in files)
             {
                 cumulative += file.Length;
-                if (cumulative > maxCumulativeSize)
+
+                if (i++ < alwaysRetainCount)
+                    continue;
+
+                if (cumulative <= maxNumberOfBytesToRetain)
+                    continue;
+
+                try
                 {
-                    yield return file;
+                    file.Delete();
+                }
+                catch (Exception ex)
+                {
+                    SelfLog.WriteLine("Exception thrown while trying to delete file {0}: {1}", file.FullName, ex);
                 }
             }
         }
-
     }
 }
 

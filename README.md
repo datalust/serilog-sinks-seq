@@ -130,6 +130,28 @@ The equivalent configuration in XML (Serilog 2.6+) is:
     <add key="serilog:write-to:Seq.controlLevelSwitch" value="$controlSwitch" />
 ```
 
+The equivalent configuration in JSON is:
+
+```json
+{
+    "Serilog":
+    {
+        "LevelSwitches": { "$controlSwitch": "Information" },
+        "MinimumLevel": { "ControlledBy": "$controlSwitch" },
+        "WriteTo":
+        [{
+            "Name": "Seq",
+            "Args":
+            {
+                "serverUrl": "http://localhost:5341",
+                "apiKey": "yeEZyL3SMcxEKUijBjN",
+                "controlLevelSwitch": "$controlSwitch"
+            }
+        }]
+    }
+}
+```
+
 For further information see the [Seq documentation](http://docs.getseq.net/docs/using-serilog#dynamic-level-control).
 
 ### Compact event format

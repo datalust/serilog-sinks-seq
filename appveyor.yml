@@ -15,6 +15,7 @@ only_commits:
     - src/Serilog.Sinks.Seq/
     - Build.ps1
     - assets/
+    - test/Serilog.Sinks.Seq.Tests/
 deploy:
 - provider: NuGet
   api_key:

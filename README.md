@@ -28,7 +28,7 @@ Log.Error("Failed to log on user {ContactId}", contactId);
 
 Then query log event properties like `ContactId` from the browser:
 
-![Query in Seq](https://nblumhardt.github.io/images/seq-sink-screenshot.png)
+![Query in Seq](https://raw.githubusercontent.com/serilog/serilog-sinks-seq/dev/assets/search-by-property.png)
 
 When the application shuts down, [ensure any buffered events are propertly flushed to Seq](https://merbla.com/2016/07/06/serilog-log-closeandflush/) by disposing the logger or calling `Log.CloseAndFlush()`:
 

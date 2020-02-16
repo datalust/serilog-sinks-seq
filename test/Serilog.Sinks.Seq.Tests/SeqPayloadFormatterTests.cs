@@ -6,22 +6,6 @@ namespace Serilog.Sinks.Seq.Tests
     public class SeqPayloadFormatterTests
     {
         [Fact]
-        public void EventsAreFormattedIntoJsonPayloads()
-        {
-            var evt = Some.LogEvent("Hello, {Name}!", "Alice");
-            var json = SeqPayloadFormatter.FormatRawPayload(new[] {evt}, null);
-            Assert.Contains("Name\":\"Alice", json);
-        }
-
-        [Fact]
-        public void EventsAreDroppedWhenJsonRenderingFails()
-        {
-            var evt = Some.LogEvent(new NastyException(), "Hello, {Name}!", "Alice");
-            var json = SeqPayloadFormatter.FormatRawPayload(new[] { evt }, null);
-            Assert.Contains("[]", json);
-        }
-
-        [Fact]
         public void EventsAreFormattedIntoCompactJsonPayloads()
         {
             var evt = Some.LogEvent("Hello, {Name}!", "Alice");

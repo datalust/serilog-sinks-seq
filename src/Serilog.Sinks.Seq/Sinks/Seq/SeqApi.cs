@@ -23,6 +23,7 @@ namespace Serilog.Sinks.Seq
         public const string ApiKeyHeaderName = "X-Seq-ApiKey";
         public const string RawEventFormatMimeType = "application/json";
         public const string CompactLogEventFormatMimeType = "application/vnd.serilog.clef";
+        public const string NoPayload = "";
 
         // Why not use a JSON parser here? For a very small case, it's not
         // worth taking on the extra payload/dependency management issues that

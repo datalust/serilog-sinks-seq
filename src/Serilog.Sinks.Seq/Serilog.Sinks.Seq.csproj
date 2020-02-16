@@ -19,6 +19,7 @@
     <RepositoryUrl>https://github.com/serilog/serilog-sinks-seq</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <GenerateAssemblyVersionAttribute>true</GenerateAssemblyVersionAttribute>
+    <LangVersion>8</LangVersion>
   </PropertyGroup>
   
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">

@@ -1,0 +1,3 @@
+﻿{"@t":"2017-10-19T12:04:39.9775056+10:00","@l":"Information","@mt":"Running loop {Counter}, switch is at {Level}","Counter":700019,"Level":"Information"}
+{"@t":"2017-10-19T12:04:39.9792156+10:00","@l":"Information","@mt":"Running loop {Counter}, switch is at {Level}","Counter":700020,"Level":"Information"}
+{"@t":"2017-10-19T12:04:39.9792575+10:00","@l":"Information","@mt":"Running loop {Counter}, switch is at {Level}","Counter":700021,"Level":"Information"}

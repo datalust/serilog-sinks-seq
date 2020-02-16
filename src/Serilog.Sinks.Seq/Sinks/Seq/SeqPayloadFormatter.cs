@@ -25,7 +25,7 @@ namespace Serilog.Sinks.Seq
 {
     static class SeqPayloadFormatter
     {
-        static readonly JsonValueFormatter JsonValueFormatter = new JsonValueFormatter();
+        static readonly JsonValueFormatter JsonValueFormatter = new JsonValueFormatter("$type");
         
         public static string FormatCompactPayload(IEnumerable<LogEvent> events, long? eventBodyLimitBytes)
         {
@@ -52,39 +52,6 @@ namespace Serilog.Sinks.Seq
                 }
             }
 
-            return payload.ToString();
-        }
-
-        public static string FormatRawPayload(IEnumerable<LogEvent> events, long? eventBodyLimitBytes)
-        {
-            var payload = new StringWriter();
-            payload.Write("{\"Events\":[");
-
-            var delimStart = "";
-            foreach (var logEvent in events)
-            {
-                var buffer = new StringWriter();
-
-                try
-                {
-                    RawJsonFormatter.FormatContent(logEvent, buffer);
-                }
-                catch (Exception ex)
-                {
-                    LogNonFormattableEvent(logEvent, ex);
-                    continue;
-                }
-
-                var json = buffer.ToString();
-                if (CheckEventBodySize(json, eventBodyLimitBytes))
-                {
-                    payload.Write(delimStart);
-                    payload.Write(json);
-                    delimStart = ",";
-                }
-            }
-
-            payload.Write("]}");
             return payload.ToString();
         }
 

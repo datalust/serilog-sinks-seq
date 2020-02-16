@@ -35,7 +35,6 @@ namespace Serilog.Sinks.Seq
         readonly string _apiKey;
         readonly long? _eventBodyLimitBytes;
         readonly HttpClient _httpClient;
-        readonly bool _useCompactFormat;
 
         DateTime _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
         readonly ControlledLevelSwitch _controlledSwitch;
@@ -45,14 +44,12 @@ namespace Serilog.Sinks.Seq
             string apiKey,
             long? eventBodyLimitBytes,
             ControlledLevelSwitch controlledSwitch,
-            HttpMessageHandler messageHandler,
-            bool useCompactFormat)
+            HttpMessageHandler messageHandler)
         {
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
             _controlledSwitch = controlledSwitch ?? throw new ArgumentNullException(nameof(controlledSwitch));
             _apiKey = apiKey;
             _eventBodyLimitBytes = eventBodyLimitBytes;
-            _useCompactFormat = useCompactFormat;
             _httpClient = messageHandler != null ? new HttpClient(messageHandler) : new HttpClient();
             _httpClient.BaseAddress = new Uri(SeqApi.NormalizeServerBaseAddress(serverUrl));
         }
@@ -77,17 +74,8 @@ namespace Serilog.Sinks.Seq
         {
             _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
 
-            string payload, payloadContentType;
-            if (_useCompactFormat)
-            {
-                payloadContentType = SeqApi.CompactLogEventFormatMimeType;
-                payload = SeqPayloadFormatter.FormatCompactPayload(events, _eventBodyLimitBytes);
-            }
-            else
-            {
-                payloadContentType = SeqApi.RawEventFormatMimeType;
-                payload = SeqPayloadFormatter.FormatRawPayload(events, _eventBodyLimitBytes);
-            }
+            var payloadContentType = SeqApi.CompactLogEventFormatMimeType;
+            var payload = SeqPayloadFormatter.FormatCompactPayload(events, _eventBodyLimitBytes);
 
             var content = new StringContent(payload, Encoding.UTF8, payloadContentType);
             if (!string.IsNullOrWhiteSpace(_apiKey))

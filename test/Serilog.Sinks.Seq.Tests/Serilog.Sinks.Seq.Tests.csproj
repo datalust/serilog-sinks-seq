@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp1.0;net452;net47;netcoreapp2.2,netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>netcoreapp1.0;net452;net47;netcoreapp2.2;netcoreapp3.1</TargetFrameworks>
     <AssemblyName>Serilog.Sinks.Seq.Tests</AssemblyName>
     <AssemblyOriginatorKeyFile>../../assets/Serilog.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>

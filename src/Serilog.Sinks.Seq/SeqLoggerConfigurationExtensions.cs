@@ -18,6 +18,7 @@ using Serilog.Core;
 using Serilog.Events;
 using Serilog.Sinks.Seq;
 using System.Net.Http;
+using Serilog.Sinks.PeriodicBatching;
 using Serilog.Sinks.Seq.Audit;
 
 #if DURABLE
@@ -89,21 +90,28 @@ namespace Serilog
                 throw new ArgumentOutOfRangeException(nameof(queueSizeLimit), "Queue size limit must be non-zero.");
 
             var defaultedPeriod = period ?? SeqSink.DefaultPeriod;
+            var controlledSwitch = new ControlledLevelSwitch(controlLevelSwitch);
 
             ILogEventSink sink;
-
+            
             if (bufferBaseFilename == null)
             {
-                sink = new SeqSink(
+                var batchedSink = new SeqSink(
                     serverUrl,
                     apiKey,
-                    batchPostingLimit,
-                    defaultedPeriod,
                     eventBodyLimitBytes,
-                    controlLevelSwitch,
+                    controlledSwitch,
                     messageHandler,
-                    compact,
-                    queueSizeLimit);
+                    compact);
+
+                var options = new PeriodicBatchingSinkOptions
+                {
+                    BatchSizeLimit = batchPostingLimit,
+                    Period = defaultedPeriod,
+                    QueueLimit = queueSizeLimit
+                };
+                
+                sink = new PeriodicBatchingSink(batchedSink, options);
             }
             else
             {
@@ -116,7 +124,7 @@ namespace Serilog
                     defaultedPeriod,
                     bufferSizeLimitBytes,
                     eventBodyLimitBytes,
-                    controlLevelSwitch,
+                    controlledSwitch,
                     messageHandler,
                     retainedInvalidPayloadsLimitBytes);
 #else
@@ -125,7 +133,9 @@ namespace Serilog
 #endif
             }
 
-            return loggerSinkConfiguration.Sink(sink, restrictedToMinimumLevel);
+            return loggerSinkConfiguration.Conditional(
+                controlledSwitch.IsIncluded,
+                wt => wt.Sink(sink, restrictedToMinimumLevel));
         }
 
         /// <summary>

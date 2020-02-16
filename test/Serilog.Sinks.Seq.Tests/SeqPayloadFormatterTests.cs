@@ -3,13 +3,13 @@ using Xunit;
 
 namespace Serilog.Sinks.Seq.Tests
 {
-    public class SeqSinkTests
+    public class SeqPayloadFormatterTests
     {
         [Fact]
         public void EventsAreFormattedIntoJsonPayloads()
         {
             var evt = Some.LogEvent("Hello, {Name}!", "Alice");
-            var json = SeqSink.FormatRawPayload(new[] {evt}, null);
+            var json = SeqPayloadFormatter.FormatRawPayload(new[] {evt}, null);
             Assert.Contains("Name\":\"Alice", json);
         }
 
@@ -17,7 +17,7 @@ namespace Serilog.Sinks.Seq.Tests
         public void EventsAreDroppedWhenJsonRenderingFails()
         {
             var evt = Some.LogEvent(new NastyException(), "Hello, {Name}!", "Alice");
-            var json = SeqSink.FormatRawPayload(new[] { evt }, null);
+            var json = SeqPayloadFormatter.FormatRawPayload(new[] { evt }, null);
             Assert.Contains("[]", json);
         }
 
@@ -25,7 +25,7 @@ namespace Serilog.Sinks.Seq.Tests
         public void EventsAreFormattedIntoCompactJsonPayloads()
         {
             var evt = Some.LogEvent("Hello, {Name}!", "Alice");
-            var json = SeqSink.FormatCompactPayload(new[] { evt }, null);
+            var json = SeqPayloadFormatter.FormatCompactPayload(new[] { evt }, null);
             Assert.Contains("Name\":\"Alice", json);
         }
 
@@ -33,7 +33,7 @@ namespace Serilog.Sinks.Seq.Tests
         public void EventsAreDroppedWhenCompactJsonRenderingFails()
         {
             var evt = Some.LogEvent(new NastyException(), "Hello, {Name}!", "Alice");
-            var json = SeqSink.FormatCompactPayload(new[] { evt }, null);
+            var json = SeqPayloadFormatter.FormatCompactPayload(new[] { evt }, null);
             Assert.Empty(json);
         }
     }

@@ -66,7 +66,7 @@ namespace Serilog.Sinks.Seq.Durable
             int batchPostingLimit,
             TimeSpan period,
             long? eventBodyLimitBytes,
-            LoggingLevelSwitch levelControlSwitch,
+            ControlledLevelSwitch controlledSwitch,
             HttpMessageHandler messageHandler,
             long? retainedInvalidPayloadsLimitBytes,
             long? bufferSizeLimitBytes)
@@ -74,7 +74,7 @@ namespace Serilog.Sinks.Seq.Durable
             _apiKey = apiKey;
             _batchPostingLimit = batchPostingLimit;
             _eventBodyLimitBytes = eventBodyLimitBytes;
-            _controlledSwitch = new ControlledLevelSwitch(levelControlSwitch);
+            _controlledSwitch = controlledSwitch;
             _connectionSchedule = new ExponentialBackoffConnectionSchedule(period);
             _retainedInvalidPayloadsLimitBytes = retainedInvalidPayloadsLimitBytes;
             _bufferSizeLimitBytes = bufferSizeLimitBytes;

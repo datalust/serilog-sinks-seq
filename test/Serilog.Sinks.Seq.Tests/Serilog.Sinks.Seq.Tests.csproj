@@ -8,9 +8,9 @@
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="Resources\ThreeBufferedEvents.json.txt" />
-  </ItemGroup>
-  <ItemGroup>
+    <Content Include="Resources\ThreeBufferedEvents.clef.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resources\ThreeBufferedEvents.json.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

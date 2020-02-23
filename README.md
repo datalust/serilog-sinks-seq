@@ -154,14 +154,6 @@ The equivalent configuration in JSON is:
 
 For further information see the [Seq documentation](https://docs.datalust.co/docs/using-serilog#dynamic-level-control).
 
-### Compact event format
-
-Seq 3.3 accepts Serilog's more efficient [compact JSON format](https://github.com/serilog/serilog-formatting-compact/). To use this, configure the sink with `compact: true`:
-
-```csharp
-    .WriteTo.Seq("http://localhost:5341", compact: true)
-```
-
 ### Troubleshooting
 
 > Nothing showed up, what can I do?
@@ -199,4 +191,3 @@ Serilog.Debugging.SelfLog.Enable(message => {
  * Make sure your application calls `Log.CloseAndFlush()`, or disposes the root `Logger`, before it exits - otherwise, buffered events may be lost.
  * If your app is a Windows console application, it is also important to close the console window by exiting the app; Windows console apps are terminated "hard" if the close button in the title bar is used, so events buffered for sending to Seq may be lost if you use it.
  * [Raise an issue](https://github.com/serilog/serilog-sinks-seq/issues), ask for help on the [Seq support forum](https://docs.datalust.co/discuss) or email **support@datalust.co**.
- 

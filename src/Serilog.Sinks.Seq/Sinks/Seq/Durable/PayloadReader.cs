@@ -23,9 +23,56 @@ namespace Serilog.Sinks.Seq.Durable
 {
     static class PayloadReader
     {
-        public const string NoPayload = "{\"Events\":[]}";
+        public static string ReadPayload(
+            int batchPostingLimit,
+            long? eventBodyLimitBytes,
+            ref FileSetPosition position,
+            ref int count,
+            out string mimeType)
+        {
+            if (position.File.EndsWith(".json"))
+            {
+                mimeType = SeqApi.RawEventFormatMimeType;
+                return ReadRawPayload(batchPostingLimit, eventBodyLimitBytes, ref position, ref count);
+            }
 
-        public static string ReadPayload(int batchPostingLimit, long? eventBodyLimitBytes, ref FileSetPosition position, ref int count)
+            mimeType = SeqApi.CompactLogEventFormatMimeType;
+            return ReadCompactPayload(batchPostingLimit, eventBodyLimitBytes, ref position, ref count);
+        }
+
+        static string ReadCompactPayload(int batchPostingLimit, long? eventBodyLimitBytes, ref FileSetPosition position, ref int count)
+        {
+            var payload = new StringWriter();
+
+            using (var current = System.IO.File.Open(position.File, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                var nextLineStart = position.NextLineStart;
+                while (count < batchPostingLimit && TryReadLine(current, ref nextLineStart, out var nextLine))
+                {
+                    position = new FileSetPosition(nextLineStart, position.File);
+
+                    // Count is the indicator that work was done, so advances even in the (rare) case an
+                    // oversized event is dropped.
+                    ++count;
+
+                    if (eventBodyLimitBytes.HasValue && Encoding.UTF8.GetByteCount(nextLine) > eventBodyLimitBytes.Value)
+                    {
+                        SelfLog.WriteLine(
+                            "Event JSON representation exceeds the byte size limit of {0} and will be dropped; data: {1}",
+                            eventBodyLimitBytes, nextLine);
+                    }
+                    else
+                    {
+                        payload.WriteLine(nextLine);
+                    }
+                }
+            }
+            
+            return payload.ToString();
+        }
+
+
+        static string ReadRawPayload(int batchPostingLimit, long? eventBodyLimitBytes, ref FileSetPosition position, ref int count)
         {
             var payload = new StringWriter();
             payload.Write("{\"Events\":[");
@@ -86,6 +133,12 @@ namespace Serilog.Sinks.Seq.Durable
                 nextStart += 3;
 
             return true;
+        }
+
+        public static string MakeEmptyPayload(out string mimeType)
+        {
+            mimeType = SeqApi.CompactLogEventFormatMimeType;
+            return SeqApi.NoPayload;
         }
     }
 }

@@ -19,6 +19,7 @@
     <RepositoryUrl>https://github.com/serilog/serilog-sinks-seq</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <GenerateAssemblyVersionAttribute>true</GenerateAssemblyVersionAttribute>
+    <LangVersion>8</LangVersion>
   </PropertyGroup>
   
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
@@ -43,7 +44,7 @@
   
   <ItemGroup>
     <PackageReference Include="Serilog" Version="2.9.0" />
-    <PackageReference Include="Serilog.Sinks.PeriodicBatching" Version="2.3.0-dev-00760 " />
+    <PackageReference Include="Serilog.Sinks.PeriodicBatching" Version="2.3.0-dev-00762 " />
     <PackageReference Include="Serilog.Formatting.Compact" Version="1.1.0" />
   </ItemGroup>
 

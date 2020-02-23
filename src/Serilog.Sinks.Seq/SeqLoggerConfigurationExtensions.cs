@@ -58,9 +58,6 @@ namespace Serilog
         /// <param name="retainedInvalidPayloadsLimitBytes">A soft limit for the number of bytes to use for storing failed requests.  
         /// The limit is soft in that it can be exceeded by any single error payload, but in that case only that single error
         /// payload will be retained.</param>
-        /// <param name="compact">Use the compact log event format defined by
-        /// <a href="https://github.com/serilog/serilog-formatting-compact">Serilog.Formatting.Compact</a>. Has no effect on
-        /// durable log shipping. Requires Seq 3.3+.</param>
         /// <param name="queueSizeLimit">The maximum number of events that will be held in-memory while waiting to ship them to
         /// Seq. Beyond this limit, events will be dropped. The default is 100,000. Has no effect on
         /// durable log shipping.</param>
@@ -79,7 +76,6 @@ namespace Serilog
             LoggingLevelSwitch controlLevelSwitch = null,
             HttpMessageHandler messageHandler = null,
             long? retainedInvalidPayloadsLimitBytes = null,
-            bool compact = false,
             int queueSizeLimit = SeqSink.DefaultQueueSizeLimit)
         {
             if (loggerSinkConfiguration == null) throw new ArgumentNullException(nameof(loggerSinkConfiguration));
@@ -101,8 +97,7 @@ namespace Serilog
                     apiKey,
                     eventBodyLimitBytes,
                     controlledSwitch,
-                    messageHandler,
-                    compact);
+                    messageHandler);
 
                 var options = new PeriodicBatchingSinkOptions
                 {
@@ -148,9 +143,6 @@ namespace Serilog
         /// in order to write an event to the sink.</param>
         /// <param name="apiKey">A Seq <i>API key</i> that authenticates the client to the Seq server.</param>
         /// <param name="messageHandler">Used to construct the HttpClient that will send the log messages to Seq.</param>
-        /// <param name="compact">Use the compact log event format defined by
-        /// <a href="https://github.com/serilog/serilog-formatting-compact">Serilog.Formatting.Compact</a>. Has no effect on
-        /// durable log shipping. Requires Seq 3.3+.</param>
         /// <returns>Logger configuration, allowing configuration to continue.</returns>
         /// <exception cref="ArgumentNullException">A required parameter is null.</exception>
         public static LoggerConfiguration Seq(
@@ -158,14 +150,13 @@ namespace Serilog
             string serverUrl,
             LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
             string apiKey = null,
-            HttpMessageHandler messageHandler = null,
-            bool compact = false)
+            HttpMessageHandler messageHandler = null)
         {
             if (loggerAuditSinkConfiguration == null) throw new ArgumentNullException(nameof(loggerAuditSinkConfiguration));
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
 
             return loggerAuditSinkConfiguration.Sink(
-                new SeqAuditSink(serverUrl, apiKey, messageHandler, compact),
+                new SeqAuditSink(serverUrl, apiKey, messageHandler),
                 restrictedToMinimumLevel);
         }
     }

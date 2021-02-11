@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net452;net47;netcoreapp2.2;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>net48;netcoreapp3.1;net5.0</TargetFrameworks>
     <AssemblyName>Serilog.Sinks.Seq.Tests</AssemblyName>
     <AssemblyOriginatorKeyFile>../../assets/Serilog.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
@@ -27,11 +27,7 @@
     <PackageReference Include="xunit" Version="2.4.1" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">
-    <PackageReference Include="System.Net.Http" Version="4.3.2" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' or '$(TargetFramework)' == 'net47' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net48' ">
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Net.Http" />

@@ -26,6 +26,8 @@ namespace Serilog.Sinks.Seq.Durable
 {
     class FileSet
     {
+        public const string RawFormatFileExtension = ".json";
+        
         readonly string _bookmarkFilename;
         readonly string _candidateSearchPath;
         readonly string _logFolder;
@@ -33,14 +35,21 @@ namespace Serilog.Sinks.Seq.Durable
 
         const string InvalidPayloadFilePrefix = "invalid-";
 
+        public string RollingFilePathFormat { get; }
+
         public FileSet(string bufferBaseFilename)
         {
             if (bufferBaseFilename == null) throw new ArgumentNullException(nameof(bufferBaseFilename));
 
+            RollingFilePathFormat = bufferBaseFilename + "-.clef";
+            
             _bookmarkFilename = Path.GetFullPath(bufferBaseFilename + ".bookmark");
             _logFolder = Path.GetDirectoryName(_bookmarkFilename);
-            _candidateSearchPath = Path.GetFileName(bufferBaseFilename) + "-*.json";
-            _filenameMatcher = new Regex("^" + Regex.Escape(Path.GetFileName(bufferBaseFilename)) + "-(?<date>\\d{8})(?<sequence>_[0-9]{3,}){0,1}\\.json$");
+            
+            // The extension cannot be matched here because it may be either "json" (raw format) or "clef" (compact).
+            _candidateSearchPath = Path.GetFileName(bufferBaseFilename) + "-*.*";
+            
+            _filenameMatcher = new Regex("^" + Regex.Escape(Path.GetFileName(bufferBaseFilename)) + "-(?<date>\\d{8})(?<sequence>_[0-9]{3,}){0,1}\\.(json|clef)$");
         }
 
         public BookmarkFile OpenBookmarkFile()
@@ -59,7 +68,7 @@ namespace Serilog.Sinks.Seq.Durable
                 .ToArray();
         }
 
-        public void CleanUpBufferFiles(long bufferSizeLimitBytes, int alwaysRetainCount)
+        public void CleanUpBufferFiles(long bufferSizeLimitBytes)
         {
             try
             {
@@ -84,9 +93,9 @@ namespace Serilog.Sinks.Seq.Durable
             try
             {
                 var candidateFiles = from file in Directory.EnumerateFiles(_logFolder, $"{InvalidPayloadFilePrefix}*.json")
-                                     let candiateFileInfo = new FileInfo(file)
-                                     orderby candiateFileInfo.LastWriteTimeUtc descending
-                                     select candiateFileInfo;
+                                     let candidateFileInfo = new FileInfo(file)
+                                     orderby candidateFileInfo.LastWriteTimeUtc descending
+                                     select candidateFileInfo;
 
                 DeleteExceedingCumulativeSize(candidateFiles, maxNumberOfBytesToRetain, 0);
             }

@@ -17,12 +17,13 @@ using Serilog.Events;
 
 namespace Serilog.Sinks.Seq
 {
-    class SeqApi
+    static class SeqApi
     {
         public const string BulkUploadResource = "api/events/raw";
         public const string ApiKeyHeaderName = "X-Seq-ApiKey";
         public const string RawEventFormatMimeType = "application/json";
         public const string CompactLogEventFormatMimeType = "application/vnd.serilog.clef";
+        public const string NoPayload = "";
 
         // Why not use a JSON parser here? For a very small case, it's not
         // worth taking on the extra payload/dependency management issues that
@@ -49,8 +50,7 @@ namespace Serilog.Sinks.Seq
                 return null;
 
             var value = eventInputResult.Substring(startValue, endValue - startValue);
-            LogEventLevel minimumLevel;
-            if (!Enum.TryParse(value, out minimumLevel))
+            if (!Enum.TryParse(value, out LogEventLevel minimumLevel))
                 return null;
 
             return minimumLevel;

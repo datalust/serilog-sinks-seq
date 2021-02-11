@@ -7,7 +7,7 @@ namespace Sample
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static void Main()
         {
             // By sharing between the Seq sink and logger itself,
             // Seq API keys can be used to control the level of the whole logging pipeline.

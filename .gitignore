@@ -185,5 +185,7 @@ UpgradeLog*.htm
 
 # Microsoft Fakes
 FakesAssemblies/
+
 *.orig
 /sample/Sample/logs/
+.idea

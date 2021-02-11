@@ -19,6 +19,7 @@ using Serilog.Core;
 using Serilog.Events;
 using System.Net.Http;
 using System.Text;
+using Serilog.Formatting.Compact;
 
 namespace Serilog.Sinks.Seq.Durable
 {
@@ -35,22 +36,23 @@ namespace Serilog.Sinks.Seq.Durable
             TimeSpan period,
             long? bufferSizeLimitBytes,
             long? eventBodyLimitBytes,
-            LoggingLevelSwitch levelControlSwitch,
+            ControlledLevelSwitch controlledSwitch,
             HttpMessageHandler messageHandler,
             long? retainedInvalidPayloadsLimitBytes)
         {
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
             if (bufferBaseFilename == null) throw new ArgumentNullException(nameof(bufferBaseFilename));
 
+            var fileSet = new FileSet(bufferBaseFilename);
 
             _shipper = new HttpLogShipper(
+                fileSet,
                 serverUrl, 
-                bufferBaseFilename, 
                 apiKey, 
                 batchPostingLimit, 
                 period, 
                 eventBodyLimitBytes,
-                levelControlSwitch,
+                controlledSwitch,
                 messageHandler,
                 retainedInvalidPayloadsLimitBytes,
                 bufferSizeLimitBytes);
@@ -58,8 +60,8 @@ namespace Serilog.Sinks.Seq.Durable
             const long individualFileSizeLimitBytes = 100L * 1024 * 1024;
             _sink = new LoggerConfiguration()
                 .MinimumLevel.Verbose()
-                .WriteTo.File(new RawJsonFormatter(),
-                        bufferBaseFilename + "-.json",
+                .WriteTo.File(new CompactJsonFormatter(),
+                        fileSet.RollingFilePathFormat,
                         rollingInterval: RollingInterval.Day,
                         fileSizeLimitBytes: individualFileSizeLimitBytes,
                         rollOnFileSizeLimit: true,

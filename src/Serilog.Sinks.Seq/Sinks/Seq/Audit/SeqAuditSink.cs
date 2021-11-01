@@ -59,7 +59,6 @@ namespace Serilog.Sinks.Seq.Audit
 
             var payload = new StringWriter();
             CompactJsonFormatter.FormatEvent(logEvent, payload, JsonValueFormatter);
-            payload.WriteLine();
 
             var content = new StringContent(payload.ToString(), Encoding.UTF8, SeqApi.CompactLogEventFormatMimeType);
             if (!string.IsNullOrWhiteSpace(_apiKey))

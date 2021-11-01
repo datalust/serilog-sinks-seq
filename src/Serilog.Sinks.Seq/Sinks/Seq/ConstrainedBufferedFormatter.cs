@@ -107,9 +107,9 @@ namespace Serilog.Sinks.Seq
         
         static LogEvent CreateOversizeEventPlaceholder(LogEvent logEvent, string jsonLine, long eventBodyLimitBytes)
         {
-            // If the limit is so constrained as to disallow sending 1024 bytes + packaging, that's okay - we'll just drop
+            // If the limit is so constrained as to disallow sending 512 bytes + packaging, that's okay - we'll just drop
             // the placeholder, too.
-            var sample = jsonLine.Substring(0, (int)Math.Min(jsonLine.Length, eventBodyLimitBytes));
+            var sample = jsonLine.Substring(0, Math.Min(jsonLine.Length, 512));
             return new LogEvent(
                 logEvent.Timestamp,
                 LogEventLevel.Error,

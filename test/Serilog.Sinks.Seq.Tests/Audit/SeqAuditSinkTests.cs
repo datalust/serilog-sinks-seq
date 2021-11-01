@@ -20,7 +20,7 @@ namespace Serilog.Sinks.Seq.Tests.Audit
             }
         }
 
-        [Fact]
+        [Fact] // This test requires an outbound connection in order to execute properly.
         public void RemoteCommunicationErrorsPropagateToCallerWhenAuditing()
         {
             using (var logger = new LoggerConfiguration()

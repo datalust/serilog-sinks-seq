@@ -23,7 +23,22 @@ namespace Serilog.Sinks.Seq.Tests
             var formatter = new ConstrainedBufferedFormatter(null);
             var json = new StringWriter();
             formatter.Format(evt, json);
-            Assert.Contains("OriginalMessageTemplate\":\"Hello, ", json.ToString());
+            var jsonString = json.ToString();
+            Assert.Contains("could not be formatted", jsonString);
+            Assert.Contains("OriginalMessageTemplate\":\"Hello, ", jsonString);
+        }
+        
+        [Fact]
+        public void PlaceholdersAreLoggedWhenTheEventSizeLimitIsExceeded()
+        {
+            var evt = Some.LogEvent("Hello, {Name}!", new string('a', 10000));
+            var formatter = new ConstrainedBufferedFormatter(2000);
+            var json = new StringWriter();
+            formatter.Format(evt, json);
+            var jsonString = json.ToString();
+            Assert.Contains("exceeds the body size limit", jsonString);
+            Assert.Contains("\"EventBodySample\"", jsonString);
+            Assert.Contains("aaaaa", jsonString);
         }
     }
 }

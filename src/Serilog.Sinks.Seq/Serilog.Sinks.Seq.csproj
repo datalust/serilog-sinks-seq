@@ -5,7 +5,7 @@
     <VersionPrefix>5.0.2</VersionPrefix>
     <Authors>Serilog Contributors</Authors>
     <Copyright>Copyright © Serilog Contributors</Copyright>
-    <TargetFrameworks>netstandard1.1;netstandard1.3;net45;netstandard2.0;netcoreapp3.1;net5.0</TargetFrameworks>
+    <TargetFrameworks>netstandard1.1;netstandard1.3;netstandard2.0;net4.5;netcoreapp3.1;net5.0</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <RootNamespace>Serilog</RootNamespace>
@@ -38,11 +38,11 @@
     <DefineConstants>$(DefineConstants);DURABLE;THREADING_TIMER</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net4.5' ">
     <DefineConstants>$(DefineConstants);DURABLE;THREADING_TIMER;HRESULTS</DefineConstants>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net4.5' ">
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   

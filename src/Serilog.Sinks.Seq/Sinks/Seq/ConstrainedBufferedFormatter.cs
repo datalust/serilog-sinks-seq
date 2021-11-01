@@ -114,7 +114,7 @@ namespace Serilog.Sinks.Seq
                 logEvent.Timestamp,
                 LogEventLevel.Error,
                 exception: null,
-                new MessageTemplateParser().Parse("Event JSON representation exceeds the body size limit {EventBodyLimitBytes}; first 1024 bytes: {EventBodySample}"),
+                new MessageTemplateParser().Parse("Event JSON representation exceeds the body size limit {EventBodyLimitBytes}; sample: {EventBodySample}"),
                 new[]
                 {
                     new LogEventProperty("EventBodyLimitBytes", new ScalarValue(eventBodyLimitBytes)),

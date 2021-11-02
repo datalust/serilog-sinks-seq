@@ -5,7 +5,7 @@ using Serilog.Core;
 
 namespace Sample
 {
-    public class Program
+    public static class Program
     {
         public static void Main()
         {

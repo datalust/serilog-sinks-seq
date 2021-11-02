@@ -19,7 +19,6 @@ using Serilog.Core;
 using Serilog.Events;
 using System.Net.Http;
 using System.Text;
-using Serilog.Formatting.Compact;
 
 namespace Serilog.Sinks.Seq.Durable
 {
@@ -60,7 +59,7 @@ namespace Serilog.Sinks.Seq.Durable
             const long individualFileSizeLimitBytes = 100L * 1024 * 1024;
             _sink = new LoggerConfiguration()
                 .MinimumLevel.Verbose()
-                .WriteTo.File(new CompactJsonFormatter(),
+                .WriteTo.File(new ConstrainedBufferedFormatter(eventBodyLimitBytes),
                         fileSet.RollingFilePathFormat,
                         rollingInterval: RollingInterval.Day,
                         fileSizeLimitBytes: individualFileSizeLimitBytes,

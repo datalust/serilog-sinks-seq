@@ -14,6 +14,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -33,7 +34,7 @@ namespace Serilog.Sinks.Seq
         static readonly TimeSpan RequiredLevelCheckInterval = TimeSpan.FromMinutes(2);
 
         readonly string _apiKey;
-        readonly long? _eventBodyLimitBytes;
+        readonly ConstrainedBufferedFormatter _formatter;
         readonly HttpClient _httpClient;
 
         DateTime _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
@@ -49,9 +50,9 @@ namespace Serilog.Sinks.Seq
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
             _controlledSwitch = controlledSwitch ?? throw new ArgumentNullException(nameof(controlledSwitch));
             _apiKey = apiKey;
-            _eventBodyLimitBytes = eventBodyLimitBytes;
             _httpClient = messageHandler != null ? new HttpClient(messageHandler) : new HttpClient();
             _httpClient.BaseAddress = new Uri(SeqApi.NormalizeServerBaseAddress(serverUrl));
+            _formatter = new ConstrainedBufferedFormatter(eventBodyLimitBytes);
         }
 
         public void Dispose()
@@ -74,10 +75,13 @@ namespace Serilog.Sinks.Seq
         {
             _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
 
-            var payloadContentType = SeqApi.CompactLogEventFormatMimeType;
-            var payload = SeqPayloadFormatter.FormatCompactPayload(events, _eventBodyLimitBytes);
+            var payload = new StringWriter();
+            foreach (var evt in events)
+            {
+                _formatter.Format(evt, payload);
+            }
 
-            var content = new StringContent(payload, Encoding.UTF8, payloadContentType);
+            var content = new StringContent(payload.ToString(), Encoding.UTF8, SeqApi.CompactLogEventFormatMimeType);
             if (!string.IsNullOrWhiteSpace(_apiKey))
                 content.Headers.Add(SeqApi.ApiKeyHeaderName, _apiKey);
     

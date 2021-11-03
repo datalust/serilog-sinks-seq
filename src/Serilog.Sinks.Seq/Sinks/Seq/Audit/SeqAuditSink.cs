@@ -66,7 +66,7 @@ namespace Serilog.Sinks.Seq.Audit
     
             var result = await _httpClient.PostAsync(SeqApi.BulkUploadResource, content).ConfigureAwait(false);
             if (!result.IsSuccessStatusCode)
-                throw new LoggingFailedException($"Received failed result {result.StatusCode} when posting events to Seq");
+                throw new LoggingFailedException($"Received failed result {result.StatusCode} when posting events to Seq.");
         }
     }
 }

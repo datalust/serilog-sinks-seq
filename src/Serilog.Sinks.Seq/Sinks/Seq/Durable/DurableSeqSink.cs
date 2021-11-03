@@ -30,13 +30,13 @@ namespace Serilog.Sinks.Seq.Durable
         public DurableSeqSink(
             string serverUrl,
             string bufferBaseFilename,
-            string apiKey,
+            string? apiKey,
             int batchPostingLimit,
             TimeSpan period,
             long? bufferSizeLimitBytes,
             long? eventBodyLimitBytes,
             ControlledLevelSwitch controlledSwitch,
-            HttpMessageHandler messageHandler,
+            HttpMessageHandler? messageHandler,
             long? retainedInvalidPayloadsLimitBytes)
         {
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));

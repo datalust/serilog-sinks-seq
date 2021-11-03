@@ -69,18 +69,18 @@ namespace Serilog
             LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
             int batchPostingLimit = SeqSink.DefaultBatchPostingLimit,
             TimeSpan? period = null,
-            string apiKey = null,
-            string bufferBaseFilename = null,
+            string? apiKey = null,
+            string? bufferBaseFilename = null,
             long? bufferSizeLimitBytes = null,
             long? eventBodyLimitBytes = 256*1024,
-            LoggingLevelSwitch controlLevelSwitch = null,
-            HttpMessageHandler messageHandler = null,
+            LoggingLevelSwitch? controlLevelSwitch = null,
+            HttpMessageHandler? messageHandler = null,
             long? retainedInvalidPayloadsLimitBytes = null,
             int queueSizeLimit = SeqSink.DefaultQueueSizeLimit)
         {
             if (loggerSinkConfiguration == null) throw new ArgumentNullException(nameof(loggerSinkConfiguration));
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
-            if (bufferSizeLimitBytes.HasValue && bufferSizeLimitBytes < 0)
+            if (bufferSizeLimitBytes is < 0)
                 throw new ArgumentOutOfRangeException(nameof(bufferSizeLimitBytes), "Negative value provided; buffer size limit must be non-negative.");
             if (queueSizeLimit < 0)
                 throw new ArgumentOutOfRangeException(nameof(queueSizeLimit), "Queue size limit must be non-zero.");
@@ -149,8 +149,8 @@ namespace Serilog
             this LoggerAuditSinkConfiguration loggerAuditSinkConfiguration,
             string serverUrl,
             LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
-            string apiKey = null,
-            HttpMessageHandler messageHandler = null)
+            string? apiKey = null,
+            HttpMessageHandler? messageHandler = null)
         {
             if (loggerAuditSinkConfiguration == null) throw new ArgumentNullException(nameof(loggerAuditSinkConfiguration));
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));

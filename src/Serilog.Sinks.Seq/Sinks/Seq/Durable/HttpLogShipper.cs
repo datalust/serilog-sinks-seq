@@ -35,7 +35,7 @@ namespace Serilog.Sinks.Seq.Durable
     {
         static readonly TimeSpan RequiredLevelCheckInterval = TimeSpan.FromMinutes(2);
 
-        readonly string _apiKey;
+        readonly string? _apiKey;
         readonly int _batchPostingLimit;
         readonly long? _eventBodyLimitBytes;
         readonly FileSet _fileSet;
@@ -61,12 +61,12 @@ namespace Serilog.Sinks.Seq.Durable
         public HttpLogShipper(
             FileSet fileSet,
             string serverUrl,
-            string apiKey,
+            string? apiKey,
             int batchPostingLimit,
             TimeSpan period,
             long? eventBodyLimitBytes,
             ControlledLevelSwitch controlledSwitch,
-            HttpMessageHandler messageHandler,
+            HttpMessageHandler? messageHandler,
             long? retainedInvalidPayloadsLimitBytes,
             long? bufferSizeLimitBytes)
         {
@@ -80,7 +80,7 @@ namespace Serilog.Sinks.Seq.Durable
             _bufferSizeLimitBytes = bufferSizeLimitBytes;
             _httpClient = messageHandler != null ? new HttpClient(messageHandler) : new HttpClient();
             _httpClient.BaseAddress = new Uri(SeqApi.NormalizeServerBaseAddress(serverUrl));
-            _timer = new PortableTimer(c => OnTick());
+            _timer = new PortableTimer(_ => OnTick());
 
             SetTimer();
         }
@@ -241,14 +241,18 @@ namespace Serilog.Sinks.Seq.Durable
             {
                 _fileSet.CleanUpInvalidPayloadFiles(_retainedInvalidPayloadsLimitBytes.Value - bytesToWrite.Length);
             }
+#if WRITE_ALL_BYTES_ASYNC
+            await IOFile.WriteAllBytesAsync(invalidPayloadFile, bytesToWrite);
+#else
             IOFile.WriteAllBytes(invalidPayloadFile, bytesToWrite);
+#endif
         }
 
         static bool FileIsUnlockedAndUnextended(FileSetPosition position)
         {
             try
             {
-                using var fileStream = IOFile.Open(position.File, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
+                using var fileStream = IOFile.Open(position.File!, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
                 return fileStream.Length <= position.NextLineStart;
             }
 #if HRESULTS

@@ -33,7 +33,7 @@ namespace Serilog.Sinks.Seq
 
         static readonly TimeSpan RequiredLevelCheckInterval = TimeSpan.FromMinutes(2);
 
-        readonly string _apiKey;
+        readonly string? _apiKey;
         readonly ConstrainedBufferedFormatter _formatter;
         readonly HttpClient _httpClient;
 
@@ -42,10 +42,10 @@ namespace Serilog.Sinks.Seq
 
         public SeqSink(
             string serverUrl,
-            string apiKey,
+            string? apiKey,
             long? eventBodyLimitBytes,
             ControlledLevelSwitch controlledSwitch,
-            HttpMessageHandler messageHandler)
+            HttpMessageHandler? messageHandler)
         {
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
             _controlledSwitch = controlledSwitch ?? throw new ArgumentNullException(nameof(controlledSwitch));

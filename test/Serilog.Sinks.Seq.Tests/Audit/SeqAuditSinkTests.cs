@@ -28,7 +28,9 @@ namespace Serilog.Sinks.Seq.Tests.Audit
             using var logger = new LoggerConfiguration()
                 .AuditTo.Seq("https://datalust.co/error/404")
                 .CreateLogger();
+            
             var ex = Assert.Throws<AggregateException>(() => logger.Information("This is an audit event"));
+            
             var baseException = ex.GetBaseException();
             Assert.IsType<LoggingFailedException>(baseException);
         }
@@ -39,7 +41,9 @@ namespace Serilog.Sinks.Seq.Tests.Audit
             var api = new TestIngestionApi();
             var sink = new SeqAuditSink(api);
             Assert.False(api.IsDisposed);
+            
             sink.Dispose();
+            
             Assert.True(api.IsDisposed);
         }
 
@@ -67,7 +71,9 @@ namespace Serilog.Sinks.Seq.Tests.Audit
             var expected = new Exception("Test");
             var api = new TestIngestionApi(_ => throw expected);
             var sink = new SeqAuditSink(api);
+            
             var thrown = Assert.Throws<AggregateException>(() => sink.Emit(Some.InformationEvent()));
+            
             Assert.Equal(expected, thrown.GetBaseException());
         }
     }

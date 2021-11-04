@@ -21,8 +21,7 @@ namespace Serilog.Sinks.Seq.Tests
         [Fact]
         public void WhenTheServerSendsNoLevelTheSwitchIsNotInitiallyAdjusted()
         {
-            var lls = new LoggingLevelSwitch(LogEventLevel.Warning);
-            lls.MinimumLevel = LogEventLevel.Fatal;
+            var lls = new LoggingLevelSwitch(LogEventLevel.Fatal);
             var cls = new ControlledLevelSwitch(lls);
             cls.Update(null);
             Assert.Equal(LogEventLevel.Fatal, lls.MinimumLevel);
@@ -78,7 +77,7 @@ namespace Serilog.Sinks.Seq.Tests
         }
 
         [Fact]
-        public void AfterServerControlhTheControllerIsAlwaysActive()
+        public void AfterServerControlTheControllerIsAlwaysActive()
         {
             var cls = new ControlledLevelSwitch();
 

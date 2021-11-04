@@ -10,27 +10,23 @@ namespace Serilog.Sinks.Seq.Tests.Audit
         [Fact]
         public void EarlyCommunicationErrorsPropagateToCallerWhenAuditing()
         {
-            using (var logger = new LoggerConfiguration()
+            using var logger = new LoggerConfiguration()
                 .AuditTo.Seq("https://example.tld")
-                .CreateLogger())
-            {
-                var ex = Assert.Throws<AggregateException>(() => logger.Information("This is an audit event"));
-                var baseException = ex.GetBaseException();
-                Assert.IsType<HttpRequestException>(baseException);
-            }
+                .CreateLogger();
+            var ex = Assert.Throws<AggregateException>(() => logger.Information("This is an audit event"));
+            var baseException = ex.GetBaseException();
+            Assert.IsType<HttpRequestException>(baseException);
         }
 
         [Fact] // This test requires an outbound connection in order to execute properly.
         public void RemoteCommunicationErrorsPropagateToCallerWhenAuditing()
         {
-            using (var logger = new LoggerConfiguration()
+            using var logger = new LoggerConfiguration()
                 .AuditTo.Seq("https://serilog.net/test/404")
-                .CreateLogger())
-            {
-                var ex = Assert.Throws<AggregateException>(() => logger.Information("This is an audit event"));
-                var baseException = ex.GetBaseException();
-                Assert.IsType<LoggingFailedException>(baseException);
-            }
+                .CreateLogger();
+            var ex = Assert.Throws<AggregateException>(() => logger.Information("This is an audit event"));
+            var baseException = ex.GetBaseException();
+            Assert.IsType<LoggingFailedException>(baseException);
         }
     }
 }

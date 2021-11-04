@@ -27,15 +27,15 @@ namespace Serilog.Sinks.Seq.Audit
 {
     sealed class SeqAuditSink : ILogEventSink, IDisposable
     {
-        readonly string _apiKey;
+        readonly string? _apiKey;
         readonly HttpClient _httpClient;
 
-        static readonly JsonValueFormatter JsonValueFormatter = new JsonValueFormatter("$type");
+        static readonly JsonValueFormatter JsonValueFormatter = new("$type");
 
         public SeqAuditSink(
             string serverUrl,
-            string apiKey,
-            HttpMessageHandler messageHandler)
+            string? apiKey,
+            HttpMessageHandler? messageHandler)
         {
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
             _httpClient = messageHandler != null ? new HttpClient(messageHandler) : new HttpClient();
@@ -66,7 +66,7 @@ namespace Serilog.Sinks.Seq.Audit
     
             var result = await _httpClient.PostAsync(SeqApi.BulkUploadResource, content).ConfigureAwait(false);
             if (!result.IsSuccessStatusCode)
-                throw new LoggingFailedException($"Received failed result {result.StatusCode} when posting events to Seq");
+                throw new LoggingFailedException($"Received failed result {result.StatusCode} when posting events to Seq.");
         }
     }
 }

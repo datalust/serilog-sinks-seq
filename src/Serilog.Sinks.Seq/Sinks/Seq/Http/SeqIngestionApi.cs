@@ -35,7 +35,7 @@ namespace Serilog.Sinks.Seq.Http
         {
             var result = await TryIngestAsync(clefPayload, CompactLogEventFormatMediaType);
 
-            if (result.Succeeded)
+            if (!result.Succeeded)
                 throw new LoggingFailedException($"Received failed result {result.StatusCode} when posting events to Seq.");
 
             return result.MinimumAcceptedLevel;

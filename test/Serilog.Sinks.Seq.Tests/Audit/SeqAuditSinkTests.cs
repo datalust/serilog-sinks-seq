@@ -22,7 +22,7 @@ namespace Serilog.Sinks.Seq.Tests.Audit
         public void RemoteCommunicationErrorsPropagateToCallerWhenAuditing()
         {
             using var logger = new LoggerConfiguration()
-                .AuditTo.Seq("https://serilog.net/test/404")
+                .AuditTo.Seq("https://datalust.co/error/404")
                 .CreateLogger();
             var ex = Assert.Throws<AggregateException>(() => logger.Information("This is an audit event"));
             var baseException = ex.GetBaseException();

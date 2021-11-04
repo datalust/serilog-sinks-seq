@@ -28,7 +28,7 @@ namespace Serilog.Sinks.Seq
     /// Wraps a <see cref="CompactJsonFormatter" /> to suppress formatting errors and apply the event body size
     /// limit, if any. Placeholder events are logged when an event is unable to be written itself.
     /// </summary>
-    class ConstrainedBufferedFormatter : ITextFormatter
+    sealed class ConstrainedBufferedFormatter : ITextFormatter
     {
         static readonly int NewLineByteCount = Encoding.UTF8.GetByteCount(Environment.NewLine);
         

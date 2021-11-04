@@ -22,7 +22,7 @@ namespace Serilog.Sinks.Seq
     /// timer thread. An exception is <see cref="IsIncluded(LogEvent)"/>, which may be called
     /// concurrently but performs no synchronization.
     /// </summary>
-    class ControlledLevelSwitch
+    sealed class ControlledLevelSwitch
     {
         // If non-null, then background level checks will be performed; set either through the constructor
         // or in response to a level specification from the server. Never set to null after being made non-null.

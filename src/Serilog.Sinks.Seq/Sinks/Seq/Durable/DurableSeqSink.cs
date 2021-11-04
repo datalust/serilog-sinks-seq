@@ -23,7 +23,7 @@ using Serilog.Sinks.Seq.Http;
 
 namespace Serilog.Sinks.Seq.Durable
 {
-    class DurableSeqSink : ILogEventSink, IDisposable
+    sealed class DurableSeqSink : ILogEventSink, IDisposable
     {
         readonly HttpLogShipper _shipper;
         readonly Logger _sink;

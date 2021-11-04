@@ -31,7 +31,7 @@ using System.Runtime.InteropServices;
 
 namespace Serilog.Sinks.Seq.Durable
 {
-    class HttpLogShipper : IDisposable
+    sealed class HttpLogShipper : IDisposable
     {
         static readonly TimeSpan RequiredLevelCheckInterval = TimeSpan.FromMinutes(2);
 

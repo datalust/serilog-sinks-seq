@@ -24,7 +24,7 @@ using Serilog.Debugging;
 
 namespace Serilog.Sinks.Seq.Durable
 {
-    class FileSet
+    sealed class FileSet
     {
         readonly string _bookmarkFilename;
         readonly string _candidateSearchPath;

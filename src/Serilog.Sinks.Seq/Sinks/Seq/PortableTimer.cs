@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace Serilog.Sinks.Seq
 {
-    class PortableTimer : IDisposable
+    sealed class PortableTimer : IDisposable
     {
         readonly object _stateLock = new();
 

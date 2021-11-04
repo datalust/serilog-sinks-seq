@@ -21,10 +21,10 @@ namespace Serilog.Sinks.Seq
 {
     class PortableTimer : IDisposable
     {
-        readonly object _stateLock = new object();
+        readonly object _stateLock = new();
 
         readonly Func<CancellationToken, Task> _onTick;
-        readonly CancellationTokenSource _cancel = new CancellationTokenSource();
+        readonly CancellationTokenSource _cancel = new();
 
 #if THREADING_TIMER
         readonly Timer _timer;
@@ -35,9 +35,7 @@ namespace Serilog.Sinks.Seq
 
         public PortableTimer(Func<CancellationToken, Task> onTick)
         {
-            if (onTick == null) throw new ArgumentNullException(nameof(onTick));
-
-            _onTick = onTick;
+            _onTick = onTick ?? throw new ArgumentNullException(nameof(onTick));
 
 #if THREADING_TIMER
             _timer = new Timer(_ => OnTick(), null, Timeout.Infinite, Timeout.Infinite);

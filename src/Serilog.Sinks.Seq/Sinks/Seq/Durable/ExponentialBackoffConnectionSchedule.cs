@@ -14,7 +14,7 @@
 
 using System;
 
-namespace Serilog.Sinks.Seq
+namespace Serilog.Sinks.Seq.Durable
 {
     /// <summary>
     /// Based on the BatchedConnectionStatus class from <see cref="Serilog.Sinks.PeriodicBatching.PeriodicBatchingSink"/>.

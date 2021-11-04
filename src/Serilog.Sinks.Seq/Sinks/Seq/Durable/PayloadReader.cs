@@ -142,7 +142,7 @@ namespace Serilog.Sinks.Seq.Durable
         public static string MakeEmptyPayload(out string mimeType)
         {
             mimeType = SeqIngestionApi.CompactLogEventFormatMediaType;
-            return SeqIngestionApi.NoPayload;
+            return SeqIngestionApi.EmptyClefPayload;
         }
     }
 }

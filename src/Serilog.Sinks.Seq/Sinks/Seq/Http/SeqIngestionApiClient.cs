@@ -20,6 +20,10 @@ using Serilog.Events;
 
 namespace Serilog.Sinks.Seq.Http
 {
+    /// <summary>
+    /// Implements <see cref="SeqIngestionApi"/> over <see cref="HttpClient" />; this is the runtime implementation of
+    /// the ingestion API.
+    /// </summary>
     sealed class SeqIngestionApiClient : SeqIngestionApi
     {
         const string BulkUploadResource = "api/events/raw";

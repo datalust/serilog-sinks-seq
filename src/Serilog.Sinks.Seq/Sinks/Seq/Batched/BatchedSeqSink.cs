@@ -23,6 +23,9 @@ using Serilog.Sinks.Seq.Http;
 
 namespace Serilog.Sinks.Seq.Batched
 {
+    /// <summary>
+    /// The default Seq sink, for use in combination with <see cref="PeriodicBatchingSink"/>.
+    /// </summary>
     sealed class BatchedSeqSink : IBatchedLogEventSink, IDisposable
     {
         static readonly TimeSpan RequiredLevelCheckInterval = TimeSpan.FromMinutes(2);

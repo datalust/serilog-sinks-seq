@@ -23,6 +23,9 @@ using Serilog.Sinks.Seq.Http;
 
 namespace Serilog.Sinks.Seq.Audit
 {
+    /// <summary>
+    /// An <see cref="ILogEventSink"/> that synchronously propagates all <see cref="Emit"/> failures as exceptions.
+    /// </summary>
     sealed class SeqAuditSink : ILogEventSink, IDisposable
     {
         readonly SeqIngestionApi _ingestionApi;

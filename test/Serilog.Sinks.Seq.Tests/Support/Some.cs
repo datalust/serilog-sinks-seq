@@ -35,9 +35,9 @@ namespace Serilog.Sinks.Seq.Tests.Support
             return LogEvent(LogEventLevel.Debug, null, "Debug event");
         }
 
-        public static LogEvent InformationEvent()
+        public static LogEvent InformationEvent(string? messageTemplate = null)
         {
-            return LogEvent(LogEventLevel.Information, null, "Information event");
+            return LogEvent(LogEventLevel.Information, null, messageTemplate ?? "Information event");
         }
 
         public static LogEvent ErrorEvent()

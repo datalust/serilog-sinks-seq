@@ -51,7 +51,7 @@ namespace Serilog.Sinks.Seq.Audit
             var payload = new StringWriter();
             CompactJsonFormatter.FormatEvent(logEvent, payload, JsonValueFormatter);
 
-            await _ingestionApi.IngestAsync(payload.ToString());
+            await _ingestionApi.IngestAsync(payload.ToString()).ConfigureAwait(false);
         }
     }
 }

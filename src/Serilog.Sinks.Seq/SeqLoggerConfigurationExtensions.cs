@@ -19,7 +19,9 @@ using Serilog.Events;
 using Serilog.Sinks.Seq;
 using System.Net.Http;
 using Serilog.Sinks.PeriodicBatching;
+using Serilog.Sinks.Seq.Batched;
 using Serilog.Sinks.Seq.Audit;
+using Serilog.Sinks.Seq.Http;
 
 #if DURABLE
 using Serilog.Sinks.Seq.Durable;
@@ -32,8 +34,12 @@ namespace Serilog
     /// </summary>
     public static class SeqLoggerConfigurationExtensions
     {
+        const int DefaultBatchPostingLimit = 1000;
+        static readonly TimeSpan DefaultPeriod = TimeSpan.FromSeconds(2);
+        const int DefaultQueueSizeLimit = 100000;
+
         /// <summary>
-        /// Adds a sink that writes log events to a <a href="https://getseq.net">Seq</a> server.
+        /// Write log events to a <a href="https://datalust.co/seq">Seq</a> server.
         /// </summary>
         /// <param name="loggerSinkConfiguration">The logger configuration.</param>
         /// <param name="serverUrl">The base URL of the Seq server that log events will be written to.</param>
@@ -67,7 +73,7 @@ namespace Serilog
             this LoggerSinkConfiguration loggerSinkConfiguration,
             string serverUrl,
             LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
-            int batchPostingLimit = SeqSink.DefaultBatchPostingLimit,
+            int batchPostingLimit = DefaultBatchPostingLimit,
             TimeSpan? period = null,
             string? apiKey = null,
             string? bufferBaseFilename = null,
@@ -76,7 +82,7 @@ namespace Serilog
             LoggingLevelSwitch? controlLevelSwitch = null,
             HttpMessageHandler? messageHandler = null,
             long? retainedInvalidPayloadsLimitBytes = null,
-            int queueSizeLimit = SeqSink.DefaultQueueSizeLimit)
+            int queueSizeLimit = DefaultQueueSizeLimit)
         {
             if (loggerSinkConfiguration == null) throw new ArgumentNullException(nameof(loggerSinkConfiguration));
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
@@ -85,19 +91,17 @@ namespace Serilog
             if (queueSizeLimit < 0)
                 throw new ArgumentOutOfRangeException(nameof(queueSizeLimit), "Queue size limit must be non-zero.");
 
-            var defaultedPeriod = period ?? SeqSink.DefaultPeriod;
+            var defaultedPeriod = period ?? DefaultPeriod;
             var controlledSwitch = new ControlledLevelSwitch(controlLevelSwitch);
 
             ILogEventSink sink;
             
             if (bufferBaseFilename == null)
             {
-                var batchedSink = new SeqSink(
-                    serverUrl,
-                    apiKey,
+                var batchedSink = new BatchedSeqSink(
+                    new SeqIngestionApiClient(serverUrl, apiKey, messageHandler),
                     eventBodyLimitBytes,
-                    controlledSwitch,
-                    messageHandler);
+                    controlledSwitch);
 
                 var options = new PeriodicBatchingSinkOptions
                 {
@@ -134,7 +138,7 @@ namespace Serilog
         }
 
         /// <summary>
-        /// Adds a sink that writes audit log events to a <a href="https://getseq.net">Seq</a> server. Auditing writes are
+        /// Write audit log events to a <a href="https://datalust.co/seq">Seq</a> server. Auditing writes are
         /// synchronous and non-batched; any failures will propagate to the caller immediately as exceptions.
         /// </summary>
         /// <param name="loggerAuditSinkConfiguration">The logger configuration.</param>
@@ -155,9 +159,8 @@ namespace Serilog
             if (loggerAuditSinkConfiguration == null) throw new ArgumentNullException(nameof(loggerAuditSinkConfiguration));
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
 
-            return loggerAuditSinkConfiguration.Sink(
-                new SeqAuditSink(serverUrl, apiKey, messageHandler),
-                restrictedToMinimumLevel);
+            var ingestionApi = new SeqIngestionApiClient(serverUrl, apiKey, messageHandler);
+            return loggerAuditSinkConfiguration.Sink(new SeqAuditSink(ingestionApi), restrictedToMinimumLevel);
         }
     }
 }

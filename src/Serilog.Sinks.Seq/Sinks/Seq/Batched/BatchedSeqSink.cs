@@ -1,4 +1,4 @@
-﻿// Serilog.Sinks.Seq Copyright 2014-2019 Serilog Contributors
+﻿// Copyright © Serilog Contributors
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,48 +16,39 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
-using Serilog.Debugging;
 using Serilog.Events;
 using Serilog.Sinks.PeriodicBatching;
+using Serilog.Sinks.Seq.Http;
 
-namespace Serilog.Sinks.Seq
+namespace Serilog.Sinks.Seq.Batched
 {
-    class SeqSink : IBatchedLogEventSink, IDisposable
+    /// <summary>
+    /// The default Seq sink, for use in combination with <see cref="PeriodicBatchingSink"/>.
+    /// </summary>
+    sealed class BatchedSeqSink : IBatchedLogEventSink, IDisposable
     {
-        public const int DefaultBatchPostingLimit = 1000;
-        public static readonly TimeSpan DefaultPeriod = TimeSpan.FromSeconds(2);
-        public const int DefaultQueueSizeLimit = 100000;
-
         static readonly TimeSpan RequiredLevelCheckInterval = TimeSpan.FromMinutes(2);
 
-        readonly string? _apiKey;
         readonly ConstrainedBufferedFormatter _formatter;
-        readonly HttpClient _httpClient;
+        readonly SeqIngestionApi _ingestionApi;
 
         DateTime _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
         readonly ControlledLevelSwitch _controlledSwitch;
 
-        public SeqSink(
-            string serverUrl,
-            string? apiKey,
+        public BatchedSeqSink(
+            SeqIngestionApi ingestionApi,
             long? eventBodyLimitBytes,
-            ControlledLevelSwitch controlledSwitch,
-            HttpMessageHandler? messageHandler)
+            ControlledLevelSwitch controlledSwitch)
         {
-            if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
             _controlledSwitch = controlledSwitch ?? throw new ArgumentNullException(nameof(controlledSwitch));
-            _apiKey = apiKey;
-            _httpClient = messageHandler != null ? new HttpClient(messageHandler) : new HttpClient();
-            _httpClient.BaseAddress = new Uri(SeqApi.NormalizeServerBaseAddress(serverUrl));
             _formatter = new ConstrainedBufferedFormatter(eventBodyLimitBytes);
+            _ingestionApi = ingestionApi ?? throw new ArgumentNullException(nameof(ingestionApi));
         }
 
         public void Dispose()
         {
-            _httpClient.Dispose();
+            _ingestionApi.Dispose();
         }
 
         // The sink must emit at least one event on startup, and the server be
@@ -81,16 +72,11 @@ namespace Serilog.Sinks.Seq
                 _formatter.Format(evt, payload);
             }
 
-            var content = new StringContent(payload.ToString(), Encoding.UTF8, SeqApi.CompactLogEventFormatMimeType);
-            if (!string.IsNullOrWhiteSpace(_apiKey))
-                content.Headers.Add(SeqApi.ApiKeyHeaderName, _apiKey);
-    
-            var result = await _httpClient.PostAsync(SeqApi.BulkUploadResource, content).ConfigureAwait(false);
-            if (!result.IsSuccessStatusCode)
-                throw new LoggingFailedException($"Received failed result {result.StatusCode} when posting events to Seq");
+            var clefPayload = payload.ToString();
 
-            var returned = await result.Content.ReadAsStringAsync();
-            _controlledSwitch.Update(SeqApi.ReadEventInputResult(returned));
+            var minimumAcceptedLevel = await _ingestionApi.IngestAsync(clefPayload);
+
+            _controlledSwitch.Update(minimumAcceptedLevel);
         }
     }
 }

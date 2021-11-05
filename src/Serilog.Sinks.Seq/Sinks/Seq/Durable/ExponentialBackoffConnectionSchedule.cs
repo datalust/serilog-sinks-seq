@@ -14,12 +14,12 @@
 
 using System;
 
-namespace Serilog.Sinks.Seq
+namespace Serilog.Sinks.Seq.Durable
 {
     /// <summary>
     /// Based on the BatchedConnectionStatus class from <see cref="Serilog.Sinks.PeriodicBatching.PeriodicBatchingSink"/>.
     /// </summary>
-    class ExponentialBackoffConnectionSchedule
+    sealed class ExponentialBackoffConnectionSchedule
     {
         static readonly TimeSpan MinimumBackoffPeriod = TimeSpan.FromSeconds(5);
         static readonly TimeSpan MaximumBackoffInterval = TimeSpan.FromMinutes(10);

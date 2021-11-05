@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using Newtonsoft.Json;
 using Serilog.Sinks.Seq.Durable;
+using Serilog.Sinks.Seq.Http;
 using Serilog.Sinks.Seq.Tests.Support;
 using Xunit;
 using IOFile = System.IO.File;
@@ -29,7 +30,7 @@ namespace Serilog.Sinks.Seq.Tests.Durable
             var count = 0;
             PayloadReader.ReadPayload(1000, null, ref position, ref count, out var mimeType);
                 
-            Assert.Equal(SeqApi.CompactLogEventFormatMimeType, mimeType);
+            Assert.Equal(SeqIngestionApi.CompactLogEventFormatMediaType, mimeType);
 
             Assert.Equal(3, count);
             Assert.Equal(465 + 3 * (Environment.NewLine.Length - 1), position.NextLineStart);
@@ -54,7 +55,7 @@ namespace Serilog.Sinks.Seq.Tests.Durable
             var count = 0;
             var payload = PayloadReader.ReadPayload(1000, null, ref position, ref count, out var mimeType);
                 
-            Assert.Equal(SeqApi.RawEventFormatMimeType, mimeType);
+            Assert.Equal(SeqIngestionApi.RawEventFormatMediaType, mimeType);
 
             Assert.Equal(3, count);
             Assert.Equal(576 + 3 * (Environment.NewLine.Length - 1), position.NextLineStart);

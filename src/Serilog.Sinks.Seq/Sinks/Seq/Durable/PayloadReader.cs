@@ -19,6 +19,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using Serilog.Debugging;
+using Serilog.Sinks.Seq.Http;
 
 namespace Serilog.Sinks.Seq.Durable
 {
@@ -35,11 +36,11 @@ namespace Serilog.Sinks.Seq.Durable
             
             if (position.File.EndsWith(".json"))
             {
-                mimeType = SeqApi.RawEventFormatMimeType;
+                mimeType = SeqIngestionApi.RawEventFormatMediaType;
                 return ReadRawPayload(batchPostingLimit, eventBodyLimitBytes, ref position, ref count);
             }
 
-            mimeType = SeqApi.CompactLogEventFormatMimeType;
+            mimeType = SeqIngestionApi.CompactLogEventFormatMediaType;
             return ReadCompactPayload(batchPostingLimit, eventBodyLimitBytes, ref position, ref count);
         }
 
@@ -140,8 +141,8 @@ namespace Serilog.Sinks.Seq.Durable
 
         public static string MakeEmptyPayload(out string mimeType)
         {
-            mimeType = SeqApi.CompactLogEventFormatMimeType;
-            return SeqApi.NoPayload;
+            mimeType = SeqIngestionApi.CompactLogEventFormatMediaType;
+            return SeqIngestionApi.EmptyClefPayload;
         }
     }
 }

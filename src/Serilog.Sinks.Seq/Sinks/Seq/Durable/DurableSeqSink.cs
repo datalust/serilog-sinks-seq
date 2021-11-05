@@ -19,10 +19,11 @@ using Serilog.Core;
 using Serilog.Events;
 using System.Net.Http;
 using System.Text;
+using Serilog.Sinks.Seq.Http;
 
 namespace Serilog.Sinks.Seq.Durable
 {
-    class DurableSeqSink : ILogEventSink, IDisposable
+    sealed class DurableSeqSink : ILogEventSink, IDisposable
     {
         readonly HttpLogShipper _shipper;
         readonly Logger _sink;
@@ -46,13 +47,11 @@ namespace Serilog.Sinks.Seq.Durable
 
             _shipper = new HttpLogShipper(
                 fileSet,
-                serverUrl, 
-                apiKey, 
+                new SeqIngestionApiClient(serverUrl, apiKey, messageHandler),
                 batchPostingLimit, 
                 period, 
                 eventBodyLimitBytes,
                 controlledSwitch,
-                messageHandler,
                 retainedInvalidPayloadsLimitBytes,
                 bufferSizeLimitBytes);
 

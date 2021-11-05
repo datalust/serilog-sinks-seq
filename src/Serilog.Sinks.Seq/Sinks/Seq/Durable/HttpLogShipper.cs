@@ -18,12 +18,12 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Text;
 using Serilog.Debugging;
 using Serilog.Events;
 using IOFile = System.IO.File;
 using System.Threading.Tasks;
+using Serilog.Sinks.Seq.Http;
 
 #if HRESULTS
 using System.Runtime.InteropServices;
@@ -31,11 +31,10 @@ using System.Runtime.InteropServices;
 
 namespace Serilog.Sinks.Seq.Durable
 {
-    class HttpLogShipper : IDisposable
+    sealed class HttpLogShipper : IDisposable
     {
         static readonly TimeSpan RequiredLevelCheckInterval = TimeSpan.FromMinutes(2);
 
-        readonly string? _apiKey;
         readonly int _batchPostingLimit;
         readonly long? _eventBodyLimitBytes;
         readonly FileSet _fileSet;
@@ -43,13 +42,13 @@ namespace Serilog.Sinks.Seq.Durable
         readonly long? _bufferSizeLimitBytes;
 
         // Timer thread only
-        readonly HttpClient _httpClient;
+        readonly SeqIngestionApi _ingestionApi;
 
         readonly ExponentialBackoffConnectionSchedule _connectionSchedule;
         DateTime _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
 
         // Synchronized
-        readonly object _stateLock = new object();
+        readonly object _stateLock = new();
 
         readonly PortableTimer _timer;
 
@@ -60,26 +59,22 @@ namespace Serilog.Sinks.Seq.Durable
 
         public HttpLogShipper(
             FileSet fileSet,
-            string serverUrl,
-            string? apiKey,
+            SeqIngestionApi ingestionApi,
             int batchPostingLimit,
             TimeSpan period,
             long? eventBodyLimitBytes,
             ControlledLevelSwitch controlledSwitch,
-            HttpMessageHandler? messageHandler,
             long? retainedInvalidPayloadsLimitBytes,
             long? bufferSizeLimitBytes)
         {
             _fileSet = fileSet ?? throw new ArgumentNullException(nameof(fileSet));
-            _apiKey = apiKey;
+            _ingestionApi = ingestionApi ?? throw new ArgumentNullException(nameof(ingestionApi));
             _batchPostingLimit = batchPostingLimit;
             _eventBodyLimitBytes = eventBodyLimitBytes;
             _controlledSwitch = controlledSwitch;
             _connectionSchedule = new ExponentialBackoffConnectionSchedule(period);
             _retainedInvalidPayloadsLimitBytes = retainedInvalidPayloadsLimitBytes;
             _bufferSizeLimitBytes = bufferSizeLimitBytes;
-            _httpClient = messageHandler != null ? new HttpClient(messageHandler) : new HttpClient();
-            _httpClient.BaseAddress = new Uri(SeqApi.NormalizeServerBaseAddress(serverUrl));
             _timer = new PortableTimer(_ => OnTick());
 
             SetTimer();
@@ -150,34 +145,26 @@ namespace Serilog.Sinks.Seq.Durable
                     {
                         _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
 
-                        var content = new StringContent(payload, Encoding.UTF8, mimeType);
-                        if (!string.IsNullOrWhiteSpace(_apiKey))
-                            content.Headers.Add(SeqApi.ApiKeyHeaderName, _apiKey);
-
-                        var result = await _httpClient.PostAsync(SeqApi.BulkUploadResource, content).ConfigureAwait(false);
-                        if (result.IsSuccessStatusCode)
+                        var result = await _ingestionApi.TryIngestAsync(payload, mimeType);
+                        if (result.Succeeded)
                         {
                             _connectionSchedule.MarkSuccess();
                             bookmarkFile.WriteBookmark(position);
-                            var returned = await result.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            var minimumAcceptedLevel = SeqApi.ReadEventInputResult(returned);
-                            _controlledSwitch.Update(minimumAcceptedLevel);
+                            _controlledSwitch.Update(result.MinimumAcceptedLevel);
                         }
-                        else if (result.StatusCode == HttpStatusCode.BadRequest ||
-                                 result.StatusCode == HttpStatusCode.RequestEntityTooLarge)
+                        else if (result.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.RequestEntityTooLarge)
                         {
                             // The connection attempt was successful - the payload we sent was the problem.
                             _connectionSchedule.MarkSuccess();
 
-                            await DumpInvalidPayload(result, payload).ConfigureAwait(false);
+                            await DumpInvalidPayloadAsync(result.StatusCode, payload).ConfigureAwait(false);
 
                             bookmarkFile.WriteBookmark(position);
                         }
                         else
                         {
                             _connectionSchedule.MarkFailure();
-                            SelfLog.WriteLine("Received failed HTTP shipping result {0}: {1}", result.StatusCode,
-                                await result.Content.ReadAsStringAsync().ConfigureAwait(false));
+                            SelfLog.WriteLine("Received failed HTTP shipping result {0}", result.StatusCode);
 
                             if (_bufferSizeLimitBytes.HasValue)
                                 _fileSet.CleanUpBufferFiles(_bufferSizeLimitBytes.Value);
@@ -230,21 +217,20 @@ namespace Serilog.Sinks.Seq.Durable
             }
         }
 
-        async Task DumpInvalidPayload(HttpResponseMessage result, string payload)
+        Task DumpInvalidPayloadAsync(HttpStatusCode statusCode, string payload)
         {
-            var invalidPayloadFile = _fileSet.MakeInvalidPayloadFilename(result.StatusCode);
-            var resultContent = await result.Content.ReadAsStringAsync();
-            SelfLog.WriteLine("HTTP shipping failed with {0}: {1}; dumping payload to {2}", result.StatusCode,
-                resultContent, invalidPayloadFile);
+            var invalidPayloadFile = _fileSet.MakeInvalidPayloadFilename(statusCode);
+            SelfLog.WriteLine("HTTP shipping failed with {0}; dumping payload to {1}", statusCode, invalidPayloadFile);
             var bytesToWrite = Encoding.UTF8.GetBytes(payload);
             if (_retainedInvalidPayloadsLimitBytes.HasValue)
             {
                 _fileSet.CleanUpInvalidPayloadFiles(_retainedInvalidPayloadsLimitBytes.Value - bytesToWrite.Length);
             }
 #if WRITE_ALL_BYTES_ASYNC
-            await IOFile.WriteAllBytesAsync(invalidPayloadFile, bytesToWrite);
+            return IOFile.WriteAllBytesAsync(invalidPayloadFile, bytesToWrite);
 #else
             IOFile.WriteAllBytes(invalidPayloadFile, bytesToWrite);
+            return Task.FromResult(0);
 #endif
         }
 

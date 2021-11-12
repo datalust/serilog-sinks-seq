@@ -15,9 +15,11 @@
 #if DURABLE
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using Serilog.Debugging;
+using Serilog.Sinks.Seq.Http;
 
 namespace Serilog.Sinks.Seq.Durable
 {
@@ -30,13 +32,15 @@ namespace Serilog.Sinks.Seq.Durable
             ref int count,
             out string mimeType)
         {
+            if (position.File == null) throw new ArgumentException("File set position must point to a file.");
+            
             if (position.File.EndsWith(".json"))
             {
-                mimeType = SeqApi.RawEventFormatMimeType;
+                mimeType = SeqIngestionApi.RawEventFormatMediaType;
                 return ReadRawPayload(batchPostingLimit, eventBodyLimitBytes, ref position, ref count);
             }
 
-            mimeType = SeqApi.CompactLogEventFormatMimeType;
+            mimeType = SeqIngestionApi.CompactLogEventFormatMediaType;
             return ReadCompactPayload(batchPostingLimit, eventBodyLimitBytes, ref position, ref count);
         }
 
@@ -44,7 +48,7 @@ namespace Serilog.Sinks.Seq.Durable
         {
             var payload = new StringWriter();
 
-            using (var current = System.IO.File.Open(position.File, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (var current = System.IO.File.Open(position.File!, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
                 var nextLineStart = position.NextLineStart;
                 while (count < batchPostingLimit && TryReadLine(current, ref nextLineStart, out var nextLine))
@@ -78,7 +82,7 @@ namespace Serilog.Sinks.Seq.Durable
             payload.Write("{\"Events\":[");
             var delimStart = "";
 
-            using (var current = System.IO.File.Open(position.File, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (var current = System.IO.File.Open(position.File!, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
                 var nextLineStart = position.NextLineStart;
                 while (count < batchPostingLimit && TryReadLine(current, ref nextLineStart, out var nextLine))
@@ -109,7 +113,7 @@ namespace Serilog.Sinks.Seq.Durable
         }
 
         // It would be ideal to chomp whitespace here, but not required.
-        static bool TryReadLine(Stream current, ref long nextStart, out string nextLine)
+        static bool TryReadLine(Stream current, ref long nextStart, [NotNullWhen(true)] out string? nextLine)
         {
             var includesBom = nextStart == 0;
 
@@ -137,8 +141,8 @@ namespace Serilog.Sinks.Seq.Durable
 
         public static string MakeEmptyPayload(out string mimeType)
         {
-            mimeType = SeqApi.CompactLogEventFormatMimeType;
-            return SeqApi.NoPayload;
+            mimeType = SeqIngestionApi.CompactLogEventFormatMediaType;
+            return SeqIngestionApi.EmptyClefPayload;
         }
     }
 }

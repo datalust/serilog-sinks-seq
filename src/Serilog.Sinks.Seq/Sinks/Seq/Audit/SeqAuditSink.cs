@@ -14,38 +14,32 @@
 
 using System;
 using System.IO;
-using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using Serilog.Core;
-using Serilog.Debugging;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
 using Serilog.Formatting.Json;
+using Serilog.Sinks.Seq.Http;
 
 namespace Serilog.Sinks.Seq.Audit
 {
+    /// <summary>
+    /// An <see cref="ILogEventSink"/> that synchronously propagates all <see cref="Emit"/> failures as exceptions.
+    /// </summary>
     sealed class SeqAuditSink : ILogEventSink, IDisposable
     {
-        readonly string _apiKey;
-        readonly HttpClient _httpClient;
+        readonly SeqIngestionApi _ingestionApi;
 
-        static readonly JsonValueFormatter JsonValueFormatter = new JsonValueFormatter("$type");
+        static readonly JsonValueFormatter JsonValueFormatter = new("$type");
 
-        public SeqAuditSink(
-            string serverUrl,
-            string apiKey,
-            HttpMessageHandler messageHandler)
+        public SeqAuditSink(SeqIngestionApi ingestionApi)
         {
-            if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
-            _httpClient = messageHandler != null ? new HttpClient(messageHandler) : new HttpClient();
-            _httpClient.BaseAddress = new Uri(SeqApi.NormalizeServerBaseAddress(serverUrl));
-            _apiKey = apiKey;
+            _ingestionApi = ingestionApi ?? throw new ArgumentNullException(nameof(ingestionApi));
         }
 
         public void Dispose()
         {
-            _httpClient.Dispose();
+            _ingestionApi.Dispose();
         }
 
         public void Emit(LogEvent logEvent)
@@ -59,15 +53,8 @@ namespace Serilog.Sinks.Seq.Audit
 
             var payload = new StringWriter();
             CompactJsonFormatter.FormatEvent(logEvent, payload, JsonValueFormatter);
-            payload.WriteLine();
 
-            var content = new StringContent(payload.ToString(), Encoding.UTF8, SeqApi.CompactLogEventFormatMimeType);
-            if (!string.IsNullOrWhiteSpace(_apiKey))
-                content.Headers.Add(SeqApi.ApiKeyHeaderName, _apiKey);
-    
-            var result = await _httpClient.PostAsync(SeqApi.BulkUploadResource, content).ConfigureAwait(false);
-            if (!result.IsSuccessStatusCode)
-                throw new LoggingFailedException($"Received failed result {result.StatusCode} when posting events to Seq");
+            await _ingestionApi.IngestAsync(payload.ToString()).ConfigureAwait(false);
         }
     }
 }

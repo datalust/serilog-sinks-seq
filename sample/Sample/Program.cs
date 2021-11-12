@@ -5,7 +5,7 @@ using Serilog.Core;
 
 namespace Sample
 {
-    public class Program
+    public static class Program
     {
         public static void Main()
         {
@@ -16,8 +16,7 @@ namespace Sample
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.ControlledBy(levelSwitch)
                 .WriteTo.Console()
-                .WriteTo.Seq("http://localhost:5341",
-                             controlLevelSwitch: levelSwitch)
+                .WriteTo.Seq("http://localhost:5341", controlLevelSwitch: levelSwitch)
                 .CreateLogger();
 
             Log.Information("Sample starting up");

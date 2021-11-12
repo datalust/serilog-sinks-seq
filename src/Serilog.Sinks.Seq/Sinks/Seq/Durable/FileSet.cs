@@ -24,10 +24,8 @@ using Serilog.Debugging;
 
 namespace Serilog.Sinks.Seq.Durable
 {
-    class FileSet
+    sealed class FileSet
     {
-        public const string RawFormatFileExtension = ".json";
-        
         readonly string _bookmarkFilename;
         readonly string _candidateSearchPath;
         readonly string _logFolder;
@@ -44,7 +42,7 @@ namespace Serilog.Sinks.Seq.Durable
             RollingFilePathFormat = bufferBaseFilename + "-.clef";
             
             _bookmarkFilename = Path.GetFullPath(bufferBaseFilename + ".bookmark");
-            _logFolder = Path.GetDirectoryName(_bookmarkFilename);
+            _logFolder = Path.GetDirectoryName(_bookmarkFilename) ?? throw new ArgumentException("Buffer base filename must refer to a regular file.");
             
             // The extension cannot be matched here because it may be either "json" (raw format) or "clef" (compact).
             _candidateSearchPath = Path.GetFileName(bufferBaseFilename) + "-*.*";

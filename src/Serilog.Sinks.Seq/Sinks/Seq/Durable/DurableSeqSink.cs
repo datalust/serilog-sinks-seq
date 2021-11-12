@@ -19,11 +19,11 @@ using Serilog.Core;
 using Serilog.Events;
 using System.Net.Http;
 using System.Text;
-using Serilog.Formatting.Compact;
+using Serilog.Sinks.Seq.Http;
 
 namespace Serilog.Sinks.Seq.Durable
 {
-    class DurableSeqSink : ILogEventSink, IDisposable
+    sealed class DurableSeqSink : ILogEventSink, IDisposable
     {
         readonly HttpLogShipper _shipper;
         readonly Logger _sink;
@@ -31,13 +31,13 @@ namespace Serilog.Sinks.Seq.Durable
         public DurableSeqSink(
             string serverUrl,
             string bufferBaseFilename,
-            string apiKey,
+            string? apiKey,
             int batchPostingLimit,
             TimeSpan period,
             long? bufferSizeLimitBytes,
             long? eventBodyLimitBytes,
             ControlledLevelSwitch controlledSwitch,
-            HttpMessageHandler messageHandler,
+            HttpMessageHandler? messageHandler,
             long? retainedInvalidPayloadsLimitBytes)
         {
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
@@ -47,20 +47,18 @@ namespace Serilog.Sinks.Seq.Durable
 
             _shipper = new HttpLogShipper(
                 fileSet,
-                serverUrl, 
-                apiKey, 
+                new SeqIngestionApiClient(serverUrl, apiKey, messageHandler),
                 batchPostingLimit, 
                 period, 
                 eventBodyLimitBytes,
                 controlledSwitch,
-                messageHandler,
                 retainedInvalidPayloadsLimitBytes,
                 bufferSizeLimitBytes);
 
             const long individualFileSizeLimitBytes = 100L * 1024 * 1024;
             _sink = new LoggerConfiguration()
                 .MinimumLevel.Verbose()
-                .WriteTo.File(new CompactJsonFormatter(),
+                .WriteTo.File(new ConstrainedBufferedFormatter(eventBodyLimitBytes),
                         fileSet.RollingFilePathFormat,
                         rollingInterval: RollingInterval.Day,
                         fileSizeLimitBytes: individualFileSizeLimitBytes,

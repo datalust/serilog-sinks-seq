@@ -47,7 +47,7 @@ namespace Serilog.Sinks.Seq.Durable
             // The extension cannot be matched here because it may be either "json" (raw format) or "clef" (compact).
             _candidateSearchPath = Path.GetFileName(bufferBaseFilename) + "-*.*";
             
-            _filenameMatcher = new Regex("^" + Regex.Escape(Path.GetFileName(bufferBaseFilename)) + "-(?<date>\\d{8})(?<sequence>_[0-9]{3,}){0,1}\\.(json|clef)$");
+            _filenameMatcher = new Regex("^" + Regex.Escape(Path.GetFileName(bufferBaseFilename)) + "-(?<date>\\d{8})(?<sequence>_[0-9]{3,}){0,1}\\.(?<ext>json|clef)$");
         }
 
         public BookmarkFile OpenBookmarkFile()
@@ -61,6 +61,7 @@ namespace Serilog.Sinks.Seq.Durable
                 .Select(n => new KeyValuePair<string, Match>(n, _filenameMatcher.Match(Path.GetFileName(n))))
                 .Where(nm => nm.Value.Success)
                 .OrderBy(nm => nm.Value.Groups["date"].Value, StringComparer.OrdinalIgnoreCase)
+                .ThenByDescending(nm => nm.Value.Groups["ext"].Value)
                 .ThenBy(nm => int.Parse("0" + nm.Value.Groups["sequence"].Value.Replace("_", "")))
                 .Select(nm => nm.Key)
                 .ToArray();

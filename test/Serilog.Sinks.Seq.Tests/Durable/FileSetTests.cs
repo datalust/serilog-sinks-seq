@@ -15,7 +15,18 @@ namespace Serilog.Sinks.Seq.Tests.Durable
             const string? fakeContent = "{}";
 
             // Matching
-            var shouldMatch = new[] {bbf + "-20180101.json", bbf + "-20180102.json", bbf + "-20180102_001.json"};
+            var shouldMatch = new[]
+            {
+                bbf + "-20180101.json", 
+                bbf + "-20180102.json",
+                bbf + "-20180102_001.json",
+                bbf + "-20180103.json",
+                bbf + "-20180103.clef",
+                bbf + "-20180104.clef",
+                bbf + "-20180104_001.clef",
+                bbf + "-20180104_002.clef",
+                bbf + "-20180105.clef"
+            };
             foreach (var fn in shouldMatch)
                 System.IO.File.WriteAllText(fn, fakeContent);
 
@@ -31,7 +42,7 @@ namespace Serilog.Sinks.Seq.Tests.Durable
             var fileSet = new FileSet(bbf);
             var files = fileSet.GetBufferFiles();
                 
-            Assert.Equal(3, files.Length);
+            Assert.Equal(9, files.Length);
             Assert.Equal(shouldMatch, files);
         }
     }

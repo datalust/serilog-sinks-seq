@@ -8,7 +8,7 @@ $branch = @{ $true = $env:APPVEYOR_REPO_BRANCH; $false = $(git symbolic-ref --sh
 $revision = @{ $true = "{0:00000}" -f [convert]::ToInt32("0" + $env:APPVEYOR_BUILD_NUMBER, 10); $false = "local" }[$env:APPVEYOR_BUILD_NUMBER -ne $NULL];
 $suffix = @{ $true = ""; $false = "$branch-$revision"}[$branch -eq "main" -and $revision -ne "local"]
 
-foreach ($src in ls src/Serilog.*) {
+foreach ($src in gci src/Serilog.*) {
     Push-Location $src
 
 	if ($suffix) {
@@ -21,7 +21,7 @@ foreach ($src in ls src/Serilog.*) {
     Pop-Location
 }
 
-foreach ($test in ls test/Serilog.*.Tests) {
+foreach ($test in gci test/Serilog.*.Tests) {
     Push-Location $test
 
     & dotnet test -c Release

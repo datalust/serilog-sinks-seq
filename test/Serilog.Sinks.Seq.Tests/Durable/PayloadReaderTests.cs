@@ -61,7 +61,7 @@ namespace Serilog.Sinks.Seq.Tests.Durable
             Assert.Equal(576 + 3 * (Environment.NewLine.Length - 1), position.NextLineStart);
             Assert.Equal(fn, position.File);
 
-            var data = JsonConvert.DeserializeObject<dynamic>(payload);
+            var data = JsonConvert.DeserializeObject<dynamic>(payload)!;
             var events = data["Events"];
             Assert.NotNull(events);
             Assert.Equal(3, events.Count);

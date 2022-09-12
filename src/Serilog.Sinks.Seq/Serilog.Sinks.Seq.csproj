@@ -36,7 +36,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
-    <DefineConstants>$(DefineConstants);DURABLE;THREADING_TIMER;WRITE_ALL_BYTES_ASYNC</DefineConstants>
+    <DefineConstants>$(DefineConstants);DURABLE;THREADING_TIMER;WRITE_ALL_BYTES_ASYNC;SOCKETS_HTTP_HANDLER_ALWAYS_DEFAULT</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net4.5' ">

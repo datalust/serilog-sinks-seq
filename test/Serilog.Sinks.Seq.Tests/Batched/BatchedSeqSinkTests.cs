@@ -22,7 +22,7 @@ namespace Serilog.Sinks.Seq.Tests.Batched
             
             Assert.True(api.IsDisposed);
         }
-
+        
         [Fact]
         public async Task EventsAreFormattedIntoPayloads()
         {

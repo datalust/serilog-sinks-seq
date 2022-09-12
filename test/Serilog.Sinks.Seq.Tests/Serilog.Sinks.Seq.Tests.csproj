@@ -9,6 +9,15 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
+    <DefineConstants>$(DefineConstants);ASYNC_DISPOSE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
+    <DefineConstants>$(DefineConstants);ASYNC_DISPOSE</DefineConstants>
+  </PropertyGroup>
+  
   <ItemGroup>
     <Content Include="Resources\ThreeBufferedEvents.clef.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

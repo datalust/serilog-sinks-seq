@@ -36,7 +36,23 @@ namespace Serilog.Sinks.Seq.Http
         {
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
             _apiKey = apiKey;
-            _httpClient = messageHandler != null ? new HttpClient(messageHandler) : new HttpClient();
+            _httpClient = messageHandler != null
+                    ? new HttpClient(messageHandler)
+                    :
+#if SOCKETS_HTTP_HANDLER_ALWAYS_DEFAULT
+                    new HttpClient(new SocketsHttpHandler
+                    {
+                        // The default value is infinite; this causes problems for long-running processes if DNS changes
+                        // require that the Seq API be accessed at a different IP address. Setting a timeout here puts
+                        // an upper bound on the duration of DNS-related outages, while hopefully incurring only infrequent
+                        // connection reestablishment costs.
+                        PooledConnectionLifetime = TimeSpan.FromMinutes(5)
+                    })
+#else
+                    new HttpClient()
+#endif
+                ;
+            
             _httpClient.BaseAddress = new Uri(NormalizeServerBaseAddress(serverUrl));
         }
 

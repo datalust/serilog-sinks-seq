@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Serilog;
 using Serilog.Core;
 
@@ -7,29 +9,38 @@ namespace Sample
 {
     public static class Program
     {
-        public static void Main()
+        public static async Task Main()
         {
             // By sharing between the Seq sink and logger itself,
             // Seq API keys can be used to control the level of the whole logging pipeline.
             var levelSwitch = new LoggingLevelSwitch();
 
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.ControlledBy(levelSwitch)
-                .WriteTo.Console()
-                .WriteTo.Seq("http://localhost:5341", controlLevelSwitch: levelSwitch)
-                .CreateLogger();
-
-            Log.Information("Sample starting up");
-
-            foreach (var i in Enumerable.Range(0, 1000))
+            try
             {
-                Log.Information("Running loop {Counter}, switch is at {Level}", i, levelSwitch.MinimumLevel);
+                Log.Logger = new LoggerConfiguration()
+                    .MinimumLevel.ControlledBy(levelSwitch)
+                    .WriteTo.Console()
+                    .WriteTo.Seq("http://localhost:5341", controlLevelSwitch: levelSwitch)
+                    .CreateLogger();
 
-                Thread.Sleep(1000);
-                Log.Debug("Loop iteration done");
+                Log.Information("Sample starting up");
+
+                foreach (var i in Enumerable.Range(0, 100))
+                {
+                    Log.Information("Running loop {Counter}, switch is at {Level}", i, levelSwitch.MinimumLevel);
+
+                    Thread.Sleep(1000);
+                    Log.Debug("Loop iteration done");
+                }
             }
-
-            Log.CloseAndFlush();
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Unhandled exception");
+            }
+            finally
+            {
+                await Log.CloseAndFlushAsync();
+            }
         }
     }
 }

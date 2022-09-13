@@ -32,6 +32,9 @@ using System.Runtime.InteropServices;
 namespace Serilog.Sinks.Seq.Durable
 {
     sealed class HttpLogShipper : IDisposable
+#if ASYNC_DISPOSE
+        , IAsyncDisposable
+#endif
     {
         static readonly TimeSpan RequiredLevelCheckInterval = TimeSpan.FromMinutes(2);
 
@@ -80,7 +83,13 @@ namespace Serilog.Sinks.Seq.Durable
             SetTimer();
         }
 
-        void CloseAndFlush()
+        public bool IsIncluded(LogEvent logEvent)
+        {
+            return _controlledSwitch.IsIncluded(logEvent);
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
         {
             lock (_stateLock)
             {
@@ -92,20 +101,26 @@ namespace Serilog.Sinks.Seq.Durable
 
             _timer.Dispose();
 
-            OnTick().GetAwaiter().GetResult();
+            Task.Run(OnTick).Wait();
         }
-
-        public bool IsIncluded(LogEvent logEvent)
+        
+#if ASYNC_DISPOSE
+        public async ValueTask DisposeAsync()
         {
-            return _controlledSwitch.IsIncluded(logEvent);
-        }
+            lock (_stateLock)
+            {
+                if (_unloading)
+                    return;
 
-        /// <inheritdoc/>
-        public void Dispose()
-        {
-            CloseAndFlush();
-        }
+                _unloading = true;
+            }
 
+            _timer.Dispose();
+
+            await OnTick().ConfigureAwait(false);
+        }
+#endif
+        
         void SetTimer()
         {
             // Note, called under _stateLock

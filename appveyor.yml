@@ -1,10 +1,10 @@
 version: '{build}'
 skip_tags: true
-image: Visual Studio 2019
+image: Visual Studio 2022
 install:
-  - ps: mkdir -Force ".\build\" | Out-Null
+  - pwsh: mkdir -Force ".\build\" | Out-Null
 build_script:
-- ps: ./Build.ps1
+- pwsh: ./Build.ps1
 test: off
 artifacts:
 - path: artifacts/Serilog.*.nupkg
@@ -17,7 +17,7 @@ deploy:
     branch: /^(main|dev)$/
 - provider: GitHub
   auth_token:
-    secure: p4LpVhBKxGS5WqucHxFQ5c7C8cP74kbNB0Z8k9Oxx/PMaDQ1+ibmoexNqVU5ZlmX
+    secure: hX+cZmW+9BCXy7vyH8myWsYdtQHyzzil9K5yvjJv7dK9XmyrGYYDj/DPzMqsXSjo
   artifact: /Serilog.*\.nupkg/
   tag: v$(appveyor_build_version)
   on:

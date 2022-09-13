@@ -24,6 +24,9 @@ using Serilog.Sinks.Seq.Http;
 namespace Serilog.Sinks.Seq.Durable
 {
     sealed class DurableSeqSink : ILogEventSink, IDisposable
+#if ASYNC_DISPOSE
+        , IAsyncDisposable
+#endif
     {
         readonly HttpLogShipper _shipper;
         readonly Logger _sink;
@@ -73,6 +76,14 @@ namespace Serilog.Sinks.Seq.Durable
             _sink.Dispose();
             _shipper.Dispose();
         }
+        
+#if ASYNC_DISPOSE
+        public async System.Threading.Tasks.ValueTask DisposeAsync()
+        {
+            await _sink.DisposeAsync().ConfigureAwait(false);
+            await _shipper.DisposeAsync().ConfigureAwait(false);
+        }
+#endif
 
         public void Emit(LogEvent logEvent)
         {

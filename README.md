@@ -1,15 +1,15 @@
-# Serilog.Sinks.Seq [![Build status](https://ci.appveyor.com/api/projects/status/uwkn795klja7u74f/branch/dev?svg=true)](https://ci.appveyor.com/project/datalust/serilog-sinks-seq/branch/dev) [![NuGet](https://img.shields.io/nuget/v/Serilog.Sinks.Seq.svg)](https://nuget.org/packages/serilog.sinks.seq) [![Join the chat at https://gitter.im/serilog/serilog](https://img.shields.io/gitter/room/serilog/serilog.svg)](https://gitter.im/serilog/serilog)
+# Serilog.Sinks.Seq [![Build status](https://ci.appveyor.com/api/projects/status/uwkn795klja7u74f/branch/dev?svg=true)](https://ci.appveyor.com/project/datalust/serilog-sinks-seq/branch/dev) [![NuGet](https://img.shields.io/nuget/v/Serilog.Sinks.Seq.svg)](https://nuget.org/packages/serilog.sinks.seq)
 
-A Serilog sink that writes events to the [Seq](https://datalust.co/seq) structured log server. Supports .NET 4.5+, .NET Core, and platforms compatible with the [.NET Platform Standard](https://github.com/dotnet/corefx/blob/master/Documentation/architecture/net-platform-standard.md) 1.1 including Windows 8 & UWP, Windows Phone and Xamarin.
+A Serilog sink that writes events to the [Seq](https://datalust.co/seq) structured log server. Supports all modern .NET platforms.
 
 [<img alt="Package Logo" src="https://datalust.co/images/seq-nuget.png" width="128px">](https://nuget.org/packages/serilog.sinks.seq)
 
 ### Getting started
 
-Install the _Serilog.Sinks.Seq_ package from Visual Studio's _NuGet_ console:
+Install _Serilog.Sinks.Seq_ into your .NET project:
 
 ```powershell
-PM> Install-Package Serilog.Sinks.Seq
+> dotnet add package Serilog.Sinks.Seq
 ```
 
 Point the logger to Seq:
@@ -69,7 +69,7 @@ Serilog's XML configuration has several other capabilities that are described on
 To use the Seq sink with _Microsoft.Extensions.Configuration_, for example with ASP.NET Core or .NET Core, use the [Serilog.Settings.Configuration](https://github.com/serilog/serilog-settings-configuration) package. First install that package if you have not already done so:
 
 ```powershell
-Install-Package Serilog.Settings.Configuration
+dotnet add package Serilog.Settings.Configuration
 ```
 
 Instead of configuring the Seq sink directly in code, call `ReadFrom.Configuration()`:

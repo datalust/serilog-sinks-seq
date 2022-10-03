@@ -39,7 +39,7 @@ namespace Sample
             }
             finally
             {
-                await Log.CloseAndFlushAsync();
+                Log.CloseAndFlush();
             }
         }
     }

@@ -14,6 +14,7 @@
 
 using System;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Serilog.Events;
@@ -38,6 +39,9 @@ namespace Serilog.Sinks.Seq.Http
             _apiKey = apiKey;
             _httpClient = messageHandler != null
                     ? new HttpClient(messageHandler)
+                    : RuntimeInformation.IsOSPlatform(OSPlatform.Create("WEBASSEMBLY"))
+                    // Can't set PooledConnectionLifetime on this platform
+                    ? new HttpClient()
                     :
 #if SOCKETS_HTTP_HANDLER_ALWAYS_DEFAULT
                     new HttpClient(new SocketsHttpHandler

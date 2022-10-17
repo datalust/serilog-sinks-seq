@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net4.8;net5.0</TargetFrameworks>
+    <TargetFramework>net6.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
@@ -9,10 +9,6 @@
 
   <ItemGroup>
     <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net4.8' ">
-    <Reference Include="System.Net.Http" />
   </ItemGroup>
     
   <ItemGroup>

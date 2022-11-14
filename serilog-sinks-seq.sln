@@ -33,6 +33,8 @@ ProjectSection(SolutionItems) = preProject
 	LICENSE = LICENSE
 EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorWasm", "sample\BlazorWasm\BlazorWasm.csproj", "{1BB4C500-449C-42DF-849D-F0CAEC9965EE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{3C2D8E01-5580-426A-BDD9-EC59CD98E618}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3C2D8E01-5580-426A-BDD9-EC59CD98E618}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3C2D8E01-5580-426A-BDD9-EC59CD98E618}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1BB4C500-449C-42DF-849D-F0CAEC9965EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1BB4C500-449C-42DF-849D-F0CAEC9965EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1BB4C500-449C-42DF-849D-F0CAEC9965EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1BB4C500-449C-42DF-849D-F0CAEC9965EE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -59,5 +65,6 @@ Global
 		{D8A74F4C-981B-41F1-B807-FE08DFCC06D4} = {037440DE-440B-4129-9F7A-09B42D00397E}
 		{17497155-5D94-45DF-81D9-BD960E8CF217} = {88A3ECD1-D91A-49A2-A6D7-5A70973A0E3F}
 		{3C2D8E01-5580-426A-BDD9-EC59CD98E618} = {67B1C971-75EE-4ABE-B184-66AAC8D9D572}
+		{1BB4C500-449C-42DF-849D-F0CAEC9965EE} = {88A3ECD1-D91A-49A2-A6D7-5A70973A0E3F}
 	EndGlobalSection
 EndGlobal

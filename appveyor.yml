@@ -2,7 +2,13 @@ version: '{build}'
 skip_tags: true
 image: Visual Studio 2022
 install:
-  - pwsh: mkdir -Force ".\build\" | Out-Null
+- pwsh: mkdir -Force ".\build\" | Out-Null
+- pwsh: $RequiredDotnetVersion =  $(Get-Content ./global.json | ConvertFrom-Json).sdk.version
+- pwsh: $env:DOTNET_INSTALL_DIR = "$pwd\.dotnetsdk"
+- pwsh: mkdir $env:DOTNET_INSTALL_DIR -Force | Out-Null
+- pwsh: Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile "$($env:DOTNET_INSTALL_DIR)/dotnet-install.ps1"
+- pwsh: '& "$($env:DOTNET_INSTALL_DIR)/dotnet-install.ps1" -Version $RequiredDotnetVersion -InstallDir $env:DOTNET_INSTALL_DIR'
+- pwsh: $env:Path = "$env:DOTNET_INSTALL_DIR;$env:Path"
 build_script:
 - pwsh: ./Build.ps1
 test: off

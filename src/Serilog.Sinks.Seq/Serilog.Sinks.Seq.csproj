@@ -21,6 +21,7 @@
     <GenerateAssemblyVersionAttribute>true</GenerateAssemblyVersionAttribute>
     <LangVersion>9</LangVersion>
     <Nullable>enable</Nullable>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
   
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
@@ -36,7 +37,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
-    <DefineConstants>$(DefineConstants);DURABLE;THREADING_TIMER;WRITE_ALL_BYTES_ASYNC;ASYNC_DISPOSE;SOCKETS_HTTP_HANDLER_ALWAYS_DEFAULT</DefineConstants>
+    <DefineConstants>$(DefineConstants);DURABLE;THREADING_TIMER;WRITE_ALL_BYTES_ASYNC;ASYNC_DISPOSE;SOCKETS_HTTP_HANDLER_ALWAYS_DEFAULT;ARCHITECTURE_WASM</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net4.5' ">

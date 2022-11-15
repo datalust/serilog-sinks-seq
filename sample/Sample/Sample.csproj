@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
   <ItemGroup>

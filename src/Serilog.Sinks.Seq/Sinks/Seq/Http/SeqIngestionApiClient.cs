@@ -36,26 +36,38 @@ namespace Serilog.Sinks.Seq.Http
         public SeqIngestionApiClient(string serverUrl, string? apiKey, HttpMessageHandler? messageHandler)
         {
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
+            
             _apiKey = apiKey;
-            _httpClient = messageHandler != null
-                    ? new HttpClient(messageHandler)
-                    : RuntimeInformation.IsOSPlatform(OSPlatform.Create("WEBASSEMBLY"))
-                    // Can't set PooledConnectionLifetime on this platform
-                    ? new HttpClient()
-                    :
-#if SOCKETS_HTTP_HANDLER_ALWAYS_DEFAULT
-                    new HttpClient(new SocketsHttpHandler
-                    {
-                        // The default value is infinite; this causes problems for long-running processes if DNS changes
-                        // require that the Seq API be accessed at a different IP address. Setting a timeout here puts
-                        // an upper bound on the duration of DNS-related outages, while hopefully incurring only infrequent
-                        // connection reestablishment costs.
-                        PooledConnectionLifetime = TimeSpan.FromMinutes(5)
-                    })
-#else
-                    new HttpClient()
+
+            if (messageHandler != null)
+            {
+                _httpClient = new HttpClient(messageHandler);
+            }
+#if ARCHITECTURE_WASM
+            else if (RuntimeInformation.ProcessArchitecture == Architecture.Wasm)
+            {
+                // Can't set PooledConnectionLifetime on this platform
+                _httpClient = new HttpClient();
+            }
 #endif
-                ;
+#if SOCKETS_HTTP_HANDLER_ALWAYS_DEFAULT
+            else
+            {
+                _httpClient = new HttpClient(new SocketsHttpHandler
+                {
+                    // The default value is infinite; this causes problems for long-running processes if DNS changes
+                    // require that the Seq API be accessed at a different IP address. Setting a timeout here puts
+                    // an upper bound on the duration of DNS-related outages, while hopefully incurring only infrequent
+                    // connection reestablishment costs.
+                    PooledConnectionLifetime = TimeSpan.FromMinutes(5)
+                });
+            }
+#else
+            else
+            {
+                _httpClient = new HttpClient();
+            }
+#endif
             
             _httpClient.BaseAddress = new Uri(NormalizeServerBaseAddress(serverUrl));
         }

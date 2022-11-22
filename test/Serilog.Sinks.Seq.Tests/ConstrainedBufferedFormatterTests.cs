@@ -48,7 +48,7 @@ namespace Serilog.Sinks.Seq.Tests
         [InlineData(1000, 512)]
         [InlineData(5000, 1476)]
         [InlineData(10000, 3976)]
-        [InlineData(130048, 3976)]
+        [InlineData(130048, 64000)]
         public void PlaceholderSampleSizeIsComputedFromEventBodyLimitBytes(long eventBodyLimitBytes, long expectedSampleSize)
         {
             var actual = ConstrainedBufferedFormatter.GetOversizeEventSampleLength(eventBodyLimitBytes);

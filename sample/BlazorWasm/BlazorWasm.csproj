@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Serilog.Sinks.Seq\Serilog.Sinks.Seq.csproj" />
+    <ProjectReference Include="..\..\src\Darp.Serilog.Sinks.Seq\Darp.Serilog.Sinks.Seq.csproj" />
   </ItemGroup>
 
 </Project>

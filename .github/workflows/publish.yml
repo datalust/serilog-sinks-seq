@@ -1,7 +1,8 @@
 name: Publish with tag
 on:
   push:
-    branch: dev
+    branches:
+      - dev
 jobs:
   build-test-pack:
     name: Build and test linux code, build documentation
@@ -20,24 +21,8 @@ jobs:
           dotnet test test/Darp.Utils.Test.Unit
       - name: Pack
         run: |
-          dotnet pack src/Darp.ByteExtensions --configuration Release
-          dotnet pack src/Darp.Utils --configuration Release
-          dotnet pack src/Darp.Utils.Assets --configuration Release
-          dotnet pack src/Darp.Utils.UI --configuration Release
-          dotnet pack src/Darp.Utils.Avalonia --configuration Release
-          dotnet pack src/Darp.Utils.Logging --configuration Release
-          dotnet pack src/Darp.Utils.Serial --configuration Release
-          dotnet pack src/Darp.Utils.Reasons --configuration Release
-          dotnet pack src/Darp.Utils.Reasons.Generator --configuration Release
+          dotnet pack src/Darp.Serilog.Sinks.Seq --configuration Release
       - name: Push
         run: |
-          dotnet nuget push "src/Darp.ByteExtensions/bin/Release/*.nupkg" --skip-duplicate --api-key ${{ github.token }} --source "github"
-          dotnet nuget push "src/Darp.Utils/bin/Release/*.nupkg" --skip-duplicate --api-key ${{ github.token }} --source "github"
-          dotnet nuget push "src/Darp.Utils.Assets/bin/Release/*.nupkg" --skip-duplicate --api-key ${{ github.token }} --source "github"
-          dotnet nuget push "src/Darp.Utils.UI/bin/Release/*.nupkg" --skip-duplicate --api-key ${{ github.token }} --source "github"
-          dotnet nuget push "src/Darp.Utils.Avalonia/bin/Release/*.nupkg" --skip-duplicate --api-key ${{ github.token }} --source "github"
-          dotnet nuget push "src/Darp.Utils.Logging/bin/Release/*.nupkg" --skip-duplicate --api-key ${{ github.token }} --source "github"
-          dotnet nuget push "src/Darp.Utils.Serial/bin/Release/*.nupkg" --skip-duplicate --api-key ${{ github.token }} --source "github"
-          dotnet nuget push "src/Darp.Utils.Reasons/bin/Release/*.nupkg" --skip-duplicate --api-key ${{ github.token }} --source "github"
-          dotnet nuget push "src/Darp.Utils.Reasons.Generator/bin/Release/*.nupkg" --skip-duplicate --api-key ${{ github.token }} --source "github"
+          dotnet nuget push "src/Darp.Serilog.Sinks.Seq/bin/Release/*.nupkg" --skip-duplicate --api-key ${{ github.token }} --source "github"
         

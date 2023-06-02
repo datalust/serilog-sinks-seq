@@ -35,6 +35,11 @@ EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorWasm", "sample\BlazorWasm\BlazorWasm.csproj", "{1BB4C500-449C-42DF-849D-F0CAEC9965EE}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{79087420-C2A6-4C6C-A802-D546BF5BD0A7}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\publish.yml = .github\workflows\publish.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -66,5 +71,6 @@ Global
 		{17497155-5D94-45DF-81D9-BD960E8CF217} = {88A3ECD1-D91A-49A2-A6D7-5A70973A0E3F}
 		{3C2D8E01-5580-426A-BDD9-EC59CD98E618} = {67B1C971-75EE-4ABE-B184-66AAC8D9D572}
 		{1BB4C500-449C-42DF-849D-F0CAEC9965EE} = {88A3ECD1-D91A-49A2-A6D7-5A70973A0E3F}
+		{79087420-C2A6-4C6C-A802-D546BF5BD0A7} = {27A8DEB5-B04B-4DCB-8CF2-0049E5EE66AF}
 	EndGlobalSection
 EndGlobal

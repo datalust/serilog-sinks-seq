@@ -15,7 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sample", "sample", "{88A3EC
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{67B1C971-75EE-4ABE-B184-66AAC8D9D572}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serilog.Sinks.Seq", "src\Serilog.Sinks.Seq\Serilog.Sinks.Seq.csproj", "{D8A74F4C-981B-41F1-B807-FE08DFCC06D4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Darp.Serilog.Sinks.Seq", "src\Darp.Serilog.Sinks.Seq\Darp.Serilog.Sinks.Seq.csproj", "{D8A74F4C-981B-41F1-B807-FE08DFCC06D4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample", "sample\Sample\Sample.csproj", "{17497155-5D94-45DF-81D9-BD960E8CF217}"
 EndProject

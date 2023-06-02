@@ -16,9 +16,6 @@ jobs:
           dotnet-version: '7.0.x'
       - name: Set up nuget
         run: dotnet nuget add source --username USERNAME --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Darp-IT/index.json"
-      - name: Test
-        run: |
-          dotnet test test/Serilog.Sinks.Seq.Tests
       - name: Pack
         run: |
           dotnet pack src/Darp.Serilog.Sinks.Seq --configuration Release

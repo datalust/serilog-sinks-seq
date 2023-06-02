@@ -18,6 +18,7 @@ using Serilog.Core;
 using Serilog.Events;
 using Serilog.Sinks.Seq;
 using System.Net.Http;
+using Serilog.Formatting.Json;
 using Serilog.Sinks.PeriodicBatching;
 using Serilog.Sinks.Seq.Batched;
 using Serilog.Sinks.Seq.Audit;
@@ -57,6 +58,7 @@ namespace Serilog
         /// <param name="eventBodyLimitBytes">The maximum size, in bytes, that the JSON representation of
         /// an event may take before it is dropped rather than being sent to the Seq server. Specify null for no limit.
         /// The default is 265 KB.</param>
+        /// <param name="jsonValueFormatter">If provided, this jsonValueFormatter can be used</param>
         /// <param name="controlLevelSwitch">If provided, the switch will be updated based on the Seq server's level setting
         /// for the corresponding API key. Passing the same key to MinimumLevel.ControlledBy() will make the whole pipeline
         /// dynamically controlled. Do not specify <paramref name="restrictedToMinimumLevel"/> with this setting.</param>
@@ -79,6 +81,7 @@ namespace Serilog
             string? bufferBaseFilename = null,
             long? bufferSizeLimitBytes = null,
             long? eventBodyLimitBytes = 256*1024,
+            JsonValueFormatter? jsonValueFormatter = null,
             LoggingLevelSwitch? controlLevelSwitch = null,
             HttpMessageHandler? messageHandler = null,
             long? retainedInvalidPayloadsLimitBytes = null,
@@ -101,6 +104,7 @@ namespace Serilog
                 var batchedSink = new BatchedSeqSink(
                     new SeqIngestionApiClient(serverUrl, apiKey, messageHandler),
                     eventBodyLimitBytes,
+                    jsonValueFormatter ?? new JsonValueFormatter("$type"),
                     controlledSwitch);
 
                 var options = new PeriodicBatchingSinkOptions
@@ -123,6 +127,7 @@ namespace Serilog
                     defaultedPeriod,
                     bufferSizeLimitBytes,
                     eventBodyLimitBytes,
+                    jsonValueFormatter ?? new JsonValueFormatter("$type"),
                     controlledSwitch,
                     messageHandler,
                     retainedInvalidPayloadsLimitBytes);

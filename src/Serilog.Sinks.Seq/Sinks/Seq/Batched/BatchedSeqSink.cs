@@ -18,6 +18,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Serilog.Events;
+using Serilog.Formatting.Json;
 using Serilog.Sinks.PeriodicBatching;
 using Serilog.Sinks.Seq.Http;
 
@@ -39,10 +40,11 @@ namespace Serilog.Sinks.Seq.Batched
         public BatchedSeqSink(
             SeqIngestionApi ingestionApi,
             long? eventBodyLimitBytes,
+            JsonValueFormatter jsonValueFormatter,
             ControlledLevelSwitch controlledSwitch)
         {
             _controlledSwitch = controlledSwitch ?? throw new ArgumentNullException(nameof(controlledSwitch));
-            _formatter = new ConstrainedBufferedFormatter(eventBodyLimitBytes);
+            _formatter = new ConstrainedBufferedFormatter(eventBodyLimitBytes, jsonValueFormatter);
             _ingestionApi = ingestionApi ?? throw new ArgumentNullException(nameof(ingestionApi));
         }
 

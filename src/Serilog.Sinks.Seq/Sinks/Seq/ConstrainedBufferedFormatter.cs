@@ -33,11 +33,12 @@ namespace Serilog.Sinks.Seq
         static readonly int NewLineByteCount = Encoding.UTF8.GetByteCount(Environment.NewLine);
         
         readonly long? _eventBodyLimitBytes;
-        readonly CompactJsonFormatter _jsonFormatter = new(new JsonValueFormatter("$type"));
+        readonly CompactJsonFormatter _jsonFormatter;
 
-        public ConstrainedBufferedFormatter(long? eventBodyLimitBytes)
+        public ConstrainedBufferedFormatter(long? eventBodyLimitBytes, JsonValueFormatter jsonValueFormatter)
         {
             _eventBodyLimitBytes = eventBodyLimitBytes;
+            _jsonFormatter = new(jsonValueFormatter);
         }
 
         public void Format(LogEvent logEvent, TextWriter output)

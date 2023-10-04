@@ -134,7 +134,7 @@ namespace Serilog
 
             return loggerSinkConfiguration.Conditional(
                 controlledSwitch.IsIncluded,
-                wt => wt.Sink(sink, restrictedToMinimumLevel));
+                wt => wt.Sink(sink, restrictedToMinimumLevel, levelSwitch: null));
         }
 
         /// <summary>

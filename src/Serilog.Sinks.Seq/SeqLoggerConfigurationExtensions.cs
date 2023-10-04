@@ -24,135 +24,134 @@ using Serilog.Sinks.Seq.Audit;
 using Serilog.Sinks.Seq.Http;
 using Serilog.Sinks.Seq.Durable;
 
-namespace Serilog
+namespace Serilog;
+
+/// <summary>
+/// Extends Serilog configuration to write events to Seq.
+/// </summary>
+public static class SeqLoggerConfigurationExtensions
 {
+    const int DefaultBatchPostingLimit = 1000;
+    static readonly TimeSpan DefaultPeriod = TimeSpan.FromSeconds(2);
+    const int DefaultQueueSizeLimit = 100000;
+
     /// <summary>
-    /// Extends Serilog configuration to write events to Seq.
+    /// Write log events to a <a href="https://datalust.co/seq">Seq</a> server.
     /// </summary>
-    public static class SeqLoggerConfigurationExtensions
+    /// <param name="loggerSinkConfiguration">The logger configuration.</param>
+    /// <param name="serverUrl">The base URL of the Seq server that log events will be written to.</param>
+    /// <param name="restrictedToMinimumLevel">The minimum log event level required 
+    /// in order to write an event to the sink.</param>
+    /// <param name="batchPostingLimit">The maximum number of events to post in a single batch.</param>
+    /// <param name="period">The time to wait between checking for event batches.</param>
+    /// <param name="bufferBaseFilename">Path for a set of files that will be used to buffer events until they
+    /// can be successfully transmitted across the network. Individual files will be created using the
+    /// pattern <paramref name="bufferBaseFilename"/>*.json, which should not clash with any other filenames
+    /// in the same directory.</param>
+    /// <param name="apiKey">A Seq <i>API key</i> that authenticates the client to the Seq server.</param>
+    /// <param name="bufferSizeLimitBytes">The maximum amount of data, in bytes, to which the buffer
+    /// log file for a specific date will be allowed to grow. By default no limit will be applied.</param>
+    /// <param name="eventBodyLimitBytes">The maximum size, in bytes, that the JSON representation of
+    /// an event may take before it is dropped rather than being sent to the Seq server. Specify null for no limit.
+    /// The default is 265 KB.</param>
+    /// <param name="controlLevelSwitch">If provided, the switch will be updated based on the Seq server's level setting
+    /// for the corresponding API key. Passing the same key to MinimumLevel.ControlledBy() will make the whole pipeline
+    /// dynamically controlled. Do not specify <paramref name="restrictedToMinimumLevel"/> with this setting.</param>
+    /// <param name="messageHandler">Used to construct the HttpClient that will send the log messages to Seq.</param>
+    /// <param name="retainedInvalidPayloadsLimitBytes">A soft limit for the number of bytes to use for storing failed requests.  
+    /// The limit is soft in that it can be exceeded by any single error payload, but in that case only that single error
+    /// payload will be retained.</param>
+    /// <param name="queueSizeLimit">The maximum number of events that will be held in-memory while waiting to ship them to
+    /// Seq. Beyond this limit, events will be dropped. The default is 100,000. Has no effect on
+    /// durable log shipping.</param>
+    /// <returns>Logger configuration, allowing configuration to continue.</returns>
+    /// <exception cref="ArgumentNullException">A required parameter is null.</exception>
+    public static LoggerConfiguration Seq(
+        this LoggerSinkConfiguration loggerSinkConfiguration,
+        string serverUrl,
+        LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
+        int batchPostingLimit = DefaultBatchPostingLimit,
+        TimeSpan? period = null,
+        string? apiKey = null,
+        string? bufferBaseFilename = null,
+        long? bufferSizeLimitBytes = null,
+        long? eventBodyLimitBytes = 256*1024,
+        LoggingLevelSwitch? controlLevelSwitch = null,
+        HttpMessageHandler? messageHandler = null,
+        long? retainedInvalidPayloadsLimitBytes = null,
+        int queueSizeLimit = DefaultQueueSizeLimit)
     {
-        const int DefaultBatchPostingLimit = 1000;
-        static readonly TimeSpan DefaultPeriod = TimeSpan.FromSeconds(2);
-        const int DefaultQueueSizeLimit = 100000;
+        if (loggerSinkConfiguration == null) throw new ArgumentNullException(nameof(loggerSinkConfiguration));
+        if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
+        if (bufferSizeLimitBytes is < 0)
+            throw new ArgumentOutOfRangeException(nameof(bufferSizeLimitBytes), "Negative value provided; buffer size limit must be non-negative.");
+        if (queueSizeLimit < 0)
+            throw new ArgumentOutOfRangeException(nameof(queueSizeLimit), "Queue size limit must be non-zero.");
 
-        /// <summary>
-        /// Write log events to a <a href="https://datalust.co/seq">Seq</a> server.
-        /// </summary>
-        /// <param name="loggerSinkConfiguration">The logger configuration.</param>
-        /// <param name="serverUrl">The base URL of the Seq server that log events will be written to.</param>
-        /// <param name="restrictedToMinimumLevel">The minimum log event level required 
-        /// in order to write an event to the sink.</param>
-        /// <param name="batchPostingLimit">The maximum number of events to post in a single batch.</param>
-        /// <param name="period">The time to wait between checking for event batches.</param>
-        /// <param name="bufferBaseFilename">Path for a set of files that will be used to buffer events until they
-        /// can be successfully transmitted across the network. Individual files will be created using the
-        /// pattern <paramref name="bufferBaseFilename"/>*.json, which should not clash with any other filenames
-        /// in the same directory.</param>
-        /// <param name="apiKey">A Seq <i>API key</i> that authenticates the client to the Seq server.</param>
-        /// <param name="bufferSizeLimitBytes">The maximum amount of data, in bytes, to which the buffer
-        /// log file for a specific date will be allowed to grow. By default no limit will be applied.</param>
-        /// <param name="eventBodyLimitBytes">The maximum size, in bytes, that the JSON representation of
-        /// an event may take before it is dropped rather than being sent to the Seq server. Specify null for no limit.
-        /// The default is 265 KB.</param>
-        /// <param name="controlLevelSwitch">If provided, the switch will be updated based on the Seq server's level setting
-        /// for the corresponding API key. Passing the same key to MinimumLevel.ControlledBy() will make the whole pipeline
-        /// dynamically controlled. Do not specify <paramref name="restrictedToMinimumLevel"/> with this setting.</param>
-        /// <param name="messageHandler">Used to construct the HttpClient that will send the log messages to Seq.</param>
-        /// <param name="retainedInvalidPayloadsLimitBytes">A soft limit for the number of bytes to use for storing failed requests.  
-        /// The limit is soft in that it can be exceeded by any single error payload, but in that case only that single error
-        /// payload will be retained.</param>
-        /// <param name="queueSizeLimit">The maximum number of events that will be held in-memory while waiting to ship them to
-        /// Seq. Beyond this limit, events will be dropped. The default is 100,000. Has no effect on
-        /// durable log shipping.</param>
-        /// <returns>Logger configuration, allowing configuration to continue.</returns>
-        /// <exception cref="ArgumentNullException">A required parameter is null.</exception>
-        public static LoggerConfiguration Seq(
-            this LoggerSinkConfiguration loggerSinkConfiguration,
-            string serverUrl,
-            LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
-            int batchPostingLimit = DefaultBatchPostingLimit,
-            TimeSpan? period = null,
-            string? apiKey = null,
-            string? bufferBaseFilename = null,
-            long? bufferSizeLimitBytes = null,
-            long? eventBodyLimitBytes = 256*1024,
-            LoggingLevelSwitch? controlLevelSwitch = null,
-            HttpMessageHandler? messageHandler = null,
-            long? retainedInvalidPayloadsLimitBytes = null,
-            int queueSizeLimit = DefaultQueueSizeLimit)
-        {
-            if (loggerSinkConfiguration == null) throw new ArgumentNullException(nameof(loggerSinkConfiguration));
-            if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
-            if (bufferSizeLimitBytes is < 0)
-                throw new ArgumentOutOfRangeException(nameof(bufferSizeLimitBytes), "Negative value provided; buffer size limit must be non-negative.");
-            if (queueSizeLimit < 0)
-                throw new ArgumentOutOfRangeException(nameof(queueSizeLimit), "Queue size limit must be non-zero.");
+        var defaultedPeriod = period ?? DefaultPeriod;
+        var controlledSwitch = new ControlledLevelSwitch(controlLevelSwitch);
 
-            var defaultedPeriod = period ?? DefaultPeriod;
-            var controlledSwitch = new ControlledLevelSwitch(controlLevelSwitch);
-
-            ILogEventSink sink;
+        ILogEventSink sink;
             
-            if (bufferBaseFilename == null)
-            {
-                var batchedSink = new BatchedSeqSink(
-                    new SeqIngestionApiClient(serverUrl, apiKey, messageHandler),
-                    eventBodyLimitBytes,
-                    controlledSwitch);
-
-                var options = new PeriodicBatchingSinkOptions
-                {
-                    BatchSizeLimit = batchPostingLimit,
-                    Period = defaultedPeriod,
-                    QueueLimit = queueSizeLimit
-                };
-                
-                sink = new PeriodicBatchingSink(batchedSink, options);
-            }
-            else
-            {
-                sink = new DurableSeqSink(
-                    serverUrl,
-                    bufferBaseFilename,
-                    apiKey,
-                    batchPostingLimit,
-                    defaultedPeriod,
-                    bufferSizeLimitBytes,
-                    eventBodyLimitBytes,
-                    controlledSwitch,
-                    messageHandler,
-                    retainedInvalidPayloadsLimitBytes);
-            }
-
-            return loggerSinkConfiguration.Conditional(
-                controlledSwitch.IsIncluded,
-                wt => wt.Sink(sink, restrictedToMinimumLevel, levelSwitch: null));
-        }
-
-        /// <summary>
-        /// Write audit log events to a <a href="https://datalust.co/seq">Seq</a> server. Auditing writes are
-        /// synchronous and non-batched; any failures will propagate to the caller immediately as exceptions.
-        /// </summary>
-        /// <param name="loggerAuditSinkConfiguration">The logger configuration.</param>
-        /// <param name="serverUrl">The base URL of the Seq server that log events will be written to.</param>
-        /// <param name="restrictedToMinimumLevel">The minimum log event level required 
-        /// in order to write an event to the sink.</param>
-        /// <param name="apiKey">A Seq <i>API key</i> that authenticates the client to the Seq server.</param>
-        /// <param name="messageHandler">Used to construct the HttpClient that will send the log messages to Seq.</param>
-        /// <returns>Logger configuration, allowing configuration to continue.</returns>
-        /// <exception cref="ArgumentNullException">A required parameter is null.</exception>
-        public static LoggerConfiguration Seq(
-            this LoggerAuditSinkConfiguration loggerAuditSinkConfiguration,
-            string serverUrl,
-            LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
-            string? apiKey = null,
-            HttpMessageHandler? messageHandler = null)
+        if (bufferBaseFilename == null)
         {
-            if (loggerAuditSinkConfiguration == null) throw new ArgumentNullException(nameof(loggerAuditSinkConfiguration));
-            if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
+            var batchedSink = new BatchedSeqSink(
+                new SeqIngestionApiClient(serverUrl, apiKey, messageHandler),
+                eventBodyLimitBytes,
+                controlledSwitch);
 
-            var ingestionApi = new SeqIngestionApiClient(serverUrl, apiKey, messageHandler);
-            return loggerAuditSinkConfiguration.Sink(new SeqAuditSink(ingestionApi), restrictedToMinimumLevel);
+            var options = new PeriodicBatchingSinkOptions
+            {
+                BatchSizeLimit = batchPostingLimit,
+                Period = defaultedPeriod,
+                QueueLimit = queueSizeLimit
+            };
+                
+            sink = new PeriodicBatchingSink(batchedSink, options);
         }
+        else
+        {
+            sink = new DurableSeqSink(
+                serverUrl,
+                bufferBaseFilename,
+                apiKey,
+                batchPostingLimit,
+                defaultedPeriod,
+                bufferSizeLimitBytes,
+                eventBodyLimitBytes,
+                controlledSwitch,
+                messageHandler,
+                retainedInvalidPayloadsLimitBytes);
+        }
+
+        return loggerSinkConfiguration.Conditional(
+            controlledSwitch.IsIncluded,
+            wt => wt.Sink(sink, restrictedToMinimumLevel, levelSwitch: null));
+    }
+
+    /// <summary>
+    /// Write audit log events to a <a href="https://datalust.co/seq">Seq</a> server. Auditing writes are
+    /// synchronous and non-batched; any failures will propagate to the caller immediately as exceptions.
+    /// </summary>
+    /// <param name="loggerAuditSinkConfiguration">The logger configuration.</param>
+    /// <param name="serverUrl">The base URL of the Seq server that log events will be written to.</param>
+    /// <param name="restrictedToMinimumLevel">The minimum log event level required 
+    /// in order to write an event to the sink.</param>
+    /// <param name="apiKey">A Seq <i>API key</i> that authenticates the client to the Seq server.</param>
+    /// <param name="messageHandler">Used to construct the HttpClient that will send the log messages to Seq.</param>
+    /// <returns>Logger configuration, allowing configuration to continue.</returns>
+    /// <exception cref="ArgumentNullException">A required parameter is null.</exception>
+    public static LoggerConfiguration Seq(
+        this LoggerAuditSinkConfiguration loggerAuditSinkConfiguration,
+        string serverUrl,
+        LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
+        string? apiKey = null,
+        HttpMessageHandler? messageHandler = null)
+    {
+        if (loggerAuditSinkConfiguration == null) throw new ArgumentNullException(nameof(loggerAuditSinkConfiguration));
+        if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
+
+        var ingestionApi = new SeqIngestionApiClient(serverUrl, apiKey, messageHandler);
+        return loggerAuditSinkConfiguration.Sink(new SeqAuditSink(ingestionApi), restrictedToMinimumLevel);
     }
 }

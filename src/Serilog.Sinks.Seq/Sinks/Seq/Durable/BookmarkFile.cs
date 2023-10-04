@@ -16,58 +16,57 @@ using System;
 using System.IO;
 using System.Text;
 
-namespace Serilog.Sinks.Seq.Durable
+namespace Serilog.Sinks.Seq.Durable;
+
+sealed class BookmarkFile : IDisposable
 {
-    sealed class BookmarkFile : IDisposable
+    readonly FileStream _bookmark;
+
+    public BookmarkFile(string bookmarkFilename)
     {
-        readonly FileStream _bookmark;
+        _bookmark = System.IO.File.Open(bookmarkFilename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
+    }
 
-        public BookmarkFile(string bookmarkFilename)
+    public FileSetPosition TryReadBookmark()
+    {
+        if (_bookmark.Length != 0)
         {
-            _bookmark = System.IO.File.Open(bookmarkFilename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
-        }
-
-        public FileSetPosition TryReadBookmark()
-        {
-            if (_bookmark.Length != 0)
-            {
-                _bookmark.Position = 0;
-
-                // Important not to dispose this StreamReader as the stream must remain open.
-                var reader = new StreamReader(_bookmark, Encoding.UTF8, false, 128);
-                var current = reader.ReadLine();
-
-                if (current != null)
-                {
-                    var parts = current.Split(new[] { ":::" }, StringSplitOptions.RemoveEmptyEntries);
-                    if (parts.Length == 2)
-                    {
-                        return new FileSetPosition(long.Parse(parts[0]), parts[1]);
-                    }
-                }
-            }
-
-            return FileSetPosition.None;
-        }
-
-        public void WriteBookmark(FileSetPosition bookmark)
-        {
-            if (bookmark.File == null)
-                return;
-
-            // Don't need to truncate, since we only ever read a single line and
-            // writes are always newline-terminated
             _bookmark.Position = 0;
 
-            // Cannot dispose, as `leaveOpen` is not available on all target platforms
-            var writer = new StreamWriter(_bookmark);
-            writer.WriteLine("{0}:::{1}", bookmark.NextLineStart, bookmark.File);
-            writer.Flush();
+            // Important not to dispose this StreamReader as the stream must remain open.
+            var reader = new StreamReader(_bookmark, Encoding.UTF8, false, 128);
+            var current = reader.ReadLine();
+
+            if (current != null)
+            {
+                var parts = current.Split(new[] { ":::" }, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length == 2)
+                {
+                    return new FileSetPosition(long.Parse(parts[0]), parts[1]);
+                }
+            }
         }
 
-        public void Dispose()
-        {
-            _bookmark.Dispose();
-        }
+        return FileSetPosition.None;
+    }
+
+    public void WriteBookmark(FileSetPosition bookmark)
+    {
+        if (bookmark.File == null)
+            return;
+
+        // Don't need to truncate, since we only ever read a single line and
+        // writes are always newline-terminated
+        _bookmark.Position = 0;
+
+        // Cannot dispose, as `leaveOpen` is not available on all target platforms
+        var writer = new StreamWriter(_bookmark);
+        writer.WriteLine("{0}:::{1}", bookmark.NextLineStart, bookmark.File);
+        writer.Flush();
+    }
+
+    public void Dispose()
+    {
+        _bookmark.Dispose();
     }
 }

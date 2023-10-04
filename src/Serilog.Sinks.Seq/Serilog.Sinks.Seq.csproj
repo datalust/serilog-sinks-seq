@@ -3,8 +3,8 @@
   <PropertyGroup>
     <Description>A Serilog sink that writes events to Seq using newline-delimited JSON and HTTP/HTTPS.</Description>
     <VersionPrefix>6.0.0</VersionPrefix>
-    <Authors>Serilog Contributors;Datalust Pty Ltd</Authors>
-    <Copyright>Copyright © Serilog Contributors</Copyright>
+    <Authors>Serilog Contributors;Serilog.Sinks.Seq Contributors;Datalust Pty Ltd</Authors>
+    <Copyright>Copyright © Serilog Contributors, Serilog.Sinks.Seq Contributors, Datalust Pty Ltd.</Copyright>
     <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

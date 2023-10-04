@@ -26,9 +26,7 @@ namespace Serilog.Sinks.Seq
         readonly Func<CancellationToken, Task> _onTick;
         readonly CancellationTokenSource _cancel = new();
 
-#if THREADING_TIMER
         readonly Timer _timer;
-#endif
 
         bool _running;
         bool _disposed;
@@ -36,10 +34,7 @@ namespace Serilog.Sinks.Seq
         public PortableTimer(Func<CancellationToken, Task> onTick)
         {
             _onTick = onTick ?? throw new ArgumentNullException(nameof(onTick));
-
-#if THREADING_TIMER
             _timer = new Timer(_ => OnTick(), null, Timeout.Infinite, Timeout.Infinite);
-#endif
         }
 
         public void Start(TimeSpan interval)
@@ -51,16 +46,7 @@ namespace Serilog.Sinks.Seq
                 if (_disposed)
                     throw new ObjectDisposedException(nameof(PortableTimer));
 
-#if THREADING_TIMER
                 _timer.Change(interval, Timeout.InfiniteTimeSpan);
-#else
-                Task.Delay(interval, _cancel.Token)
-                    .ContinueWith(
-                        _ => OnTick(),
-                        CancellationToken.None,
-                        TaskContinuationOptions.DenyChildAttach,
-                        TaskScheduler.Default);
-#endif
             }
         }
 
@@ -70,22 +56,11 @@ namespace Serilog.Sinks.Seq
             {
                 lock (_stateLock)
                 {
-                    if (_disposed)
+                    if (_disposed || _running)
                     {
+                        // Timer callbacks may be overlapped; if the sink is still shipping logs when the next interval
+                        // begins, skip this interval to avoid piling up threads.
                         return;
-                    }
-
-                    // There's a little bit of raciness here, but it's needed to support the
-                    // current API, which allows the tick handler to reenter and set the next interval.
-
-                    if (_running)
-                    {
-                        Monitor.Wait(_stateLock);
-
-                        if (_disposed)
-                        {
-                            return;
-                        }
                     }
 
                     _running = true;
@@ -126,10 +101,7 @@ namespace Serilog.Sinks.Seq
                     Monitor.Wait(_stateLock);
                 }
 
-#if THREADING_TIMER
                 _timer.Dispose();
-#endif
-
                 _disposed = true;
             }
         }

@@ -22,10 +22,7 @@ using Serilog.Sinks.PeriodicBatching;
 using Serilog.Sinks.Seq.Batched;
 using Serilog.Sinks.Seq.Audit;
 using Serilog.Sinks.Seq.Http;
-
-#if DURABLE
 using Serilog.Sinks.Seq.Durable;
-#endif
 
 namespace Serilog
 {
@@ -114,7 +111,6 @@ namespace Serilog
             }
             else
             {
-#if DURABLE
                 sink = new DurableSeqSink(
                     serverUrl,
                     bufferBaseFilename,
@@ -126,10 +122,6 @@ namespace Serilog
                     controlledSwitch,
                     messageHandler,
                     retainedInvalidPayloadsLimitBytes);
-#else
-                // We keep the API consistent for easier packaging and to support bait-and-switch.
-                throw new NotSupportedException("Durable log shipping is not supported on this platform.");
-#endif
             }
 
             return loggerSinkConfiguration.Conditional(

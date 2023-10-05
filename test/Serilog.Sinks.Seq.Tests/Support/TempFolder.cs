@@ -3,43 +3,42 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 
-namespace Serilog.Sinks.Seq.Tests.Support
+namespace Serilog.Sinks.Seq.Tests.Support;
+
+class TempFolder : IDisposable
 {
-    class TempFolder : IDisposable
+    static readonly Guid Session = Guid.NewGuid();
+
+    readonly string _tempFolder;
+
+    public TempFolder([CallerMemberName] string? name = null)
     {
-        static readonly Guid Session = Guid.NewGuid();
+        _tempFolder = System.IO.Path.Combine(
+            Environment.GetEnvironmentVariable("TMP") ?? Environment.GetEnvironmentVariable("TMPDIR") ?? "/tmp",
+            "Serilog.Sinks.Seq.Tests",
+            Session.ToString("n"),
+            name ?? Guid.NewGuid().ToString("n"));
 
-        readonly string _tempFolder;
+        Directory.CreateDirectory(_tempFolder);
+    }
 
-        public TempFolder([CallerMemberName] string? name = null)
+    public string Path => _tempFolder;
+
+    public void Dispose()
+    {
+        try
         {
-            _tempFolder = System.IO.Path.Combine(
-                Environment.GetEnvironmentVariable("TMP") ?? Environment.GetEnvironmentVariable("TMPDIR") ?? "/tmp",
-                "Serilog.Sinks.Seq.Tests",
-                Session.ToString("n"),
-                name ?? Guid.NewGuid().ToString("n"));
-
-            Directory.CreateDirectory(_tempFolder);
+            if (Directory.Exists(_tempFolder))
+                Directory.Delete(_tempFolder, true);
         }
-
-        public string Path => _tempFolder;
-
-        public void Dispose()
+        catch (Exception ex)
         {
-            try
-            {
-                if (Directory.Exists(_tempFolder))
-                    Directory.Delete(_tempFolder, true);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex);
-            }
+            Debug.WriteLine(ex);
         }
+    }
 
-        public string AllocateFilename(string? ext = null)
-        {
-            return System.IO.Path.Combine(Path, Guid.NewGuid().ToString("n") + "." + (ext ?? "tmp"));
-        }
+    public string AllocateFilename(string? ext = null)
+    {
+        return System.IO.Path.Combine(Path, Guid.NewGuid().ToString("n") + "." + (ext ?? "tmp"));
     }
 }

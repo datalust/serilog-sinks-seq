@@ -12,24 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#if DURABLE
+namespace Serilog.Sinks.Seq.Durable;
 
-namespace Serilog.Sinks.Seq.Durable
+readonly struct FileSetPosition
 {
-    readonly struct FileSetPosition
+    public string? File { get; }
+
+    public long NextLineStart { get; }
+
+    public FileSetPosition(long nextLineStart, string? file)
     {
-        public string? File { get; }
-
-        public long NextLineStart { get; }
-
-        public FileSetPosition(long nextLineStart, string? file)
-        {
-            NextLineStart = nextLineStart;
-            File = file;
-        }
-
-        public static readonly FileSetPosition None = default;
+        NextLineStart = nextLineStart;
+        File = file;
     }
-}
 
-#endif
+    public static readonly FileSetPosition None = default;
+}

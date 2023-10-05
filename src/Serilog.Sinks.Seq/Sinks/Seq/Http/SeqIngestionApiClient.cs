@@ -19,49 +19,49 @@ using System.Text;
 using System.Threading.Tasks;
 using Serilog.Events;
 
-namespace Serilog.Sinks.Seq.Http
+namespace Serilog.Sinks.Seq.Http;
+
+/// <summary>
+/// Implements <see cref="SeqIngestionApi"/> over <see cref="HttpClient" />; this is the runtime implementation of
+/// the ingestion API.
+/// </summary>
+sealed class SeqIngestionApiClient : SeqIngestionApi
 {
-    /// <summary>
-    /// Implements <see cref="SeqIngestionApi"/> over <see cref="HttpClient" />; this is the runtime implementation of
-    /// the ingestion API.
-    /// </summary>
-    sealed class SeqIngestionApiClient : SeqIngestionApi
-    {
-        const string BulkUploadResource = "api/events/raw";
-        const string ApiKeyHeaderName = "X-Seq-ApiKey";
+    const string BulkUploadResource = "api/events/raw";
+    const string ApiKeyHeaderName = "X-Seq-ApiKey";
         
-        readonly string? _apiKey;
-        readonly HttpClient _httpClient;
+    readonly string? _apiKey;
+    readonly HttpClient _httpClient;
 
-        public SeqIngestionApiClient(string serverUrl, string? apiKey, HttpMessageHandler? messageHandler)
-        {
-            if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
+    public SeqIngestionApiClient(string serverUrl, string? apiKey, HttpMessageHandler? messageHandler)
+    {
+        if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
             
-            _apiKey = apiKey;
+        _apiKey = apiKey;
 
-            if (messageHandler != null)
-            {
-                _httpClient = new HttpClient(messageHandler);
-            }
+        if (messageHandler != null)
+        {
+            _httpClient = new HttpClient(messageHandler);
+        }
 #if ARCHITECTURE_WASM
-            else if (RuntimeInformation.ProcessArchitecture == Architecture.Wasm)
-            {
-                // Can't set PooledConnectionLifetime on this platform
-                _httpClient = new HttpClient();
-            }
+        else if (RuntimeInformation.ProcessArchitecture == Architecture.Wasm)
+        {
+            // Can't set PooledConnectionLifetime on this platform
+            _httpClient = new HttpClient();
+        }
 #endif
 #if SOCKETS_HTTP_HANDLER_ALWAYS_DEFAULT
-            else
+        else
+        {
+            _httpClient = new HttpClient(new SocketsHttpHandler
             {
-                _httpClient = new HttpClient(new SocketsHttpHandler
-                {
-                    // The default value is infinite; this causes problems for long-running processes if DNS changes
-                    // require that the Seq API be accessed at a different IP address. Setting a timeout here puts
-                    // an upper bound on the duration of DNS-related outages, while hopefully incurring only infrequent
-                    // connection reestablishment costs.
-                    PooledConnectionLifetime = TimeSpan.FromMinutes(5)
-                });
-            }
+                // The default value is infinite; this causes problems for long-running processes if DNS changes
+                // require that the Seq API be accessed at a different IP address. Setting a timeout here puts
+                // an upper bound on the duration of DNS-related outages, while hopefully incurring only infrequent
+                // connection reestablishment costs.
+                PooledConnectionLifetime = TimeSpan.FromMinutes(5)
+            });
+        }
 #else
             else
             {
@@ -69,67 +69,66 @@ namespace Serilog.Sinks.Seq.Http
             }
 #endif
             
-            _httpClient.BaseAddress = new Uri(NormalizeServerBaseAddress(serverUrl));
-        }
+        _httpClient.BaseAddress = new Uri(NormalizeServerBaseAddress(serverUrl));
+    }
 
-        public override async Task<IngestionResult> TryIngestAsync(string payload, string mediaType)
-        {
-            var content = new StringContent(payload, Encoding.UTF8, mediaType);
-            if (!string.IsNullOrWhiteSpace(_apiKey))
-                content.Headers.Add(ApiKeyHeaderName, _apiKey);
+    public override async Task<IngestionResult> TryIngestAsync(string payload, string mediaType)
+    {
+        var content = new StringContent(payload, Encoding.UTF8, mediaType);
+        if (!string.IsNullOrWhiteSpace(_apiKey))
+            content.Headers.Add(ApiKeyHeaderName, _apiKey);
     
-            using var response = await _httpClient.PostAsync(BulkUploadResource, content).ConfigureAwait(false);
+        using var response = await _httpClient.PostAsync(BulkUploadResource, content).ConfigureAwait(false);
             
-            if (!response.IsSuccessStatusCode)
-                return new(false, response.StatusCode, null);
+        if (!response.IsSuccessStatusCode)
+            return new(false, response.StatusCode, null);
             
-            var returned = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            var minimumLevel = ReadIngestionResult(returned);
-            return new(true, response.StatusCode, minimumLevel);
-        }
+        var returned = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var minimumLevel = ReadIngestionResult(returned);
+        return new(true, response.StatusCode, minimumLevel);
+    }
         
-        public override void Dispose()
-        {
-            _httpClient.Dispose();
-        }
+    public override void Dispose()
+    {
+        _httpClient.Dispose();
+    }
         
-        // Why not use a JSON parser here? For a very small case, it's not
-        // worth taking on the extra payload/dependency management issues that
-        // a full-fledged parser will entail. If things get more sophisticated
-        // we'll reevaluate.
-        const string LevelMarker = "\"MinimumLevelAccepted\":\"";
+    // Why not use a JSON parser here? For a very small case, it's not
+    // worth taking on the extra payload/dependency management issues that
+    // a full-fledged parser will entail. If things get more sophisticated
+    // we'll reevaluate.
+    const string LevelMarker = "\"MinimumLevelAccepted\":\"";
 
-        internal static LogEventLevel? ReadIngestionResult(string? ingestionResult)
-        {
-            if (ingestionResult == null) return null;
+    internal static LogEventLevel? ReadIngestionResult(string? ingestionResult)
+    {
+        if (ingestionResult == null) return null;
 
-            // Seq 1.5 servers will return JSON including "MinimumLevelAccepted":x, where
-            // x may be null or a JSON string representation of the equivalent LogEventLevel
-            var startProp = ingestionResult.IndexOf(LevelMarker, StringComparison.Ordinal);
-            if (startProp == -1)
-                return null;
+        // Seq 1.5 servers will return JSON including "MinimumLevelAccepted":x, where
+        // x may be null or a JSON string representation of the equivalent LogEventLevel
+        var startProp = ingestionResult.IndexOf(LevelMarker, StringComparison.Ordinal);
+        if (startProp == -1)
+            return null;
 
-            var startValue = startProp + LevelMarker.Length;
-            if (startValue >= ingestionResult.Length)
-                return null;
+        var startValue = startProp + LevelMarker.Length;
+        if (startValue >= ingestionResult.Length)
+            return null;
 
-            var endValue = ingestionResult.IndexOf('"', startValue);
-            if (endValue == -1)
-                return null;
+        var endValue = ingestionResult.IndexOf('"', startValue);
+        if (endValue == -1)
+            return null;
 
-            var value = ingestionResult.Substring(startValue, endValue - startValue);
-            if (!Enum.TryParse(value, out LogEventLevel minimumLevel))
-                return null;
+        var value = ingestionResult.Substring(startValue, endValue - startValue);
+        if (!Enum.TryParse(value, out LogEventLevel minimumLevel))
+            return null;
 
-            return minimumLevel;
-        }
+        return minimumLevel;
+    }
 
-        internal static string NormalizeServerBaseAddress(string serverUrl)
-        {
-            var baseUri = serverUrl;
-            if (!baseUri.EndsWith("/"))
-                baseUri += "/";
-            return baseUri;
-        }
+    internal static string NormalizeServerBaseAddress(string serverUrl)
+    {
+        var baseUri = serverUrl;
+        if (!baseUri.EndsWith("/"))
+            baseUri += "/";
+        return baseUri;
     }
 }

@@ -18,6 +18,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Serilog.Events;
+using Serilog.Formatting;
 using Serilog.Sinks.PeriodicBatching;
 using Serilog.Sinks.Seq.Http;
 
@@ -30,7 +31,7 @@ sealed class BatchedSeqSink : IBatchedLogEventSink, IDisposable
 {
     static readonly TimeSpan RequiredLevelCheckInterval = TimeSpan.FromMinutes(2);
 
-    readonly ConstrainedBufferedFormatter _formatter;
+    readonly ConstrainedBufferedFormatter _payloadFormatter;
     readonly SeqIngestionApi _ingestionApi;
 
     DateTime _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
@@ -38,11 +39,12 @@ sealed class BatchedSeqSink : IBatchedLogEventSink, IDisposable
 
     public BatchedSeqSink(
         SeqIngestionApi ingestionApi,
+        ITextFormatter payloadFormatter,
         long? eventBodyLimitBytes,
         ControlledLevelSwitch controlledSwitch)
     {
         _controlledSwitch = controlledSwitch ?? throw new ArgumentNullException(nameof(controlledSwitch));
-        _formatter = new ConstrainedBufferedFormatter(eventBodyLimitBytes);
+        _payloadFormatter = new ConstrainedBufferedFormatter(eventBodyLimitBytes, payloadFormatter);
         _ingestionApi = ingestionApi ?? throw new ArgumentNullException(nameof(ingestionApi));
     }
 
@@ -69,7 +71,7 @@ sealed class BatchedSeqSink : IBatchedLogEventSink, IDisposable
         var payload = new StringWriter();
         foreach (var evt in events)
         {
-            _formatter.Format(evt, payload);
+            _payloadFormatter.Format(evt, payload);
         }
 
         var clefPayload = payload.ToString();

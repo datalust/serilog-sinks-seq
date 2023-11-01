@@ -1,4 +1,4 @@
-// Serilog.Sinks.Seq Copyright 2014-2019 Serilog Contributors
+// Serilog.Sinks.Seq Copyright © Serilog Contributors
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,14 +18,12 @@ using System.Text;
 using Serilog.Debugging;
 using Serilog.Events;
 using Serilog.Formatting;
-using Serilog.Formatting.Compact;
-using Serilog.Formatting.Json;
 using Serilog.Parsing;
 
 namespace Serilog.Sinks.Seq;
 
 /// <summary>
-/// Wraps a <see cref="CompactJsonFormatter" /> to suppress formatting errors and apply the event body size
+/// Wraps an <see cref="ITextFormatter" /> to suppress formatting errors and apply the event body size
 /// limit, if any. Placeholder events are logged when an event is unable to be written itself.
 /// </summary>
 sealed class ConstrainedBufferedFormatter : ITextFormatter
@@ -33,10 +31,11 @@ sealed class ConstrainedBufferedFormatter : ITextFormatter
     static readonly int NewLineByteCount = Encoding.UTF8.GetByteCount(Environment.NewLine);
         
     readonly long? _eventBodyLimitBytes;
-    readonly CompactJsonFormatter _jsonFormatter = new(new JsonValueFormatter("$type"));
+    readonly ITextFormatter _innerFormatter;
 
-    public ConstrainedBufferedFormatter(long? eventBodyLimitBytes)
+    public ConstrainedBufferedFormatter(long? eventBodyLimitBytes, ITextFormatter innerFormatter)
     {
+        _innerFormatter = innerFormatter;
         _eventBodyLimitBytes = eventBodyLimitBytes;
     }
 
@@ -51,7 +50,7 @@ sealed class ConstrainedBufferedFormatter : ITextFormatter
 
         try
         {
-            _jsonFormatter.Format(logEvent, buffer);
+            _innerFormatter.Format(logEvent, buffer);
         }
         catch (Exception ex) when (writePlaceholders)
         {

@@ -17,8 +17,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Serilog.Core;
 using Serilog.Events;
-using Serilog.Formatting.Compact;
-using Serilog.Formatting.Json;
+using Serilog.Formatting;
 using Serilog.Sinks.Seq.Http;
 
 namespace Serilog.Sinks.Seq.Audit;
@@ -29,12 +28,12 @@ namespace Serilog.Sinks.Seq.Audit;
 sealed class SeqAuditSink : ILogEventSink, IDisposable
 {
     readonly SeqIngestionApi _ingestionApi;
+    readonly ITextFormatter _payloadFormatter;
 
-    static readonly JsonValueFormatter JsonValueFormatter = new("$type");
-
-    public SeqAuditSink(SeqIngestionApi ingestionApi)
+    public SeqAuditSink(SeqIngestionApi ingestionApi, ITextFormatter payloadFormatter)
     {
         _ingestionApi = ingestionApi ?? throw new ArgumentNullException(nameof(ingestionApi));
+        _payloadFormatter = payloadFormatter ?? throw new ArgumentNullException(nameof(payloadFormatter));
     }
 
     public void Dispose()
@@ -52,7 +51,7 @@ sealed class SeqAuditSink : ILogEventSink, IDisposable
         if (logEvent == null) throw new ArgumentNullException(nameof(logEvent));
 
         var payload = new StringWriter();
-        CompactJsonFormatter.FormatEvent(logEvent, payload, JsonValueFormatter);
+        _payloadFormatter.Format(logEvent, payload);
 
         await _ingestionApi.IngestAsync(payload.ToString()).ConfigureAwait(false);
     }

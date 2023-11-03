@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using Serilog.Formatting.Compact;
 using Serilog.Sinks.Seq.Tests.Support;
 using Xunit;
 
@@ -10,7 +11,7 @@ public class ConstrainedBufferedFormatterTests
     public void EventsAreFormattedIntoCompactJsonPayloads()
     {
         var evt = Some.LogEvent("Hello, {Name}!", "Alice");
-        var formatter = new ConstrainedBufferedFormatter(null);
+        var formatter = new ConstrainedBufferedFormatter(null, new CompactJsonFormatter());
         var json = new StringWriter();
         formatter.Format(evt, json);
         Assert.Contains("Name\":\"Alice", json.ToString());
@@ -20,7 +21,7 @@ public class ConstrainedBufferedFormatterTests
     public void PlaceholdersAreLoggedWhenCompactJsonRenderingFails()
     {
         var evt = Some.LogEvent(new NastyException(), "Hello, {Name}!", "Alice");
-        var formatter = new ConstrainedBufferedFormatter(null);
+        var formatter = new ConstrainedBufferedFormatter(null, new CompactJsonFormatter());
         var json = new StringWriter();
         formatter.Format(evt, json);
         var jsonString = json.ToString();
@@ -32,7 +33,7 @@ public class ConstrainedBufferedFormatterTests
     public void PlaceholdersAreLoggedWhenTheEventSizeLimitIsExceeded()
     {
         var evt = Some.LogEvent("Hello, {Name}!", new string('a', 10000));
-        var formatter = new ConstrainedBufferedFormatter(2000);
+        var formatter = new ConstrainedBufferedFormatter(2000, new CompactJsonFormatter());
         var json = new StringWriter();
         formatter.Format(evt, json);
         var jsonString = json.ToString();

@@ -1,4 +1,4 @@
-﻿// Serilog.Sinks.Seq Copyright 2016 Serilog Contributors
+﻿// Serilog.Sinks.Seq Copyright © Serilog Contributors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
 using System;
 using Serilog.Core;
 using Serilog.Events;
-using System.Net.Http;
 using System.Text;
+using Serilog.Formatting;
 using Serilog.Sinks.Seq.Http;
 
 namespace Serilog.Sinks.Seq.Durable;
@@ -30,25 +30,23 @@ sealed class DurableSeqSink : ILogEventSink, IDisposable
     readonly Logger _sink;
 
     public DurableSeqSink(
-        string serverUrl,
+        SeqIngestionApi ingestionApi,
+        ITextFormatter payloadFormatter,
         string bufferBaseFilename,
-        string? apiKey,
         int batchPostingLimit,
         TimeSpan period,
         long? bufferSizeLimitBytes,
         long? eventBodyLimitBytes,
         ControlledLevelSwitch controlledSwitch,
-        HttpMessageHandler? messageHandler,
         long? retainedInvalidPayloadsLimitBytes)
     {
-        if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
         if (bufferBaseFilename == null) throw new ArgumentNullException(nameof(bufferBaseFilename));
 
         var fileSet = new FileSet(bufferBaseFilename);
 
         _shipper = new HttpLogShipper(
             fileSet,
-            new SeqIngestionApiClient(serverUrl, apiKey, messageHandler),
+            ingestionApi,
             batchPostingLimit, 
             period, 
             eventBodyLimitBytes,
@@ -59,7 +57,7 @@ sealed class DurableSeqSink : ILogEventSink, IDisposable
         const long individualFileSizeLimitBytes = 100L * 1024 * 1024;
         _sink = new LoggerConfiguration()
             .MinimumLevel.Verbose()
-            .WriteTo.File(new ConstrainedBufferedFormatter(eventBodyLimitBytes),
+            .WriteTo.File(new ConstrainedBufferedFormatter(eventBodyLimitBytes, payloadFormatter),
                 fileSet.RollingFilePathFormat,
                 rollingInterval: RollingInterval.Day,
                 fileSizeLimitBytes: individualFileSizeLimitBytes,

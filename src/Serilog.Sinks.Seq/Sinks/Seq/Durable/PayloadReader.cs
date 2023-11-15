@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#if DURABLE
-
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -21,130 +19,127 @@ using System.Text;
 using Serilog.Debugging;
 using Serilog.Sinks.Seq.Http;
 
-namespace Serilog.Sinks.Seq.Durable
+namespace Serilog.Sinks.Seq.Durable;
+
+static class PayloadReader
 {
-    static class PayloadReader
+    public static string ReadPayload(
+        int batchPostingLimit,
+        long? eventBodyLimitBytes,
+        ref FileSetPosition position,
+        ref int count,
+        out string mimeType)
     {
-        public static string ReadPayload(
-            int batchPostingLimit,
-            long? eventBodyLimitBytes,
-            ref FileSetPosition position,
-            ref int count,
-            out string mimeType)
-        {
-            if (position.File == null) throw new ArgumentException("File set position must point to a file.");
+        if (position.File == null) throw new ArgumentException("File set position must point to a file.");
             
-            if (position.File.EndsWith(".json"))
-            {
-                mimeType = SeqIngestionApi.RawEventFormatMediaType;
-                return ReadRawPayload(batchPostingLimit, eventBodyLimitBytes, ref position, ref count);
-            }
-
-            mimeType = SeqIngestionApi.CompactLogEventFormatMediaType;
-            return ReadCompactPayload(batchPostingLimit, eventBodyLimitBytes, ref position, ref count);
+        if (position.File.EndsWith(".json"))
+        {
+            mimeType = SeqIngestionApi.RawEventFormatMediaType;
+            return ReadRawPayload(batchPostingLimit, eventBodyLimitBytes, ref position, ref count);
         }
 
-        static string ReadCompactPayload(int batchPostingLimit, long? eventBodyLimitBytes, ref FileSetPosition position, ref int count)
+        mimeType = SeqIngestionApi.CompactLogEventFormatMediaType;
+        return ReadCompactPayload(batchPostingLimit, eventBodyLimitBytes, ref position, ref count);
+    }
+
+    static string ReadCompactPayload(int batchPostingLimit, long? eventBodyLimitBytes, ref FileSetPosition position, ref int count)
+    {
+        var payload = new StringWriter();
+
+        using (var current = System.IO.File.Open(position.File!, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
         {
-            var payload = new StringWriter();
-
-            using (var current = System.IO.File.Open(position.File!, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            var nextLineStart = position.NextLineStart;
+            while (count < batchPostingLimit && TryReadLine(current, ref nextLineStart, out var nextLine))
             {
-                var nextLineStart = position.NextLineStart;
-                while (count < batchPostingLimit && TryReadLine(current, ref nextLineStart, out var nextLine))
+                position = new FileSetPosition(nextLineStart, position.File);
+
+                // Count is the indicator that work was done, so advances even in the (rare) case an
+                // oversized event is dropped.
+                ++count;
+
+                if (eventBodyLimitBytes.HasValue && Encoding.UTF8.GetByteCount(nextLine) > eventBodyLimitBytes.Value)
                 {
-                    position = new FileSetPosition(nextLineStart, position.File);
-
-                    // Count is the indicator that work was done, so advances even in the (rare) case an
-                    // oversized event is dropped.
-                    ++count;
-
-                    if (eventBodyLimitBytes.HasValue && Encoding.UTF8.GetByteCount(nextLine) > eventBodyLimitBytes.Value)
-                    {
-                        SelfLog.WriteLine(
-                            "Event JSON representation exceeds the byte size limit of {0} and will be dropped; data: {1}",
-                            eventBodyLimitBytes, nextLine);
-                    }
-                    else
-                    {
-                        payload.WriteLine(nextLine);
-                    }
+                    SelfLog.WriteLine(
+                        "Event JSON representation exceeds the byte size limit of {0} and will be dropped; data: {1}",
+                        eventBodyLimitBytes, nextLine);
+                }
+                else
+                {
+                    payload.WriteLine(nextLine);
                 }
             }
+        }
             
-            return payload.ToString();
-        }
+        return payload.ToString();
+    }
 
 
-        static string ReadRawPayload(int batchPostingLimit, long? eventBodyLimitBytes, ref FileSetPosition position, ref int count)
+    static string ReadRawPayload(int batchPostingLimit, long? eventBodyLimitBytes, ref FileSetPosition position, ref int count)
+    {
+        var payload = new StringWriter();
+        payload.Write("{\"Events\":[");
+        var delimStart = "";
+
+        using (var current = System.IO.File.Open(position.File!, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
         {
-            var payload = new StringWriter();
-            payload.Write("{\"Events\":[");
-            var delimStart = "";
-
-            using (var current = System.IO.File.Open(position.File!, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            var nextLineStart = position.NextLineStart;
+            while (count < batchPostingLimit && TryReadLine(current, ref nextLineStart, out var nextLine))
             {
-                var nextLineStart = position.NextLineStart;
-                while (count < batchPostingLimit && TryReadLine(current, ref nextLineStart, out var nextLine))
+                position = new FileSetPosition(nextLineStart, position.File);
+
+                // Count is the indicator that work was done, so advances even in the (rare) case an
+                // oversized event is dropped.
+                ++count;
+
+                if (eventBodyLimitBytes.HasValue && Encoding.UTF8.GetByteCount(nextLine) > eventBodyLimitBytes.Value)
                 {
-                    position = new FileSetPosition(nextLineStart, position.File);
-
-                    // Count is the indicator that work was done, so advances even in the (rare) case an
-                    // oversized event is dropped.
-                    ++count;
-
-                    if (eventBodyLimitBytes.HasValue && Encoding.UTF8.GetByteCount(nextLine) > eventBodyLimitBytes.Value)
-                    {
-                        SelfLog.WriteLine(
-                            "Event JSON representation exceeds the byte size limit of {0} and will be dropped; data: {1}",
-                            eventBodyLimitBytes, nextLine);
-                    }
-                    else
-                    {
-                        payload.Write(delimStart);
-                        payload.Write(nextLine);
-                        delimStart = ",";
-                    }
+                    SelfLog.WriteLine(
+                        "Event JSON representation exceeds the byte size limit of {0} and will be dropped; data: {1}",
+                        eventBodyLimitBytes, nextLine);
                 }
-
-                payload.Write("]}");
-            }
-            return payload.ToString();
-        }
-
-        // It would be ideal to chomp whitespace here, but not required.
-        static bool TryReadLine(Stream current, ref long nextStart, [NotNullWhen(true)] out string? nextLine)
-        {
-            var includesBom = nextStart == 0;
-
-            if (current.Length <= nextStart)
-            {
-                nextLine = null;
-                return false;
+                else
+                {
+                    payload.Write(delimStart);
+                    payload.Write(nextLine);
+                    delimStart = ",";
+                }
             }
 
-            current.Position = nextStart;
-
-            // Important not to dispose this StreamReader as the stream must remain open.
-            var reader = new StreamReader(current, Encoding.UTF8, false, 128);
-            nextLine = reader.ReadLine();
-
-            if (nextLine == null)
-                return false;
-
-            nextStart += Encoding.UTF8.GetByteCount(nextLine) + Encoding.UTF8.GetByteCount(Environment.NewLine);
-            if (includesBom)
-                nextStart += 3;
-
-            return true;
+            payload.Write("]}");
         }
+        return payload.ToString();
+    }
 
-        public static string MakeEmptyPayload(out string mimeType)
+    // It would be ideal to chomp whitespace here, but not required.
+    static bool TryReadLine(Stream current, ref long nextStart, [NotNullWhen(true)] out string? nextLine)
+    {
+        var includesBom = nextStart == 0;
+
+        if (current.Length <= nextStart)
         {
-            mimeType = SeqIngestionApi.CompactLogEventFormatMediaType;
-            return SeqIngestionApi.EmptyClefPayload;
+            nextLine = null;
+            return false;
         }
+
+        current.Position = nextStart;
+
+        // Important not to dispose this StreamReader as the stream must remain open.
+        var reader = new StreamReader(current, Encoding.UTF8, false, 128);
+        nextLine = reader.ReadLine();
+
+        if (nextLine == null)
+            return false;
+
+        nextStart += Encoding.UTF8.GetByteCount(nextLine) + Encoding.UTF8.GetByteCount(Environment.NewLine);
+        if (includesBom)
+            nextStart += 3;
+
+        return true;
+    }
+
+    public static string MakeEmptyPayload(out string mimeType)
+    {
+        mimeType = SeqIngestionApi.CompactLogEventFormatMediaType;
+        return SeqIngestionApi.EmptyClefPayload;
     }
 }
-
-#endif

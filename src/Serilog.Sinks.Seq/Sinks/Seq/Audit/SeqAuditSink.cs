@@ -17,44 +17,42 @@ using System.IO;
 using System.Threading.Tasks;
 using Serilog.Core;
 using Serilog.Events;
-using Serilog.Formatting.Compact;
-using Serilog.Formatting.Json;
+using Serilog.Formatting;
 using Serilog.Sinks.Seq.Http;
 
-namespace Serilog.Sinks.Seq.Audit
+namespace Serilog.Sinks.Seq.Audit;
+
+/// <summary>
+/// An <see cref="ILogEventSink"/> that synchronously propagates all <see cref="Emit"/> failures as exceptions.
+/// </summary>
+sealed class SeqAuditSink : ILogEventSink, IDisposable
 {
-    /// <summary>
-    /// An <see cref="ILogEventSink"/> that synchronously propagates all <see cref="Emit"/> failures as exceptions.
-    /// </summary>
-    sealed class SeqAuditSink : ILogEventSink, IDisposable
+    readonly SeqIngestionApi _ingestionApi;
+    readonly ITextFormatter _payloadFormatter;
+
+    public SeqAuditSink(SeqIngestionApi ingestionApi, ITextFormatter payloadFormatter)
     {
-        readonly SeqIngestionApi _ingestionApi;
+        _ingestionApi = ingestionApi ?? throw new ArgumentNullException(nameof(ingestionApi));
+        _payloadFormatter = payloadFormatter ?? throw new ArgumentNullException(nameof(payloadFormatter));
+    }
 
-        static readonly JsonValueFormatter JsonValueFormatter = new("$type");
+    public void Dispose()
+    {
+        _ingestionApi.Dispose();
+    }
 
-        public SeqAuditSink(SeqIngestionApi ingestionApi)
-        {
-            _ingestionApi = ingestionApi ?? throw new ArgumentNullException(nameof(ingestionApi));
-        }
+    public void Emit(LogEvent logEvent)
+    {
+        EmitAsync(logEvent).Wait();
+    }
 
-        public void Dispose()
-        {
-            _ingestionApi.Dispose();
-        }
+    async Task EmitAsync(LogEvent logEvent)
+    {
+        if (logEvent == null) throw new ArgumentNullException(nameof(logEvent));
 
-        public void Emit(LogEvent logEvent)
-        {
-            EmitAsync(logEvent).Wait();
-        }
+        var payload = new StringWriter();
+        _payloadFormatter.Format(logEvent, payload);
 
-        async Task EmitAsync(LogEvent logEvent)
-        {
-            if (logEvent == null) throw new ArgumentNullException(nameof(logEvent));
-
-            var payload = new StringWriter();
-            CompactJsonFormatter.FormatEvent(logEvent, payload, JsonValueFormatter);
-
-            await _ingestionApi.IngestAsync(payload.ToString()).ConfigureAwait(false);
-        }
+        await _ingestionApi.IngestAsync(payload.ToString()).ConfigureAwait(false);
     }
 }

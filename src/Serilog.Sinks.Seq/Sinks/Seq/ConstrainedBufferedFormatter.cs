@@ -1,4 +1,4 @@
-// Serilog.Sinks.Seq Copyright 2014-2019 Serilog Contributors
+// Serilog.Sinks.Seq Copyright © Serilog Contributors
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,124 +18,122 @@ using System.Text;
 using Serilog.Debugging;
 using Serilog.Events;
 using Serilog.Formatting;
-using Serilog.Formatting.Compact;
-using Serilog.Formatting.Json;
 using Serilog.Parsing;
 
-namespace Serilog.Sinks.Seq
+namespace Serilog.Sinks.Seq;
+
+/// <summary>
+/// Wraps an <see cref="ITextFormatter" /> to suppress formatting errors and apply the event body size
+/// limit, if any. Placeholder events are logged when an event is unable to be written itself.
+/// </summary>
+sealed class ConstrainedBufferedFormatter : ITextFormatter
 {
-    /// <summary>
-    /// Wraps a <see cref="CompactJsonFormatter" /> to suppress formatting errors and apply the event body size
-    /// limit, if any. Placeholder events are logged when an event is unable to be written itself.
-    /// </summary>
-    sealed class ConstrainedBufferedFormatter : ITextFormatter
+    static readonly int NewLineByteCount = Encoding.UTF8.GetByteCount(Environment.NewLine);
+        
+    readonly long? _eventBodyLimitBytes;
+    readonly ITextFormatter _innerFormatter;
+
+    public ConstrainedBufferedFormatter(long? eventBodyLimitBytes, ITextFormatter innerFormatter)
     {
-        static readonly int NewLineByteCount = Encoding.UTF8.GetByteCount(Environment.NewLine);
+        _innerFormatter = innerFormatter;
+        _eventBodyLimitBytes = eventBodyLimitBytes;
+    }
+
+    public void Format(LogEvent logEvent, TextWriter output)
+    {
+        Format(logEvent, output, writePlaceholders: true);
+    }
         
-        readonly long? _eventBodyLimitBytes;
-        readonly CompactJsonFormatter _jsonFormatter = new(new JsonValueFormatter("$type"));
+    void Format(LogEvent logEvent, TextWriter output, bool writePlaceholders)
+    {
+        var buffer = new StringWriter();
 
-        public ConstrainedBufferedFormatter(long? eventBodyLimitBytes)
+        try
         {
-            _eventBodyLimitBytes = eventBodyLimitBytes;
+            _innerFormatter.Format(logEvent, buffer);
         }
-
-        public void Format(LogEvent logEvent, TextWriter output)
+        catch (Exception ex) when (writePlaceholders)
         {
-            Format(logEvent, output, writePlaceholders: true);
-        }
-        
-        void Format(LogEvent logEvent, TextWriter output, bool writePlaceholders)
-        {
-            var buffer = new StringWriter();
-
-            try
-            {
-                _jsonFormatter.Format(logEvent, buffer);
-            }
-            catch (Exception ex) when (writePlaceholders)
-            {
-                SelfLog.WriteLine(
-                    "Event with message template {0} at {1} could not be formatted as JSON and will be dropped: {2}",
-                    logEvent.MessageTemplate.Text, logEvent.Timestamp, ex);
+            SelfLog.WriteLine(
+                "Event with message template {0} at {1} could not be formatted as JSON and will be dropped: {2}",
+                logEvent.MessageTemplate.Text, logEvent.Timestamp, ex);
                 
-                var placeholder = CreateNonFormattableEventPlaceholder(logEvent, ex);
+            var placeholder = CreateNonFormattableEventPlaceholder(logEvent, ex);
+            Format(placeholder, output, writePlaceholders: false);
+            return;
+        }
+
+        var jsonLine = buffer.ToString();
+        if (CheckEventBodySize(jsonLine, _eventBodyLimitBytes))
+        {
+            output.Write(jsonLine);
+        }
+        else
+        {
+            SelfLog.WriteLine(
+                "Event JSON representation exceeds the byte size limit of {0} set for this Seq sink and will be dropped; data: {1}",
+                _eventBodyLimitBytes, jsonLine);
+                
+            if (writePlaceholders)
+            {
+                var placeholder = CreateOversizeEventPlaceholder(logEvent, jsonLine, _eventBodyLimitBytes!.Value);
                 Format(placeholder, output, writePlaceholders: false);
-                return;
-            }
-
-            var jsonLine = buffer.ToString();
-            if (CheckEventBodySize(jsonLine, _eventBodyLimitBytes))
-            {
-                output.Write(jsonLine);
-            }
-            else
-            {
-                SelfLog.WriteLine(
-                    "Event JSON representation exceeds the byte size limit of {0} set for this Seq sink and will be dropped; data: {1}",
-                    _eventBodyLimitBytes, jsonLine);
-                
-                if (writePlaceholders)
-                {
-                    var placeholder = CreateOversizeEventPlaceholder(logEvent, jsonLine, _eventBodyLimitBytes!.Value);
-                    Format(placeholder, output, writePlaceholders: false);
-                }
             }
         }
+    }
 
-        static LogEvent CreateNonFormattableEventPlaceholder(LogEvent logEvent, Exception ex)
-        {
-            return new LogEvent(
-                logEvent.Timestamp,
-                LogEventLevel.Error,
-                ex,
-                new MessageTemplateParser().Parse("Event with message template {OriginalMessageTemplate} could not be formatted as JSON"),
-                new[]
-                {
-                    new LogEventProperty("OriginalMessageTemplate", new ScalarValue(logEvent.MessageTemplate.Text)),
-                });
-        }
+    static LogEvent CreateNonFormattableEventPlaceholder(LogEvent logEvent, Exception ex)
+    {
+        return new LogEvent(
+            logEvent.Timestamp,
+            LogEventLevel.Error,
+            ex,
+            new MessageTemplateParser().Parse("Event with message template {OriginalMessageTemplate} could not be formatted as JSON"),
+            new[]
+            {
+                new LogEventProperty("OriginalMessageTemplate", new ScalarValue(logEvent.MessageTemplate.Text)),
+            });
+    }
 
-        static bool CheckEventBodySize(string jsonLine, long? eventBodyLimitBytes)
-        {
-            if (eventBodyLimitBytes == null)
-                return true;
+    static bool CheckEventBodySize(string jsonLine, long? eventBodyLimitBytes)
+    {
+        if (eventBodyLimitBytes == null)
+            return true;
             
-            var byteCount = Encoding.UTF8.GetByteCount(jsonLine) - NewLineByteCount;
-            return byteCount <= eventBodyLimitBytes;
-        }
+        var byteCount = Encoding.UTF8.GetByteCount(jsonLine) - NewLineByteCount;
+        return byteCount <= eventBodyLimitBytes;
+    }
         
-        static LogEvent CreateOversizeEventPlaceholder(LogEvent logEvent, string jsonLine, long eventBodyLimitBytes)
-        {
-            var sampleLength = GetOversizeEventSampleLength(eventBodyLimitBytes);
-            var sample = jsonLine.Substring(0, Math.Min(jsonLine.Length, (int)sampleLength));
-            return new LogEvent(
-                logEvent.Timestamp,
-                LogEventLevel.Error,
-                exception: null,
-                new MessageTemplateParser().Parse("Event JSON representation exceeds the body size limit {EventBodyLimitBytes}; sample: {EventBodySample}"),
-                new[]
-                {
-                    new LogEventProperty("EventBodyLimitBytes", new ScalarValue(eventBodyLimitBytes)),
-                    new LogEventProperty("EventBodySample", new ScalarValue(sample)),
-                });
-        }
+    static LogEvent CreateOversizeEventPlaceholder(LogEvent logEvent, string jsonLine, long eventBodyLimitBytes)
+    {
+        var sampleLength = GetOversizeEventSampleLength(eventBodyLimitBytes);
+        var sample = jsonLine.Substring(0, Math.Min(jsonLine.Length, (int)sampleLength));
+        return new LogEvent(
+            logEvent.Timestamp,
+            LogEventLevel.Error,
+            exception: null,
+            new MessageTemplateParser().Parse("Event JSON representation exceeds the body size limit {EventBodyLimitBytes}; sample: {EventBodySample}"),
+            new[]
+            {
+                new LogEventProperty("EventBodyLimitBytes", new ScalarValue(eventBodyLimitBytes)),
+                new LogEventProperty("EventBodySample", new ScalarValue(sample)),
+            });
+    }
 
-        internal static long GetOversizeEventSampleLength(long eventBodyLimitBytes)
-        {
-            // A quick estimate of how much of the original event payload we should send along with the oversized event
-            // placeholder. If the limit is so constrained as to disallow sending the sample, that's okay - we'll
-            // just drop the placeholder, too.
+    internal static long GetOversizeEventSampleLength(long eventBodyLimitBytes)
+    {
+        // A quick estimate of how much of the original event payload we should send along with the oversized event
+        // placeholder. If the limit is so constrained as to disallow sending the sample, that's okay - we'll
+        // just drop the placeholder, too.
             
-            // In reality the timestamp and other envelope components won't be anything close to this.
-            const long packagingAllowance = 2048;
-            var byteBudget = eventBodyLimitBytes - packagingAllowance;
+        // In reality the timestamp and other envelope components won't be anything close to this.
+        const long packagingAllowance = 2048;
+        var byteBudget = eventBodyLimitBytes - packagingAllowance;
             
-            // Allow for multibyte characters and JSON escape sequences.
-            var withEncoding = byteBudget / 2;
+        // Allow for multibyte characters and JSON escape sequences.
+        var withEncoding = byteBudget / 2;
 
-            const long minimumSampleSize = 512;
-            return Math.Max(withEncoding, minimumSampleSize);
-        }
+        const long minimumSampleSize = 512;
+        return Math.Max(withEncoding, minimumSampleSize);
     }
 }

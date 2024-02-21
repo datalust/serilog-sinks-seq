@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Serilog.Core;
 using Serilog.Events;
-using Serilog.Formatting.Compact;
 using Serilog.Sinks.Seq.Batched;
 using Serilog.Sinks.Seq.Http;
 using Serilog.Sinks.Seq.Tests.Support;
@@ -16,7 +15,7 @@ public class BatchedSeqSinkTests
     public void BatchedSinkDisposesIngestionApi()
     {
         var api = new TestIngestionApi();
-        var sink = new BatchedSeqSink(api, new CompactJsonFormatter(), null, new ControlledLevelSwitch());
+        var sink = new BatchedSeqSink(api, new SeqCompactJsonFormatter(), null, new ControlledLevelSwitch());
         Assert.False(api.IsDisposed);
             
         sink.Dispose();
@@ -28,7 +27,7 @@ public class BatchedSeqSinkTests
     public async Task EventsAreFormattedIntoPayloads()
     {
         var api = new TestIngestionApi();
-        var sink = new BatchedSeqSink(api, new CompactJsonFormatter(), null, new ControlledLevelSwitch());
+        var sink = new BatchedSeqSink(api, new SeqCompactJsonFormatter(), null, new ControlledLevelSwitch());
 
         await sink.EmitBatchAsync(new[]
         {
@@ -48,7 +47,7 @@ public class BatchedSeqSinkTests
         const LogEventLevel originalLevel = LogEventLevel.Debug, newLevel = LogEventLevel.Error;
         var levelSwitch = new LoggingLevelSwitch(originalLevel);
         var api = new TestIngestionApi(_ => Task.FromResult(new IngestionResult(true, HttpStatusCode.Accepted, newLevel)));
-        var sink = new BatchedSeqSink(api, new CompactJsonFormatter(), null, new ControlledLevelSwitch(levelSwitch));
+        var sink = new BatchedSeqSink(api, new SeqCompactJsonFormatter(), null, new ControlledLevelSwitch(levelSwitch));
 
         await sink.EmitBatchAsync(new[] { Some.InformationEvent() });
             

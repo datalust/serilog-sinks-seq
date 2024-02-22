@@ -36,7 +36,7 @@ public static class SeqLoggerConfigurationExtensions
     static readonly TimeSpan DefaultPeriod = TimeSpan.FromSeconds(2);
     const int DefaultQueueSizeLimit = 100000;
     static ITextFormatter CreateDefaultFormatter() => new SeqCompactJsonFormatter();
-
+    
     /// <summary>
     /// Write log events to a <a href="https://datalust.co/seq">Seq</a> server.
     /// </summary>

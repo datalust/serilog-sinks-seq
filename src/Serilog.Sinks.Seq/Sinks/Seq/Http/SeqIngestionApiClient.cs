@@ -29,7 +29,7 @@ sealed class SeqIngestionApiClient : SeqIngestionApi
 {
     const string BulkUploadResource = "api/events/raw";
     const string ApiKeyHeaderName = "X-Seq-ApiKey";
-        
+
     readonly string? _apiKey;
     readonly HttpClient _httpClient;
 
@@ -50,6 +50,7 @@ sealed class SeqIngestionApiClient : SeqIngestionApi
             _httpClient = new HttpClient();
         }
 #endif
+        
 #if SOCKETS_HTTP_HANDLER_ALWAYS_DEFAULT
         else
         {
@@ -59,14 +60,19 @@ sealed class SeqIngestionApiClient : SeqIngestionApi
                 // require that the Seq API be accessed at a different IP address. Setting a timeout here puts
                 // an upper bound on the duration of DNS-related outages, while hopefully incurring only infrequent
                 // connection reestablishment costs.
-                PooledConnectionLifetime = TimeSpan.FromMinutes(5)
+                PooledConnectionLifetime = TimeSpan.FromMinutes(5),
+                
+                // Don't trace the sink's own requests. On platforms that use alternative message handler implementations
+                // by default, the caller needs to do this manually and pass a handler through. Where `SocketsHttpHandler`
+                // is the default, we can safely set this without inadvertently causing behavior changes.
+                ActivityHeadersPropagator = null
             });
         }
 #else
-            else
-            {
-                _httpClient = new HttpClient();
-            }
+        else
+        {
+            _httpClient = new HttpClient();
+        }
 #endif
             
         _httpClient.BaseAddress = new Uri(NormalizeServerBaseAddress(serverUrl));

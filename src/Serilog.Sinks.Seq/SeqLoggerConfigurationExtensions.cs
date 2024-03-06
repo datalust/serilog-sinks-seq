@@ -19,7 +19,6 @@ using Serilog.Events;
 using Serilog.Sinks.Seq;
 using System.Net.Http;
 using Serilog.Formatting;
-using Serilog.Formatting.Compact;
 using Serilog.Sinks.PeriodicBatching;
 using Serilog.Sinks.Seq.Batched;
 using Serilog.Sinks.Seq.Audit;
@@ -36,8 +35,8 @@ public static class SeqLoggerConfigurationExtensions
     const int DefaultBatchPostingLimit = 1000;
     static readonly TimeSpan DefaultPeriod = TimeSpan.FromSeconds(2);
     const int DefaultQueueSizeLimit = 100000;
-    static ITextFormatter CreateDefaultFormatter() => new CompactJsonFormatter(new("$type"));
-
+    static ITextFormatter CreateDefaultFormatter() => new SeqCompactJsonFormatter();
+    
     /// <summary>
     /// Write log events to a <a href="https://datalust.co/seq">Seq</a> server.
     /// </summary>

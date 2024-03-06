@@ -3,7 +3,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Serilog.Debugging;
 using Serilog.Events;
-using Serilog.Formatting.Compact;
 using Serilog.Sinks.Seq.Audit;
 using Serilog.Sinks.Seq.Tests.Support;
 using Xunit;
@@ -40,7 +39,7 @@ public class SeqAuditSinkTests
     public void AuditSinkDisposesIngestionApi()
     {
         var api = new TestIngestionApi();
-        var sink = new SeqAuditSink(api, new CompactJsonFormatter());
+        var sink = new SeqAuditSink(api, new SeqCompactJsonFormatter());
         Assert.False(api.IsDisposed);
             
         sink.Dispose();
@@ -54,7 +53,7 @@ public class SeqAuditSinkTests
         LogEvent evt1 = Some.InformationEvent("first"), evt2 = Some.InformationEvent("second");
             
         var api = new TestIngestionApi();
-        var sink = new SeqAuditSink(api, new CompactJsonFormatter());
+        var sink = new SeqAuditSink(api, new SeqCompactJsonFormatter());
             
         sink.Emit(evt1);
         sink.Emit(evt2);
@@ -71,7 +70,7 @@ public class SeqAuditSinkTests
     {
         var expected = new Exception("Test");
         var api = new TestIngestionApi(_ => throw expected);
-        var sink = new SeqAuditSink(api, new CompactJsonFormatter());
+        var sink = new SeqAuditSink(api, new SeqCompactJsonFormatter());
             
         var thrown = Assert.Throws<AggregateException>(() => sink.Emit(Some.InformationEvent()));
             

@@ -51,7 +51,7 @@ abstract class SeqIngestionApi : IDisposable
     /// <exception cref="HttpRequestException">The ingestion request could not be sent.</exception>
     public async Task<LogEventLevel?> IngestAsync(string clefPayload)
     {
-        var result = await TryIngestAsync(clefPayload, CompactLogEventFormatMediaType);
+        var result = await TryIngestAsync(clefPayload, CompactLogEventFormatMediaType).ConfigureAwait(false);
 
         if (!result.Succeeded)
             throw new LoggingFailedException($"Received failed result {result.StatusCode} when posting events to Seq.");

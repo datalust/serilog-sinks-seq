@@ -17,7 +17,7 @@ using System;
 namespace Serilog.Sinks.Seq.Durable;
 
 /// <summary>
-/// Based on the BatchedConnectionStatus class from <see cref="Serilog.Sinks.PeriodicBatching.PeriodicBatchingSink"/>.
+/// Based on the <c>BatchedConnectionStatus</c> class from <c>Serilog.Sinks.PeriodicBatching</c>.
 /// </summary>
 sealed class ExponentialBackoffConnectionSchedule
 {
@@ -30,7 +30,7 @@ sealed class ExponentialBackoffConnectionSchedule
 
     public ExponentialBackoffConnectionSchedule(TimeSpan period)
     {
-        if (period < TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(period), "The connection retry period must be a positive timespan");
+        if (period < TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(period), "The connection retry period must be a positive timespan.");
        
         _period = period;
     }
@@ -55,7 +55,7 @@ sealed class ExponentialBackoffConnectionSchedule
             // Second failure, start ramping up the interval - first 2x, then 4x, ...
             var backoffFactor = Math.Pow(2, (_failuresSinceSuccessfulConnection - 1));
 
-            // If the period is ridiculously short, give it a boost so we get some
+            // If the period is ridiculously short, give it a boost so that we get some
             // visible backoff.
             var backoffPeriod = Math.Max(_period.Ticks, MinimumBackoffPeriod.Ticks);
 

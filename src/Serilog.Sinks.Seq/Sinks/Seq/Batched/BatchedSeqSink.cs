@@ -15,17 +15,16 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
+using Serilog.Core;
 using Serilog.Events;
 using Serilog.Formatting;
-using Serilog.Sinks.PeriodicBatching;
 using Serilog.Sinks.Seq.Http;
 
 namespace Serilog.Sinks.Seq.Batched;
 
 /// <summary>
-/// The default Seq sink, for use in combination with <see cref="PeriodicBatchingSink"/>.
+/// The default Seq sink.
 /// </summary>
 sealed class BatchedSeqSink : IBatchedLogEventSink, IDisposable
 {
@@ -60,11 +59,11 @@ sealed class BatchedSeqSink : IBatchedLogEventSink, IDisposable
         if (_controlledSwitch.IsActive &&
             _nextRequiredLevelCheckUtc < DateTime.UtcNow)
         {
-            await EmitBatchAsync(Enumerable.Empty<LogEvent>());
+            await EmitBatchAsync(Array.Empty<LogEvent>());
         }
     }
 
-    public async Task EmitBatchAsync(IEnumerable<LogEvent> events)
+    public async Task EmitBatchAsync(IReadOnlyCollection<LogEvent> events)
     {
         _nextRequiredLevelCheckUtc = DateTime.UtcNow.Add(RequiredLevelCheckInterval);
 

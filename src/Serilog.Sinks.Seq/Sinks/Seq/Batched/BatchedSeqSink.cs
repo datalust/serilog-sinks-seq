@@ -59,7 +59,7 @@ sealed class BatchedSeqSink : IBatchedLogEventSink, IDisposable
         if (_controlledSwitch.IsActive &&
             _nextRequiredLevelCheckUtc < DateTime.UtcNow)
         {
-            await EmitBatchAsync(Array.Empty<LogEvent>());
+            await EmitBatchAsync([]);
         }
     }
 

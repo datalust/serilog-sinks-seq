@@ -39,7 +39,7 @@ sealed class BookmarkFile : IDisposable
 
             if (current != null)
             {
-                var parts = current.Split(new[] { ":::" }, StringSplitOptions.RemoveEmptyEntries);
+                var parts = current.Split([":::"], StringSplitOptions.RemoveEmptyEntries);
                 if (parts.Length == 2)
                 {
                     return new FileSetPosition(long.Parse(parts[0]), parts[1]);

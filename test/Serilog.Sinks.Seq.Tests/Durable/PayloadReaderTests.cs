@@ -17,7 +17,9 @@ public class PayloadReaderTests
     {
         using var tmp = new TempFolder();
         var fn = tmp.AllocateFilename("clef");
-        var lines = IOFile.ReadAllText(Path.Combine("Resources", "ThreeBufferedEvents.clef.txt"), Encoding.UTF8).Split(new [] {'\r', '\n'}, StringSplitOptions.RemoveEmptyEntries);
+        var lines = IOFile.ReadAllText(Path.Combine("Resources", "ThreeBufferedEvents.clef.txt"), Encoding.UTF8)
+            // ReSharper disable once RedundantCast
+            .Split((char[])['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
         using (var f = IOFile.Create(fn))
         using (var fw = new StreamWriter(f, Encoding.UTF8))
         {
@@ -42,7 +44,9 @@ public class PayloadReaderTests
     {
         using var tmp = new TempFolder();
         var fn = tmp.AllocateFilename("json");
-        var lines = IOFile.ReadAllText(Path.Combine("Resources", "ThreeBufferedEvents.json.txt"), Encoding.UTF8).Split(new [] {'\r', '\n'}, StringSplitOptions.RemoveEmptyEntries);
+        var lines = IOFile.ReadAllText(Path.Combine("Resources", "ThreeBufferedEvents.json.txt"), Encoding.UTF8)
+            // ReSharper disable once RedundantCast
+            .Split((char[])['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
         using (var f = IOFile.Create(fn))
         using (var fw = new StreamWriter(f, Encoding.UTF8))
         {

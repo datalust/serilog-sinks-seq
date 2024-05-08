@@ -18,7 +18,6 @@ using Serilog.Core;
 using Serilog.Events;
 using Serilog.Sinks.Seq;
 using System.Net.Http;
-using Serilog.Core.Sinks.Batching;
 using Serilog.Formatting;
 using Serilog.Sinks.Seq.Batched;
 using Serilog.Sinks.Seq.Audit;

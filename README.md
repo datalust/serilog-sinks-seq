@@ -5,9 +5,8 @@ A Serilog sink that writes events to the [Seq](https://datalust.co/seq) structur
 [<img alt="Package Logo" src="https://datalust.co/images/seq-nuget.png" width="128px">](https://nuget.org/packages/serilog.sinks.seq)
 
 > [!TIP]
-> If you would like to see timing and dependency information in Seq, [SerilogTracing](https://github.com/serilog-tracing/serilog-tracing) is a Serilog extension that supports both logs and traces.
->
-> [![SerilogTracing Logo](https://avatars.githubusercontent.com/u/155593990?s=40&v=4)](https://github.com/serilog-tracing/serilog-tracing)
+> If you would like to see timing and dependency information in Seq, [<img src="https://avatars.githubusercontent.com/u/155593990?s=40&amp;v=4" alt="SerilogTracing Logo" style="max-width: 100%;vertical-align: middle;">SerilogTracing](https://github.com/serilog-tracing/serilog-tracing) is a Serilog extension that supports both logs and traces.
+
 
 ### Getting started
 

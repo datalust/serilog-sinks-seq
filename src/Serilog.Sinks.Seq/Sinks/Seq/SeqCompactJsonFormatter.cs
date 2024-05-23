@@ -1,4 +1,4 @@
-// Copyright 2016 Serilog Contributors
+// Copyright © Serilog Contributors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ using Serilog.Events;
 using Serilog.Formatting;
 using Serilog.Formatting.Json;
 using Serilog.Parsing;
+using Serilog.Sinks.Seq.Conventions;
+
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable PossibleMultipleEnumeration
 
@@ -33,8 +35,13 @@ namespace Serilog.Sinks.Seq;
 /// implicit SerilogTracing span support.</remarks>
 public class SeqCompactJsonFormatter: ITextFormatter
 {
-    readonly JsonValueFormatter _valueFormatter = new("$type");
+    static readonly IDottedPropertyNameConvention DottedPropertyNameConvention =
+        AppContext.TryGetSwitch("Serilog.Parsing.MessageTemplateParser.AcceptDottedPropertyNames", out var accept) && accept ?
+            new UnflattenDottedPropertyNames() :
+            new PreserveDottedPropertyNames();
 
+    readonly JsonValueFormatter _valueFormatter = new("$type");
+    
     /// <summary>
     /// Format the log event into the output. Subsequent events will be newline-delimited.
     /// </summary>
@@ -139,8 +146,9 @@ public class SeqCompactJsonFormatter: ITextFormatter
                 output.Write('\"');
             }
         }
-            
-        foreach (var property in logEvent.Properties)
+
+        var properties = DottedPropertyNameConvention.ProcessDottedPropertyNames(logEvent.Properties);
+        foreach (var property in properties)
         {
             var name = property.Key;
                 

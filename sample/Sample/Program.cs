@@ -4,6 +4,8 @@ using System.Threading;
 using Serilog;
 using Serilog.Core;
 
+AppContext.SetSwitch("Serilog.Parsing.MessageTemplateParser.AcceptDottedPropertyNames", true);
+
 // By sharing between the Seq sink and logger itself,
 // Seq API keys can be used to control the level of the whole logging pipeline.
 var levelSwitch = new LoggingLevelSwitch();
@@ -20,7 +22,7 @@ try
 
     foreach (var i in Enumerable.Range(0, 100))
     {
-        Log.Information("Running loop {Counter}, switch is at {Level}", i, levelSwitch.MinimumLevel);
+        Log.Information("Running loop {Counter.I}, switch is at {Level}", i, levelSwitch.MinimumLevel);
 
         Thread.Sleep(1000);
         Log.Debug("Loop iteration done");

@@ -19,7 +19,6 @@ using Serilog.Events;
 using Serilog.Sinks.Seq;
 using System.Net.Http;
 using Serilog.Formatting;
-using Serilog.Sinks.PeriodicBatching;
 using Serilog.Sinks.Seq.Batched;
 using Serilog.Sinks.Seq.Audit;
 using Serilog.Sinks.Seq.Http;
@@ -98,8 +97,6 @@ public static class SeqLoggerConfigurationExtensions
         var formatter = payloadFormatter ?? CreateDefaultFormatter();
         var ingestionApi = new SeqIngestionApiClient(serverUrl, apiKey, messageHandler);
 
-        ILogEventSink sink;
-            
         if (bufferBaseFilename == null)
         {
             var batchedSink = new BatchedSeqSink(
@@ -108,29 +105,29 @@ public static class SeqLoggerConfigurationExtensions
                 eventBodyLimitBytes,
                 controlledSwitch);
 
-            var options = new PeriodicBatchingSinkOptions
+            var options = new BatchingOptions
             {
                 BatchSizeLimit = batchPostingLimit,
-                Period = defaultedPeriod,
+                BufferingTimeLimit = defaultedPeriod,
                 QueueLimit = queueSizeLimit
             };
-                
-            sink = new PeriodicBatchingSink(batchedSink, options);
+            
+            return loggerSinkConfiguration.Conditional(
+                controlledSwitch.IsIncluded,
+                wt => wt.Sink(batchedSink, options, restrictedToMinimumLevel, levelSwitch: null));
         }
-        else
-        {
-            sink = new DurableSeqSink(
-                ingestionApi,
-                formatter,
-                bufferBaseFilename,
-                batchPostingLimit,
-                defaultedPeriod,
-                bufferSizeLimitBytes,
-                eventBodyLimitBytes,
-                controlledSwitch,
-                retainedInvalidPayloadsLimitBytes);
-        }
-
+        
+        var sink = new DurableSeqSink(
+            ingestionApi,
+            formatter,
+            bufferBaseFilename,
+            batchPostingLimit,
+            defaultedPeriod,
+            bufferSizeLimitBytes,
+            eventBodyLimitBytes,
+            controlledSwitch,
+            retainedInvalidPayloadsLimitBytes);
+        
         return loggerSinkConfiguration.Conditional(
             controlledSwitch.IsIncluded,
             wt => wt.Sink(sink, restrictedToMinimumLevel, levelSwitch: null));

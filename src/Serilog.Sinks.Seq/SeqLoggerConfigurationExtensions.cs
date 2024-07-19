@@ -165,7 +165,7 @@ public static class SeqLoggerConfigurationExtensions
         if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
 
         var ingestionApi = new SeqIngestionApiClient(serverUrl, apiKey, messageHandler);
-        var sink = new SeqAuditSink(ingestionApi, payloadFormatter ?? CreateDefaultFormatter(formatProvider ?? CultureInfo.InvariantCulture));
+        var sink = new SeqAuditSink(ingestionApi, payloadFormatter ?? CreateDefaultFormatter(formatProvider));
         return loggerAuditSinkConfiguration.Sink(sink, restrictedToMinimumLevel);
     }
 }

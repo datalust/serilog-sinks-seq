@@ -68,7 +68,8 @@ public static class SeqLoggerConfigurationExtensions
     /// durable log shipping.</param>
     /// <param name="payloadFormatter">An <see cref="ITextFormatter"/> that will be used to format (newline-delimited CLEF/JSON)
     /// payloads. Experimental.</param>
-    /// <param name="formatProvider">An <see cref="IFormatProvider"/> that will be used to render log event tokens. Does not apply if `payloadFormatter` is provided.</param>
+    /// <param name="formatProvider">An <see cref="IFormatProvider"/> that will be used to render log event tokens. Does not apply if `payloadFormatter` is provided.
+    /// If `formatProvider` is provided then event messages will be rendered and included in the payload.</param>
     /// <returns>Logger configuration, allowing configuration to continue.</returns>
     /// <exception cref="ArgumentNullException">A required parameter is null.</exception>
     public static LoggerConfiguration Seq(

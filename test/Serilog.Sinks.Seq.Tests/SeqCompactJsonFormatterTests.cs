@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
@@ -16,13 +17,13 @@ namespace Serilog.Sinks.Seq.Tests;
 
 public class SeqCompactJsonFormatterTests
 {
-    JObject AssertValidJson(Action<ILogger> act)
+    JObject AssertValidJson(Action<ILogger> act, IFormatProvider? formatProvider = null, Action<JObject>? assert = null)
     {
         var sw = new StringWriter();
         var logger = new LoggerConfiguration()
             .Destructure.AsScalar<ActivityTraceId>()
             .Destructure.AsScalar<ActivitySpanId>()
-            .WriteTo.TextWriter(new SeqCompactJsonFormatter(), sw)
+            .WriteTo.TextWriter(new SeqCompactJsonFormatter(formatProvider ?? CultureInfo.InvariantCulture), sw)
             .CreateLogger();
         act(logger);
         logger.Dispose();
@@ -33,8 +34,40 @@ public class SeqCompactJsonFormatterTests
             DateParseHandling = DateParseHandling.None,
             CheckAdditionalContent = true,
         };
+
+        var evt = JsonConvert.DeserializeObject<JObject>(json, settings)!;
+        (assert ?? (_ => { }))(evt);
+        return evt;
+    }
+
+    [Theory]
+    [InlineData("fr-FR", "31\u202f415,927 19/07/2024 10:00:59 12\u202f345,67 €", "31\u202f415,927", "12\u202f345,67 €")]
+    [InlineData("en-US", "31,415.927 7/19/2024 10:00:59 AM $12,345.67", "31,415.927", "$12,345.67")]
+    public void PropertiesFormatCorrectlyForTheFormatProvider(
+        string cultureName, 
+        string expectedMessage,
+        string renderedNumber,
+        string renderedCurrency)
+    {
+        var number = Math.PI * 10000;
+        var date = new DateTime(2024, 7, 19, 10, 00, 59);
+        var currency = 12345.67M;
         
-        return JsonConvert.DeserializeObject<JObject>(json, settings)!;
+        AssertValidJson(log => log.Information("{a:n} {b} {c:C}", number, date, currency), new CultureInfo(cultureName), evt =>
+        {
+            Assert.Equal(expectedMessage, evt["@m"]!.ToString());
+            Assert.Equal(renderedNumber, evt["@r"]![0]!.ToString());
+            Assert.Equal(renderedCurrency, evt["@r"]![1]!.ToString());
+        });
+    }
+
+    [Fact]
+    public void MessageNotRenderedForDefaultFormatProvider()
+    {
+        AssertValidJson(log => log.Information("{a}", 1.234), null, evt =>
+        {
+            Assert.Null(evt["@m"]);
+        });
     }
 
     [Fact]

@@ -22,8 +22,6 @@ using Serilog.Formatting;
 using Serilog.Formatting.Json;
 using Serilog.Parsing;
 using Serilog.Sinks.Seq.Conventions;
-using Serilog.Sinks.Seq.Formatting;
-
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable PossibleMultipleEnumeration
 
@@ -39,16 +37,15 @@ public class SeqCompactJsonFormatter: ITextFormatter
     readonly IDottedPropertyNameConvention _dottedPropertyNameConvention;
     readonly JsonValueFormatter _valueFormatter;
     readonly IFormatProvider _formatProvider;
-    readonly bool _renderMessages;
 
-    /// <summary>Construct a <see cref="SeqCompactJsonFormatter"/>.</summary>
+    /// <summary>
+    /// Construct a <see cref="SeqCompactJsonFormatter"/>.
+    /// </summary>
     /// <param name="valueFormatter">A value formatter for <see cref="LogEventPropertyValue"/>s on the event.</param>
     /// <param name="formatProvider">An <see cref="IFormatProvider"/> that will be used to render log event tokens.</param>
     public SeqCompactJsonFormatter(IFormatProvider? formatProvider = null, JsonValueFormatter? valueFormatter = null)
     {
         var acceptDottedPropertyNames = AppContext.TryGetSwitch("Serilog.Parsing.MessageTemplateParser.AcceptDottedPropertyNames", out var accept) && accept;
-
-        _renderMessages = acceptDottedPropertyNames || formatProvider != null && !ReferenceEquals(formatProvider, CultureInfo.InvariantCulture);
 
         _dottedPropertyNameConvention = acceptDottedPropertyNames ?
             new UnflattenDottedPropertyNames() :
@@ -85,38 +82,26 @@ public class SeqCompactJsonFormatter: ITextFormatter
         output.Write("\",\"@mt\":");
         JsonValueFormatter.WriteQuotedJsonString(logEvent.MessageTemplate.Text, output);
 
-        if (_renderMessages)
-        {
-            // `@m` is normally created during ingestion, however, it must be sent from the client 
-            // to honour non-default IFormatProviders
-            output.Write(",\"@m\":");
-            JsonValueFormatter.WriteQuotedJsonString(
-                CleanMessageTemplateFormatter.Format(logEvent.MessageTemplate, logEvent.Properties, _formatProvider),
-                output);
-        }
-        else
-        {
-            var tokensWithFormat = logEvent.MessageTemplate.Tokens
-                .OfType<PropertyToken>()
-                .Where(pt => pt.Format != null);
+        var tokensWithFormat = logEvent.MessageTemplate.Tokens
+            .OfType<PropertyToken>()
+            .Where(pt => pt.Format != null);
 
-            // Better not to allocate an array in the 99.9% of cases where this is false
-            // ReSharper disable once PossibleMultipleEnumeration
-            if (tokensWithFormat.Any())
+        // Better not to allocate an array in the 99.9% of cases where this is false
+        // ReSharper disable once PossibleMultipleEnumeration
+        if (tokensWithFormat.Any())
+        {
+            output.Write(",\"@r\":[");
+            var delim = "";
+            foreach (var r in tokensWithFormat)
             {
-                output.Write(",\"@r\":[");
-                var delim = "";
-                foreach (var r in tokensWithFormat)
-                {
-                    output.Write(delim);
-                    delim = ",";
-                    var space = new StringWriter();
-                    r.Render(logEvent.Properties, space, _formatProvider);
-                    JsonValueFormatter.WriteQuotedJsonString(space.ToString(), output);
-                }
-
-                output.Write(']');
+                output.Write(delim);
+                delim = ",";
+                var space = new StringWriter();
+                r.Render(logEvent.Properties, space, _formatProvider);
+                JsonValueFormatter.WriteQuotedJsonString(space.ToString(), output);
             }
+
+            output.Write(']');
         }
 
         if (logEvent.Level != LogEventLevel.Information)

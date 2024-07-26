@@ -12,6 +12,7 @@ using Serilog.Events;
 using Serilog.Parsing;
 using Xunit;
 // ReSharper disable AccessToDisposedClosure
+// ReSharper disable ParameterOnlyUsedForPreconditionCheck.Local
 
 namespace Serilog.Sinks.Seq.Tests;
 
@@ -23,7 +24,7 @@ public class SeqCompactJsonFormatterTests
         var logger = new LoggerConfiguration()
             .Destructure.AsScalar<ActivityTraceId>()
             .Destructure.AsScalar<ActivitySpanId>()
-            .WriteTo.TextWriter(new SeqCompactJsonFormatter(formatProvider ?? CultureInfo.InvariantCulture), sw)
+            .WriteTo.TextWriter(new SeqCompactJsonFormatter(formatProvider), sw)
             .CreateLogger();
         act(logger);
         logger.Dispose();
@@ -41,23 +42,25 @@ public class SeqCompactJsonFormatterTests
     }
 
     [Theory]
-    [InlineData("fr-FR", "31\u202f415,927 19/07/2024 10:00:59 12\u202f345,67 €", "31\u202f415,927", "12\u202f345,67 €")]
-    [InlineData("en-US", "31,415.927 7/19/2024 10:00:59 AM $12,345.67", "31,415.927", "$12,345.67")]
-    public void PropertiesFormatCorrectlyForTheFormatProvider(
-        string cultureName, 
-        string expectedMessage,
-        string renderedNumber,
-        string renderedCurrency)
+    [InlineData("fr-FR")]
+    [InlineData("en-US")]
+    public void PropertiesFormatCorrectlyForTheFormatProvider(string cultureName)
     {
+        var cultureInfo = new CultureInfo(cultureName);
+        
         var number = Math.PI * 10000;
         var date = new DateTime(2024, 7, 19, 10, 00, 59);
         var currency = 12345.67M;
+
+        // Culture-specific formatting differs by .NET version (and possibly OS).
+        var messageBuilder = new StringWriter(cultureInfo);
+        messageBuilder.Write("{0:n} {1} {2:C}", number, date, currency);
+        var expectedMessage = messageBuilder.ToString();
         
-        AssertValidJson(log => log.Information("{a:n} {b} {c:C}", number, date, currency), new CultureInfo(cultureName), evt =>
+        AssertValidJson(log => log.Information("{a:n} {b} {c:C}", number, date, currency), cultureInfo, evt =>
         {
-            Assert.Equal(expectedMessage, evt["@m"]!.ToString());
-            Assert.Equal(renderedNumber, evt["@r"]![0]!.ToString());
-            Assert.Equal(renderedCurrency, evt["@r"]![1]!.ToString());
+            Assert.Equal(expectedMessage, evt["@m"]!.Value<string>());
+            Assert.Null(evt["@r"]);
         });
     }
 
@@ -65,6 +68,15 @@ public class SeqCompactJsonFormatterTests
     public void MessageNotRenderedForDefaultFormatProvider()
     {
         AssertValidJson(log => log.Information("{a}", 1.234), null, evt =>
+        {
+            Assert.Null(evt["@m"]);
+        });
+    }
+
+    [Fact]
+    public void MessageNotRenderedForExplicitInvariantCulture()
+    {
+        AssertValidJson(log => log.Information("{a}", 1.234), CultureInfo.InvariantCulture, evt =>
         {
             Assert.Null(evt["@m"]);
         });

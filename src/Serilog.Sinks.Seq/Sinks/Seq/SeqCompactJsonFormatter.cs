@@ -34,20 +34,37 @@ namespace Serilog.Sinks.Seq;
 /// </summary>
 /// <remarks>Modified from <c>Serilog.Formatting.Compact.CompactJsonFormatter</c> to add
 /// implicit SerilogTracing span support.</remarks>
-public class SeqCompactJsonFormatter: ITextFormatter
+public sealed class SeqCompactJsonFormatter: ITextFormatter
 {
-    static readonly IDottedPropertyNameConvention DottedPropertyNameConvention =
-        AppContext.TryGetSwitch("Serilog.Parsing.MessageTemplateParser.AcceptDottedPropertyNames", out var accept) && accept ?
-            new UnflattenDottedPropertyNames() :
-            new PreserveDottedPropertyNames();
-
+    static readonly IDottedPropertyNameConvention DefaultDottedPropertyNameConvention =
+        new UnflattenDottedPropertyNames();
+    
     readonly JsonValueFormatter _valueFormatter = new("$type");
     readonly IFormatProvider _formatProvider;
+    readonly IDottedPropertyNameConvention _dottedPropertyNameConvention;
     
+    /// <summary>
+    /// Create a <see cref="SeqCompactJsonFormatter"/>.
+    /// </summary>
     /// <param name="formatProvider">An <see cref="IFormatProvider"/> that will be used to render log event tokens.</param>
     public SeqCompactJsonFormatter(IFormatProvider? formatProvider = null)
+        : this(formatProvider, false)
+    {
+    }
+
+    /// <summary>
+    /// Create a <see cref="SeqCompactJsonFormatter"/>.
+    /// </summary>
+    /// <param name="formatProvider">An <see cref="IFormatProvider"/> that will be used to render log event tokens.</param>
+    /// <param name="preserveDottedPropertyNames">If <c langword="true"/>, log event property names that
+    /// contain <c>.</c> will be sent to Seq as-is. Otherwise, properties with dotted names will be converted
+    /// into nested objects.</param>
+    public SeqCompactJsonFormatter(IFormatProvider? formatProvider, bool preserveDottedPropertyNames)
     {
         _formatProvider = formatProvider ?? CultureInfo.InvariantCulture;
+        _dottedPropertyNameConvention = preserveDottedPropertyNames
+            ? new PreserveDottedPropertyNames()
+            : new UnflattenDottedPropertyNames();
     }
 
     /// <summary>
@@ -57,7 +74,7 @@ public class SeqCompactJsonFormatter: ITextFormatter
     /// <param name="output">The output.</param>
     public void Format(LogEvent logEvent, TextWriter output)
     {
-        FormatEvent(logEvent, output, _valueFormatter, _formatProvider);
+        FormatEvent(logEvent, output, _valueFormatter, _formatProvider, _dottedPropertyNameConvention);
         output.WriteLine();
     }
 
@@ -69,6 +86,11 @@ public class SeqCompactJsonFormatter: ITextFormatter
     /// <param name="valueFormatter">A value formatter for <see cref="LogEventPropertyValue"/>s on the event.</param>
     /// <param name="formatProvider">An <see cref="IFormatProvider"/> that will be used to render log event tokens.</param>
     public static void FormatEvent(LogEvent logEvent, TextWriter output, JsonValueFormatter valueFormatter, IFormatProvider formatProvider)
+    {
+        FormatEvent(logEvent, output, valueFormatter, formatProvider, DefaultDottedPropertyNameConvention);
+    }
+
+    static void FormatEvent(LogEvent logEvent, TextWriter output, JsonValueFormatter valueFormatter, IFormatProvider formatProvider, IDottedPropertyNameConvention dottedPropertyNameConvention)
     {
         if (logEvent == null) throw new ArgumentNullException(nameof(logEvent));
         if (output == null) throw new ArgumentNullException(nameof(output));
@@ -167,7 +189,7 @@ public class SeqCompactJsonFormatter: ITextFormatter
             }
         }
 
-        var properties = DottedPropertyNameConvention.ProcessDottedPropertyNames(logEvent.Properties);
+        var properties = dottedPropertyNameConvention.ProcessDottedPropertyNames(logEvent.Properties);
         foreach (var property in properties)
         {
             var name = property.Key;

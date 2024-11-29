@@ -89,6 +89,14 @@ public class SeqCompactJsonFormatterTests
     }
 
     [Fact]
+    public void DottedPropertiesAreNested()
+    {
+        dynamic evt = AssertValidJson(log => log.Information("Property {a.b} and {a.c}", "One", "Two"));
+        Assert.Equal("One", (string)evt.a.b);
+        Assert.Equal("Two", (string)evt.a.c);
+    }
+
+    [Fact]
     public void ExceptionsAreFormattedToValidJson()
     {
         AssertValidJson(log => log.Information(new DivideByZeroException(), "With exception"));

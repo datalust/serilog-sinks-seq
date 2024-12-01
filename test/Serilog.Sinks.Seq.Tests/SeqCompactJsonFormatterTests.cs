@@ -5,25 +5,24 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Serilog.Events;
-using Serilog.Parsing;
 using Xunit;
 // ReSharper disable AccessToDisposedClosure
+// ReSharper disable ParameterOnlyUsedForPreconditionCheck.Local
 
 namespace Serilog.Sinks.Seq.Tests;
 
 public class SeqCompactJsonFormatterTests
 {
-    JObject AssertValidJson(Action<ILogger> act, IFormatProvider? formatProvider = null, Action<JObject>? assert = null)
+    static JObject AssertValidJson(Action<ILogger> act, IFormatProvider? formatProvider = null, Action<JObject>? assert = null)
     {
         var sw = new StringWriter();
         var logger = new LoggerConfiguration()
             .Destructure.AsScalar<ActivityTraceId>()
             .Destructure.AsScalar<ActivitySpanId>()
-            .WriteTo.TextWriter(new SeqCompactJsonFormatter(formatProvider ?? CultureInfo.InvariantCulture), sw)
+            .WriteTo.TextWriter(new SeqCompactJsonFormatter(formatProvider), sw)
             .CreateLogger();
         act(logger);
         logger.Dispose();
@@ -41,35 +40,27 @@ public class SeqCompactJsonFormatterTests
     }
 
     [Theory]
-    [InlineData("fr-FR", "31\u202f415,927 19/07/2024 10:00:59 12\u202f345,67 €", "31\u202f415,927", "12\u202f345,67 €")]
-    [InlineData("en-US", "31,415.927 7/19/2024 10:00:59 AM $12,345.67", "31,415.927", "$12,345.67")]
-    public void PropertiesFormatCorrectlyForTheFormatProvider(
-        string cultureName, 
-        string expectedMessage,
-        string renderedNumber,
-        string renderedCurrency)
+    [InlineData("fr-FR")]
+    [InlineData("en-US")]
+    public void PropertiesFormatCorrectlyForTheFormatProvider(string cultureName)
     {
-        var number = Math.PI * 10000;
-        var date = new DateTime(2024, 7, 19, 10, 00, 59);
-        var currency = 12345.67M;
+        var cultureInfo = new CultureInfo(cultureName);
         
-        AssertValidJson(log => log.Information("{a:n} {b} {c:C}", number, date, currency), new CultureInfo(cultureName), evt =>
+        const double number = Math.PI * 10000;
+        var date = new DateTime(2024, 7, 19, 10, 00, 59);
+        const decimal currency = 12345.67M;
+
+        // Culture-specific formatting differs by .NET version platform.
+        var expectedNumber = number.ToString("n", cultureInfo);
+        var expectedCurrency = currency.ToString("C", cultureInfo);
+        
+        AssertValidJson(log => log.Information("{a:n} {b} {c:C}", number, date, currency), cultureInfo, evt =>
         {
-            Assert.Equal(expectedMessage, evt["@m"]!.ToString());
-            Assert.Equal(renderedNumber, evt["@r"]![0]!.ToString());
-            Assert.Equal(renderedCurrency, evt["@r"]![1]!.ToString());
+            Assert.Equal(expectedNumber, evt["@r"]![0]!.Value<string>());
+            Assert.Equal(expectedCurrency, evt["@r"]![1]!.Value<string>());
         });
     }
-
-    [Fact]
-    public void MessageNotRenderedForDefaultFormatProvider()
-    {
-        AssertValidJson(log => log.Information("{a}", 1.234), null, evt =>
-        {
-            Assert.Null(evt["@m"]);
-        });
-    }
-
+    
     [Fact]
     public void AnEmptyEventIsValidJson()
     {
@@ -146,9 +137,7 @@ public class SeqCompactJsonFormatterTests
     {
         var traceId = ActivityTraceId.CreateRandom();
         var spanId = ActivitySpanId.CreateRandom();
-        var evt = new LogEvent(DateTimeOffset.Now, LogEventLevel.Information, null,
-            new MessageTemplate(Enumerable.Empty<MessageTemplateToken>()), Enumerable.Empty<LogEventProperty>(),
-            traceId, spanId);
+        var evt = new LogEvent(DateTimeOffset.Now, LogEventLevel.Information, null, MessageTemplate.Empty, [], traceId, spanId);
         var json = AssertValidJson(log => log.Write(evt));
         Assert.Equal(traceId.ToHexString(), json["@tr"]);
         Assert.Equal(spanId.ToHexString(), json["@sp"]);

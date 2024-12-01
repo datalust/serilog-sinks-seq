@@ -24,6 +24,12 @@ sealed class BookmarkFile : IDisposable
 
     public BookmarkFile(string bookmarkFilename)
     {
+        var directory = Path.GetDirectoryName(bookmarkFilename);
+        if (!string.IsNullOrWhiteSpace(directory) && !Directory.Exists(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+        
         _bookmark = System.IO.File.Open(bookmarkFilename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
     }
 

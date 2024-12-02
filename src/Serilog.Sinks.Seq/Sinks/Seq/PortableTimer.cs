@@ -13,9 +13,6 @@
 // limitations under the License.
 
 using Serilog.Debugging;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Serilog.Sinks.Seq;
 

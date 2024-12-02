@@ -1,6 +1,4 @@
-﻿using System;
-using System.Net.Http;
-using System.Threading.Tasks;
+﻿using System.Net.Http;
 using Serilog.Debugging;
 using Serilog.Events;
 using Serilog.Sinks.Seq.Audit;

@@ -1,8 +1,4 @@
-using System;
-using System.IO;
 using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 using Serilog.Sinks.Seq.Durable;
 using Serilog.Sinks.Seq.Http;
 using Serilog.Sinks.Seq.Tests.Support;

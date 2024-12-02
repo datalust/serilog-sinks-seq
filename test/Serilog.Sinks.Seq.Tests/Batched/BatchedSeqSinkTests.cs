@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using System.Threading.Tasks;
 using Serilog.Core;
 using Serilog.Events;
 using Serilog.Sinks.Seq.Batched;

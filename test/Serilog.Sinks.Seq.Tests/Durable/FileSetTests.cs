@@ -1,5 +1,4 @@
-﻿using System.IO;
-using Serilog.Sinks.Seq.Durable;
+﻿using Serilog.Sinks.Seq.Durable;
 using Serilog.Sinks.Seq.Tests.Support;
 using Xunit;
 

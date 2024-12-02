@@ -12,15 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text;
 using Serilog.Debugging;
 using Serilog.Events;
 using IOFile = System.IO.File;
-using System.Threading.Tasks;
 using Serilog.Sinks.Seq.Http;
 
 #if HRESULTS

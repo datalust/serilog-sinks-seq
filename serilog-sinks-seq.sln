@@ -21,7 +21,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample", "sample\Sample\Sam
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serilog.Sinks.Seq.Tests", "test\Serilog.Sinks.Seq.Tests\Serilog.Sinks.Seq.Tests.csproj", "{3C2D8E01-5580-426A-BDD9-EC59CD98E618}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sln", "sln", "{27A8DEB5-B04B-4DCB-8CF2-0049E5EE66AF}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".sln", ".sln", "{27A8DEB5-B04B-4DCB-8CF2-0049E5EE66AF}"
 ProjectSection(SolutionItems) = preProject
 	Build.ps1 = Build.ps1
 	README.md = README.md

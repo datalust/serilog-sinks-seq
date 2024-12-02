@@ -41,7 +41,7 @@ sealed class FileSet
         // The extension cannot be matched here because it may be either "json" (raw format) or "clef" (compact).
         _candidateSearchPath = Path.GetFileName(bufferBaseFilename) + "-*.*";
             
-        _filenameMatcher = new Regex("^" + Regex.Escape(Path.GetFileName(bufferBaseFilename)) + "-(?<date>\\d{8})(?<sequence>_[0-9]{3,}){0,1}\\.(?<ext>json|clef)$");
+        _filenameMatcher = new Regex("^" + Regex.Escape(Path.GetFileName(bufferBaseFilename)) + @"-(?<date>\d{8})(?<sequence>_[0-9]{3,}){0,1}\.(?<ext>json|clef)$");
     }
 
     public BookmarkFile OpenBookmarkFile()

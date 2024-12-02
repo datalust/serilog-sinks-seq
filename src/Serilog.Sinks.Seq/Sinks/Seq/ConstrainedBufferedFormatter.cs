@@ -87,10 +87,9 @@ sealed class ConstrainedBufferedFormatter : ITextFormatter
             LogEventLevel.Error,
             ex,
             new MessageTemplateParser().Parse("Event with message template {OriginalMessageTemplate} could not be formatted as JSON"),
-            new[]
-            {
-                new LogEventProperty("OriginalMessageTemplate", new ScalarValue(logEvent.MessageTemplate.Text)),
-            });
+            [
+                new LogEventProperty("OriginalMessageTemplate", new ScalarValue(logEvent.MessageTemplate.Text))
+            ]);
     }
 
     static bool CheckEventBodySize(string jsonLine, long? eventBodyLimitBytes)
@@ -111,11 +110,10 @@ sealed class ConstrainedBufferedFormatter : ITextFormatter
             LogEventLevel.Error,
             exception: null,
             new MessageTemplateParser().Parse("Event JSON representation exceeds the body size limit {EventBodyLimitBytes}; sample: {EventBodySample}"),
-            new[]
-            {
+            [
                 new LogEventProperty("EventBodyLimitBytes", new ScalarValue(eventBodyLimitBytes)),
-                new LogEventProperty("EventBodySample", new ScalarValue(sample)),
-            });
+                new LogEventProperty("EventBodySample", new ScalarValue(sample))
+            ]);
     }
 
     internal static long GetOversizeEventSampleLength(long eventBodyLimitBytes)

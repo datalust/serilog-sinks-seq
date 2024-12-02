@@ -47,6 +47,7 @@ sealed class PortableTimer : IDisposable
         }
     }
 
+    // ReSharper disable once AsyncVoidMethod
     async void OnTick()
     {
         try

@@ -73,7 +73,7 @@ sealed class DurableSeqSink : ILogEventSink, IDisposable
     }
         
 #if ASYNC_DISPOSE
-        public async System.Threading.Tasks.ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
             await _sink.DisposeAsync().ConfigureAwait(false);
             await _shipper.DisposeAsync().ConfigureAwait(false);

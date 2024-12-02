@@ -3,6 +3,9 @@ using System.Linq;
 using System.Threading;
 using Serilog;
 using Serilog.Core;
+using Serilog.Debugging;
+
+SelfLog.Enable(Console.Error);
 
 // By sharing between the Seq sink and logger itself,
 // Seq API keys can be used to control the level of the whole logging pipeline.

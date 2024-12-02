@@ -32,27 +32,27 @@ namespace Serilog.Sinks.Seq;
 /// </summary>
 /// <remarks>Modified from <c>Serilog.Formatting.Compact.CompactJsonFormatter</c> to add
 /// implicit SerilogTracing span support.</remarks>
-public class SeqCompactJsonFormatter: ITextFormatter
+public sealed class SeqCompactJsonFormatter: ITextFormatter
 {
-    readonly IDottedPropertyNameConvention _dottedPropertyNameConvention;
     readonly JsonValueFormatter _valueFormatter;
     readonly IFormatProvider _formatProvider;
-
+    readonly IDottedPropertyNameConvention _dottedPropertyNameConvention;
+    
     /// <summary>
     /// Construct a <see cref="SeqCompactJsonFormatter"/>.
     /// </summary>
     /// <param name="valueFormatter">A value formatter for <see cref="LogEventPropertyValue"/>s on the event.</param>
     /// <param name="formatProvider">An <see cref="IFormatProvider"/> that will be used to render log event tokens.</param>
-    public SeqCompactJsonFormatter(IFormatProvider? formatProvider = null, JsonValueFormatter? valueFormatter = null)
+    /// <param name="preserveDottedPropertyNames">If <c langword="true"/>, log event property names that
+    /// contain <c>.</c> will be sent to Seq as-is. Otherwise, properties with dotted names will be converted
+    /// into nested objects.</param>
+    public SeqCompactJsonFormatter(IFormatProvider? formatProvider = null, JsonValueFormatter? valueFormatter = null, bool preserveDottedPropertyNames = false)
     {
-        var acceptDottedPropertyNames = AppContext.TryGetSwitch("Serilog.Parsing.MessageTemplateParser.AcceptDottedPropertyNames", out var accept) && accept;
-
-        _dottedPropertyNameConvention = acceptDottedPropertyNames ?
-            new UnflattenDottedPropertyNames() :
-            new PreserveDottedPropertyNames();
-
         _formatProvider = formatProvider ?? CultureInfo.InvariantCulture;
         _valueFormatter = valueFormatter ?? new("$type");
+        _dottedPropertyNameConvention = preserveDottedPropertyNames
+            ? new PreserveDottedPropertyNames()
+            : new UnflattenDottedPropertyNames();
     }
 
     /// <summary>

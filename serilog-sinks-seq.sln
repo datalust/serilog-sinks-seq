@@ -23,7 +23,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serilog.Sinks.Seq.Tests", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sln", "sln", "{27A8DEB5-B04B-4DCB-8CF2-0049E5EE66AF}"
 ProjectSection(SolutionItems) = preProject
-	appveyor.yml = appveyor.yml
 	Build.ps1 = Build.ps1
 	README.md = README.md
 	.gitattributes = .gitattributes
@@ -31,9 +30,18 @@ ProjectSection(SolutionItems) = preProject
 	CHANGES.md = CHANGES.md
 	global.json = global.json
 	LICENSE = LICENSE
+	Directory.Build.props = Directory.Build.props
+	Directory.Version.props = Directory.Version.props
 EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorWasm", "sample\BlazorWasm\BlazorWasm.csproj", "{1BB4C500-449C-42DF-849D-F0CAEC9965EE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{02D526DA-1D26-4B37-BC72-54B42CC4C185}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{8FE857C7-CD70-4FC2-98D6-022580B70659}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\ci.yml = .github\workflows\ci.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -66,5 +74,6 @@ Global
 		{17497155-5D94-45DF-81D9-BD960E8CF217} = {88A3ECD1-D91A-49A2-A6D7-5A70973A0E3F}
 		{3C2D8E01-5580-426A-BDD9-EC59CD98E618} = {67B1C971-75EE-4ABE-B184-66AAC8D9D572}
 		{1BB4C500-449C-42DF-849D-F0CAEC9965EE} = {88A3ECD1-D91A-49A2-A6D7-5A70973A0E3F}
+		{8FE857C7-CD70-4FC2-98D6-022580B70659} = {02D526DA-1D26-4B37-BC72-54B42CC4C185}
 	EndGlobalSection
 EndGlobal

@@ -62,6 +62,17 @@ public sealed class SeqCompactJsonFormatter: ITextFormatter
     /// <param name="output">The output.</param>
     public void Format(LogEvent logEvent, TextWriter output)
     {
+        FormatEvent(logEvent, output);
+        output.WriteLine();
+    }
+
+    /// <summary>
+    /// Format the log event into the output, without newline delimiters.
+    /// </summary>
+    /// <param name="logEvent">The event to format.</param>
+    /// <param name="output">The output.</param>
+    public void FormatEvent(LogEvent logEvent, TextWriter output)
+    {
         if (logEvent == null) throw new ArgumentNullException(nameof(logEvent));
         if (output == null) throw new ArgumentNullException(nameof(output));
 

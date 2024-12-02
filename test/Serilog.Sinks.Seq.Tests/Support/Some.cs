@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Serilog.Events;
+﻿using Serilog.Events;
 using Xunit.Sdk;
 
 namespace Serilog.Sinks.Seq.Tests.Support;

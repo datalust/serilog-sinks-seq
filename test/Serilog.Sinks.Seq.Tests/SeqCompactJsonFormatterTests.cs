@@ -1,10 +1,8 @@
 // This file originally CompactJsonFormatterTests from https://github.com/serilog/serilog-formatting-compact,
 // Copyright Serilog Contributors and distributed under the Apache 2.0 license.
 
-using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Serilog.Events;

@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
 using Serilog.Core;
 using Serilog.Events;
 using System.Text;
@@ -74,7 +73,7 @@ sealed class DurableSeqSink : ILogEventSink, IDisposable
     }
         
 #if ASYNC_DISPOSE
-        public async System.Threading.Tasks.ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
             await _sink.DisposeAsync().ConfigureAwait(false);
             await _shipper.DisposeAsync().ConfigureAwait(false);

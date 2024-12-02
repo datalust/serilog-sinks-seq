@@ -12,13 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using System.Globalization;
 using Serilog.Configuration;
 using Serilog.Core;
 using Serilog.Events;
 using Serilog.Sinks.Seq;
-using System.Net.Http;
 using Serilog.Formatting;
 using Serilog.Sinks.Seq.Batched;
 using Serilog.Sinks.Seq.Audit;

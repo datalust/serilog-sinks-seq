@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Text;
 using Serilog.Debugging;
 using Serilog.Sinks.Seq.Http;

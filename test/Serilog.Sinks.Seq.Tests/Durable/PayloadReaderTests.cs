@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Text;
+﻿using System.Text;
 using Newtonsoft.Json;
 using Serilog.Sinks.Seq.Durable;
 using Serilog.Sinks.Seq.Http;

@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using System.Threading.Tasks;
 using Serilog.Core;
 using Serilog.Events;
 using Serilog.Sinks.Seq.Batched;
@@ -29,11 +28,10 @@ public class BatchedSeqSinkTests
         var api = new TestIngestionApi();
         var sink = new BatchedSeqSink(api, new SeqCompactJsonFormatter(), null, new ControlledLevelSwitch());
 
-        await sink.EmitBatchAsync(new[]
-        {
+        await sink.EmitBatchAsync([
             Some.InformationEvent("first"),
             Some.InformationEvent("second")
-        });
+        ]);
 
         var emitted = await api.GetPayloadAsync();
 
@@ -49,7 +47,7 @@ public class BatchedSeqSinkTests
         var api = new TestIngestionApi(_ => Task.FromResult(new IngestionResult(true, HttpStatusCode.Accepted, newLevel)));
         var sink = new BatchedSeqSink(api, new SeqCompactJsonFormatter(), null, new ControlledLevelSwitch(levelSwitch));
 
-        await sink.EmitBatchAsync(new[] { Some.InformationEvent() });
+        await sink.EmitBatchAsync([Some.InformationEvent()]);
             
         Assert.Equal(newLevel, levelSwitch.MinimumLevel);
     }

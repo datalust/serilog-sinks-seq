@@ -1,28 +1,26 @@
 // This file originally CompactJsonFormatterTests from https://github.com/serilog/serilog-formatting-compact,
 // Copyright Serilog Contributors and distributed under the Apache 2.0 license.
 
-using System;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
+using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Serilog.Events;
-using Serilog.Parsing;
 using Xunit;
 // ReSharper disable AccessToDisposedClosure
+// ReSharper disable ParameterOnlyUsedForPreconditionCheck.Local
 
 namespace Serilog.Sinks.Seq.Tests;
 
 public class SeqCompactJsonFormatterTests
 {
-    JObject AssertValidJson(Action<ILogger> act)
+    static JObject AssertValidJson(Action<ILogger> act, IFormatProvider? formatProvider = null, Action<JObject>? assert = null)
     {
         var sw = new StringWriter();
         var logger = new LoggerConfiguration()
             .Destructure.AsScalar<ActivityTraceId>()
             .Destructure.AsScalar<ActivitySpanId>()
-            .WriteTo.TextWriter(new SeqCompactJsonFormatter(), sw)
+            .WriteTo.TextWriter(new SeqCompactJsonFormatter(formatProvider), sw)
             .CreateLogger();
         act(logger);
         logger.Dispose();
@@ -33,10 +31,34 @@ public class SeqCompactJsonFormatterTests
             DateParseHandling = DateParseHandling.None,
             CheckAdditionalContent = true,
         };
-        
-        return JsonConvert.DeserializeObject<JObject>(json, settings)!;
+
+        var evt = JsonConvert.DeserializeObject<JObject>(json, settings)!;
+        (assert ?? (_ => { }))(evt);
+        return evt;
     }
 
+    [Theory]
+    [InlineData("fr-FR")]
+    [InlineData("en-US")]
+    public void PropertiesFormatCorrectlyForTheFormatProvider(string cultureName)
+    {
+        var cultureInfo = new CultureInfo(cultureName);
+        
+        const double number = Math.PI * 10000;
+        var date = new DateTime(2024, 7, 19, 10, 00, 59);
+        const decimal currency = 12345.67M;
+
+        // Culture-specific formatting differs by .NET version platform.
+        var expectedNumber = number.ToString("n", cultureInfo);
+        var expectedCurrency = currency.ToString("C", cultureInfo);
+        
+        AssertValidJson(log => log.Information("{a:n} {b} {c:C}", number, date, currency), cultureInfo, evt =>
+        {
+            Assert.Equal(expectedNumber, evt["@r"]![0]!.Value<string>());
+            Assert.Equal(expectedCurrency, evt["@r"]![1]!.Value<string>());
+        });
+    }
+    
     [Fact]
     public void AnEmptyEventIsValidJson()
     {
@@ -53,6 +75,14 @@ public class SeqCompactJsonFormatterTests
     public void MultiplePropertiesAreDelimited()
     {
         AssertValidJson(log => log.Information("Property {First} and {Second}", "One", "Two"));
+    }
+
+    [Fact]
+    public void DottedPropertiesAreNested()
+    {
+        dynamic evt = AssertValidJson(log => log.Information("Property {a.b} and {a.c}", "One", "Two"));
+        Assert.Equal("One", (string)evt.a.b);
+        Assert.Equal("Two", (string)evt.a.c);
     }
 
     [Fact]
@@ -105,9 +135,7 @@ public class SeqCompactJsonFormatterTests
     {
         var traceId = ActivityTraceId.CreateRandom();
         var spanId = ActivitySpanId.CreateRandom();
-        var evt = new LogEvent(DateTimeOffset.Now, LogEventLevel.Information, null,
-            new MessageTemplate(Enumerable.Empty<MessageTemplateToken>()), Enumerable.Empty<LogEventProperty>(),
-            traceId, spanId);
+        var evt = new LogEvent(DateTimeOffset.Now, LogEventLevel.Information, null, MessageTemplate.Empty, [], traceId, spanId);
         var json = AssertValidJson(log => log.Write(evt));
         Assert.Equal(traceId.ToHexString(), json["@tr"]);
         Assert.Equal(spanId.ToHexString(), json["@sp"]);

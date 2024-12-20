@@ -1,8 +1,5 @@
-﻿using System;
-using System.Net;
-using System.Threading;
+﻿using System.Net;
 using System.Threading.Channels;
-using System.Threading.Tasks;
 using Serilog.Sinks.Seq.Http;
 
 namespace Serilog.Sinks.Seq.Tests.Support;

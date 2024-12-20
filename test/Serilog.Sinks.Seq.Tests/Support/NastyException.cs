@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Serilog.Sinks.Seq.Tests.Support;
+﻿namespace Serilog.Sinks.Seq.Tests.Support;
 
 public class NastyException : Exception
 {

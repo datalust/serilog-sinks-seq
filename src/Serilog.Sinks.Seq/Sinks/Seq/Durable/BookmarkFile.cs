@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using System.IO;
 using System.Text;
 
 namespace Serilog.Sinks.Seq.Durable;
@@ -24,6 +22,12 @@ sealed class BookmarkFile : IDisposable
 
     public BookmarkFile(string bookmarkFilename)
     {
+        var directory = Path.GetDirectoryName(bookmarkFilename);
+        if (!string.IsNullOrWhiteSpace(directory) && !Directory.Exists(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+        
         _bookmark = System.IO.File.Open(bookmarkFilename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
     }
 

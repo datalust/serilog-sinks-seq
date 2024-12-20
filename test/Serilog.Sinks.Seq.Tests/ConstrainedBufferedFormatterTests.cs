@@ -1,5 +1,4 @@
-﻿using System.IO;
-using Serilog.Sinks.Seq.Tests.Support;
+﻿using Serilog.Sinks.Seq.Tests.Support;
 using Xunit;
 
 namespace Serilog.Sinks.Seq.Tests;

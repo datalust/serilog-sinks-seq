@@ -12,12 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
 using Serilog.Configuration;
 using Serilog.Core;
 using Serilog.Events;
 using Serilog.Sinks.Seq;
-using System.Net.Http;
 using Serilog.Formatting;
 using Serilog.Sinks.Seq.Batched;
 using Serilog.Sinks.Seq.Audit;
@@ -34,7 +32,7 @@ public static class SeqLoggerConfigurationExtensions
     const int DefaultBatchPostingLimit = 1000;
     static readonly TimeSpan DefaultPeriod = TimeSpan.FromSeconds(2);
     const int DefaultQueueSizeLimit = 100000;
-    static ITextFormatter CreateDefaultFormatter() => new SeqCompactJsonFormatter();
+    static ITextFormatter CreateDefaultFormatter(IFormatProvider? formatProvider) => new SeqCompactJsonFormatter(formatProvider);
     
     /// <summary>
     /// Write log events to a <a href="https://datalust.co/seq">Seq</a> server.
@@ -67,6 +65,8 @@ public static class SeqLoggerConfigurationExtensions
     /// durable log shipping.</param>
     /// <param name="payloadFormatter">An <see cref="ITextFormatter"/> that will be used to format (newline-delimited CLEF/JSON)
     /// payloads. Experimental.</param>
+    /// <param name="formatProvider">An <see cref="IFormatProvider"/> that will be used to render log event tokens. Does not apply if <paramref name="payloadFormatter"/> is provided.
+    /// If <paramref name="formatProvider"/> is provided then event messages will be rendered and included in the payload.</param>
     /// <returns>Logger configuration, allowing configuration to continue.</returns>
     /// <exception cref="ArgumentNullException">A required parameter is null.</exception>
     public static LoggerConfiguration Seq(
@@ -83,7 +83,8 @@ public static class SeqLoggerConfigurationExtensions
         HttpMessageHandler? messageHandler = null,
         long? retainedInvalidPayloadsLimitBytes = null,
         int queueSizeLimit = DefaultQueueSizeLimit,
-        ITextFormatter? payloadFormatter = null)
+        ITextFormatter? payloadFormatter = null,
+        IFormatProvider? formatProvider = null)
     {
         if (loggerSinkConfiguration == null) throw new ArgumentNullException(nameof(loggerSinkConfiguration));
         if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
@@ -94,7 +95,7 @@ public static class SeqLoggerConfigurationExtensions
 
         var defaultedPeriod = period ?? DefaultPeriod;
         var controlledSwitch = new ControlledLevelSwitch(controlLevelSwitch);
-        var formatter = payloadFormatter ?? CreateDefaultFormatter();
+        var formatter = payloadFormatter ?? CreateDefaultFormatter(formatProvider);
         var ingestionApi = new SeqIngestionApiClient(serverUrl, apiKey, messageHandler);
 
         if (bufferBaseFilename == null)
@@ -145,6 +146,7 @@ public static class SeqLoggerConfigurationExtensions
     /// <param name="messageHandler">Used to construct the HttpClient that will send the log messages to Seq.</param>
     /// <param name="payloadFormatter">An <see cref="ITextFormatter"/> that will be used to format (newline-delimited CLEF/JSON)
     /// payloads. Experimental.</param>
+    /// <param name="formatProvider">An <see cref="IFormatProvider"/> that will be used to render log event tokens.</param>
     /// <returns>Logger configuration, allowing configuration to continue.</returns>
     /// <exception cref="ArgumentNullException">A required parameter is null.</exception>
     public static LoggerConfiguration Seq(
@@ -153,13 +155,14 @@ public static class SeqLoggerConfigurationExtensions
         LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
         string? apiKey = null,
         HttpMessageHandler? messageHandler = null,
-        ITextFormatter? payloadFormatter = null)
+        ITextFormatter? payloadFormatter = null,
+        IFormatProvider? formatProvider = null)
     {
         if (loggerAuditSinkConfiguration == null) throw new ArgumentNullException(nameof(loggerAuditSinkConfiguration));
         if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
 
         var ingestionApi = new SeqIngestionApiClient(serverUrl, apiKey, messageHandler);
-        var sink = new SeqAuditSink(ingestionApi, payloadFormatter ?? CreateDefaultFormatter());
+        var sink = new SeqAuditSink(ingestionApi, payloadFormatter ?? CreateDefaultFormatter(formatProvider));
         return loggerAuditSinkConfiguration.Sink(sink, restrictedToMinimumLevel);
     }
 }

@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Collections.Generic;
 using Serilog.Events;
 
 namespace Serilog.Sinks.Seq.Conventions;
@@ -21,7 +20,7 @@ namespace Serilog.Sinks.Seq.Conventions;
 /// Maintains verbatim processing of property names. A property named <c>"a.b"</c> will be transmitted to Seq as a
 /// scalar value with name <c>"a.b"</c>.
 /// </summary>
-class PreserveDottedPropertyNames: IDottedPropertyNameConvention
+sealed class PreserveDottedPropertyNames: IDottedPropertyNameConvention
 {
     /// <inheritdoc />
     public IReadOnlyDictionary<string, LogEventPropertyValue> ProcessDottedPropertyNames(IReadOnlyDictionary<string, LogEventPropertyValue> maybeDotted)

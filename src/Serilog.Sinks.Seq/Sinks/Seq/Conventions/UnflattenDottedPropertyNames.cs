@@ -12,21 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Serilog.Events;
 
 namespace Serilog.Sinks.Seq.Conventions;
 
 /// <summary>
-/// Experimental. Unflatten property names. A property with name <c>"a.b"</c> will be transmitted to Seq as
+/// Nest (un-flatten) properties with dotted names. A property with name <c>"a.b"</c> will be transmitted to Seq as
 /// a structure with name <c>"a"</c>, and one member <c>"b"</c>.
 /// </summary>
 /// <remarks>This behavior is enabled when the <c>Serilog.Parsing.MessageTemplateParser.AcceptDottedPropertyNames</c>
 /// <see cref="AppContext"/> switch is set to value <c langword="true"/>.</remarks>
-class UnflattenDottedPropertyNames: IDottedPropertyNameConvention
+sealed class UnflattenDottedPropertyNames: IDottedPropertyNameConvention
 {
     const int MaxDepth = 10;
 

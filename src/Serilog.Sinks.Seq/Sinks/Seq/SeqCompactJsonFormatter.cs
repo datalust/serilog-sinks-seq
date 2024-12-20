@@ -12,17 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using Serilog.Events;
 using Serilog.Formatting;
 using Serilog.Formatting.Json;
 using Serilog.Parsing;
 using Serilog.Sinks.Seq.Conventions;
-
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable PossibleMultipleEnumeration
 
@@ -33,40 +29,53 @@ namespace Serilog.Sinks.Seq;
 /// </summary>
 /// <remarks>Modified from <c>Serilog.Formatting.Compact.CompactJsonFormatter</c> to add
 /// implicit SerilogTracing span support.</remarks>
-public class SeqCompactJsonFormatter: ITextFormatter
+public sealed class SeqCompactJsonFormatter: ITextFormatter
 {
-    static readonly IDottedPropertyNameConvention DottedPropertyNameConvention =
-        AppContext.TryGetSwitch("Serilog.Parsing.MessageTemplateParser.AcceptDottedPropertyNames", out var accept) && accept ?
-            new UnflattenDottedPropertyNames() :
-            new PreserveDottedPropertyNames();
-
-    readonly JsonValueFormatter _valueFormatter = new("$type");
+    readonly JsonValueFormatter _valueFormatter;
+    readonly IFormatProvider _formatProvider;
+    readonly IDottedPropertyNameConvention _dottedPropertyNameConvention;
     
     /// <summary>
-    /// Format the log event into the output. Subsequent events will be newline-delimited.
+    /// Construct a <see cref="SeqCompactJsonFormatter"/>.
+    /// </summary>
+    /// <param name="valueFormatter">A value formatter for <see cref="LogEventPropertyValue"/>s on the event.</param>
+    /// <param name="formatProvider">An <see cref="IFormatProvider"/> that will be used to render log event tokens.</param>
+    /// <param name="preserveDottedPropertyNames">If <c langword="true"/>, log event property names that
+    /// contain <c>.</c> will be sent to Seq as-is. Otherwise, properties with dotted names will be converted
+    /// into nested objects.</param>
+    public SeqCompactJsonFormatter(IFormatProvider? formatProvider = null, JsonValueFormatter? valueFormatter = null, bool preserveDottedPropertyNames = false)
+    {
+        _formatProvider = formatProvider ?? CultureInfo.InvariantCulture;
+        _valueFormatter = valueFormatter ?? new("$type");
+        _dottedPropertyNameConvention = preserveDottedPropertyNames
+            ? new PreserveDottedPropertyNames()
+            : new UnflattenDottedPropertyNames();
+    }
+
+    /// <summary>
+    /// Format the log event into the output. Successive events will be newline-delimited.
     /// </summary>
     /// <param name="logEvent">The event to format.</param>
     /// <param name="output">The output.</param>
     public void Format(LogEvent logEvent, TextWriter output)
     {
-        FormatEvent(logEvent, output, _valueFormatter);
+        FormatEvent(logEvent, output);
         output.WriteLine();
     }
 
     /// <summary>
-    /// Format the log event into the output.
+    /// Format the log event into the output, without newline delimiters.
     /// </summary>
     /// <param name="logEvent">The event to format.</param>
     /// <param name="output">The output.</param>
-    /// <param name="valueFormatter">A value formatter for <see cref="LogEventPropertyValue"/>s on the event.</param>
-    public static void FormatEvent(LogEvent logEvent, TextWriter output, JsonValueFormatter valueFormatter)
+    public void FormatEvent(LogEvent logEvent, TextWriter output)
     {
         if (logEvent == null) throw new ArgumentNullException(nameof(logEvent));
         if (output == null) throw new ArgumentNullException(nameof(output));
-        if (valueFormatter == null) throw new ArgumentNullException(nameof(valueFormatter));
 
         output.Write("{\"@t\":\"");
         output.Write(logEvent.Timestamp.UtcDateTime.ToString("O"));
+        
         output.Write("\",\"@mt\":");
         JsonValueFormatter.WriteQuotedJsonString(logEvent.MessageTemplate.Text, output);
 
@@ -85,9 +94,10 @@ public class SeqCompactJsonFormatter: ITextFormatter
                 output.Write(delim);
                 delim = ",";
                 var space = new StringWriter();
-                r.Render(logEvent.Properties, space, CultureInfo.InvariantCulture);
+                r.Render(logEvent.Properties, space, _formatProvider);
                 JsonValueFormatter.WriteQuotedJsonString(space.ToString(), output);
             }
+
             output.Write(']');
         }
 
@@ -147,7 +157,7 @@ public class SeqCompactJsonFormatter: ITextFormatter
             }
         }
 
-        var properties = DottedPropertyNameConvention.ProcessDottedPropertyNames(logEvent.Properties);
+        var properties = _dottedPropertyNameConvention.ProcessDottedPropertyNames(logEvent.Properties);
         foreach (var property in properties)
         {
             var name = property.Key;
@@ -164,7 +174,7 @@ public class SeqCompactJsonFormatter: ITextFormatter
             output.Write(',');
             JsonValueFormatter.WriteQuotedJsonString(name, output);
             output.Write(':');
-            valueFormatter.Format(property.Value, output);
+            _valueFormatter.Format(property.Value, output);
         }
 
         output.Write('}');

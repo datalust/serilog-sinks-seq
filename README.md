@@ -2,7 +2,7 @@
 
 A Serilog sink that writes events to the [Seq](https://datalust.co/seq) structured log server. Supports all modern .NET platforms.
 
-[<img alt="Package Logo" src="https://datalust.co/images/seq-nuget.png" width="128px">](https://nuget.org/packages/serilog.sinks.seq)
+[<img alt="Package Logo" src="https://datalust.co/assets/images-2021-10-Seq_Diamond-Main.png" width="128px">](https://nuget.org/packages/serilog.sinks.seq)
 
 > [!TIP]
 > If you would like to see timing and dependency information in Seq, [SerilogTracing](https://github.com/serilog-tracing/serilog-tracing) is a Serilog extension that can send both logs and traces through this sink.
@@ -12,8 +12,8 @@ A Serilog sink that writes events to the [Seq](https://datalust.co/seq) structur
 
 Install _Serilog.Sinks.Seq_ into your .NET project:
 
-```powershell
-> dotnet add package Serilog.Sinks.Seq
+```sh
+dotnet add package Serilog.Sinks.Seq
 ```
 
 Point the logger to Seq:
@@ -37,7 +37,7 @@ Then query log event properties like `ContactId` from the browser:
 When the application shuts down, [ensure any buffered events are propertly flushed to Seq](https://merbla.com/2016/07/06/serilog-log-closeandflush/) by disposing the logger or calling `Log.CloseAndFlush()`:
 
 ```csharp
-Log.CloseAndFlush();
+await Log.CloseAndFlushAsync();
 ```
 
 The sink can take advantage of Seq's [API keys](https://docs.datalust.co/docs/api-keys) to authenticate clients and dynamically attach properties to events at the server-side. To use an API key, specify it in the `apiKey` parameter of `WriteTo.Seq()`.
@@ -72,7 +72,7 @@ Serilog's XML configuration has several other capabilities that are described on
 
 To use the Seq sink with _Microsoft.Extensions.Configuration_, for example with ASP.NET Core or .NET Core, use the [Serilog.Settings.Configuration](https://github.com/serilog/serilog-settings-configuration) package. First install that package if you have not already done so:
 
-```powershell
+```sh
 dotnet add package Serilog.Settings.Configuration
 ```
 
@@ -83,7 +83,7 @@ var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
     .Build();
 
-var logger = new LoggerConfiguration()
+await using var logger = new LoggerConfiguration()
     .ReadFrom.Configuration(configuration)
     .CreateLogger();
 ```

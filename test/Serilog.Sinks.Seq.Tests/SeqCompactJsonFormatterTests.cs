@@ -6,6 +6,7 @@ using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Serilog.Events;
+using Serilog.Sinks.Seq.Tests.Support;
 using Xunit;
 // ReSharper disable AccessToDisposedClosure
 // ReSharper disable ParameterOnlyUsedForPreconditionCheck.Local
@@ -194,5 +195,50 @@ public class SeqCompactJsonFormatterTests
         Assert.True(jObject.ContainsKey("SpanStartTimestamp"));
         
         Assert.False(jObject.ContainsKey("@st"));
+    }
+    
+    [Fact]
+    public void SpanLinksGenerateValidJson()
+    {
+        var traceId1 = ActivityTraceId.CreateRandom();
+        var spanId1 = ActivitySpanId.CreateRandom();
+        var traceId2 = ActivityTraceId.CreateRandom();
+        var spanId2 = ActivitySpanId.CreateRandom();
+
+        var links = new[]
+        {
+            new Traceparent($"00-{traceId1.ToHexString()}-{spanId1.ToHexString()}-01"),
+            new Traceparent($"00-{traceId2.ToHexString()}-{spanId2.ToHexString()}-01"),
+        };
+
+        var json = AssertValidJson(
+            log => log.Information("With {SpanLinks}", links));
+
+        Assert.False(json.ContainsKey("SpanLinks"));
+
+        var sl = json["@sl"]!;
+        Assert.Equal(2, sl.Count());
+
+        Assert.Equal(traceId1.ToHexString(), sl[0]!["traceid"]);
+        Assert.Equal(spanId1.ToHexString(), sl[0]!["spanid"]);
+
+        Assert.Equal(traceId2.ToHexString(), sl[1]!["traceid"]);
+        Assert.Equal(spanId2.ToHexString(), sl[1]!["spanid"]);
+    }
+
+    [Fact]
+    public void IgnoresSpanLinksThatAreNotTraceparents()
+    {
+        var links = new[]
+        {
+            new Traceparent("not-a-traceparent"),
+        };
+
+        var json = AssertValidJson(
+            log => log.Information("With {SpanLinks}", links));
+
+        Assert.False(json.ContainsKey("@sl"));
+
+        Assert.True(json.ContainsKey("SpanLinks"));
     }
 }

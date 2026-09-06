@@ -128,6 +128,37 @@ public sealed class SeqCompactJsonFormatter: ITextFormatter
             output.Write('\"');
         }
 
+        var hasSpanLinks = false;
+        if (logEvent.Properties.TryGetValue("SpanLinks", out var sl) &&
+            sl is SequenceValue spanLinks)
+        {
+            var isFirst = true;
+
+            foreach (var link in spanLinks.Elements)
+            {
+                var traceparent = link is ScalarValue { Value: string stringValue } ? stringValue : link.ToString();
+
+                // NOTE: We're just translating from one text format to another, so could simply validate
+                // and offset, but parsing already doesn't allocate, so poggybacking off `ActivityContext`
+                // is reasonably performant and simple
+                if (!ActivityContext.TryParse(traceparent, null, out var linkCtxt)) continue;
+
+                output.Write(isFirst ? ",\"@sl\":[" : ",");
+                
+                output.Write("{\"traceid\":\"");
+                output.Write(linkCtxt.TraceId.ToHexString());
+                output.Write("\",\"spanid\":\"");
+                output.Write(linkCtxt.SpanId.ToHexString());
+                output.Write("\"}");
+
+                isFirst = false;
+                hasSpanLinks = true;
+            }
+            
+            if (hasSpanLinks)
+                output.Write("]");
+        }
+
         var skipSpanProperties = false;
         if (logEvent is {TraceId: not null, SpanId: not null} &&
             logEvent.Properties.TryGetValue("SpanStartTimestamp", out var st) &&
@@ -163,6 +194,9 @@ public sealed class SeqCompactJsonFormatter: ITextFormatter
             var name = property.Key;
                 
             if (skipSpanProperties && name is "SpanStartTimestamp" or "ParentSpanId" or "SpanKind")
+                continue;
+
+            if (hasSpanLinks && name is "SpanLinks")
                 continue;
                 
             if (name.Length > 0 && name[0] == '@')

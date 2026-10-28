@@ -6,6 +6,7 @@ using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Serilog.Events;
+using Serilog.Parsing;
 using Xunit;
 // ReSharper disable AccessToDisposedClosure
 // ReSharper disable ParameterOnlyUsedForPreconditionCheck.Local
@@ -194,5 +195,32 @@ public class SeqCompactJsonFormatterTests
         Assert.True(jObject.ContainsKey("SpanStartTimestamp"));
         
         Assert.False(jObject.ContainsKey("@st"));
+    }
+
+    [Fact]
+    public void RecognizesMetricDefinitions()
+    {
+        var definitions = new Dictionary<string, object?>
+        {
+            { "cpu.usage", new { kind = "Gauge" } }
+        };
+
+        var jObject = AssertValidJson(log => log.Information("{@MetricDefinitions}", definitions));
+        
+        Assert.False(jObject.ContainsKey("MetricDefinitions"));
+        
+        Assert.True(jObject.TryGetValue("@d", out var dValue));
+        Assert.Equal("Gauge", dValue["cpu.usage"]!["kind"]);
+    }
+
+    [Fact]
+    public void IgnoresNonDictionaryMetricDefinitions()
+    {
+        var jObject = AssertValidJson(log => log.Information("{Definitions}", "some value"));
+        
+        Assert.False(jObject.ContainsKey("@d"));
+        
+        Assert.True(jObject.TryGetValue("Definitions", out var dValue));
+        Assert.Equal("some value", dValue);
     }
 }

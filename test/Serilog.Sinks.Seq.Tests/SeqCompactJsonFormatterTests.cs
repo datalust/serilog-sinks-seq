@@ -6,6 +6,7 @@ using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Serilog.Events;
+using Serilog.Sinks.Seq.Tests.Support;
 using Xunit;
 // ReSharper disable AccessToDisposedClosure
 // ReSharper disable ParameterOnlyUsedForPreconditionCheck.Local
@@ -165,7 +166,20 @@ public class SeqCompactJsonFormatterTests
         var ps = parent.SpanId;
         const ActivityKind sk = ActivityKind.Server;
         
-        var jObject = AssertValidJson(log => log.Information("{SpanStartTimestamp} {ParentSpanId} {SpanKind}", st, ps, sk));
+        var slTraceId1 = ActivityTraceId.CreateRandom();
+        var slSpanId1 = ActivitySpanId.CreateRandom();
+        var slTraceId2 = ActivityTraceId.CreateRandom();
+        var slSpanId2 = ActivitySpanId.CreateRandom();
+
+        var links = new[]
+        {
+            new ActivityLink(new ActivityContext(slTraceId1, slSpanId1, ActivityTraceFlags.Recorded)),
+            new ActivityLink(new ActivityContext(slTraceId2, slSpanId2, ActivityTraceFlags.None)),
+        };
+        
+        var jObject = AssertValidJson(log => log
+            .ForContext(new SpanLinkEnricher(links))
+            .Information("{SpanStartTimestamp} {ParentSpanId} {SpanKind}", st, ps, sk));
 
         Assert.False(jObject.ContainsKey("SpanStartTimestamp"));
 
@@ -183,6 +197,15 @@ public class SeqCompactJsonFormatterTests
 
         Assert.True(jObject.TryGetValue("@sk", out var skValue));
         Assert.Equal("Server", skValue.ToObject<string>());
+        
+        Assert.True(jObject.TryGetValue("@sl", out var slValue));
+        Assert.Equal(2, slValue.Count());
+
+        Assert.Equal(slTraceId1.ToHexString(), slValue[0]!["traceid"]);
+        Assert.Equal(slSpanId1.ToHexString(), slValue[0]!["spanid"]);
+
+        Assert.Equal(slTraceId2.ToHexString(), slValue[1]!["traceid"]);
+        Assert.Equal(slSpanId2.ToHexString(), slValue[1]!["spanid"]);
     }
     
     [Fact]

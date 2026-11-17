@@ -9,9 +9,9 @@ namespace Serilog.Sinks.Seq.Tests.Support;
 ///
 /// These need to follow the SerilogTracing data model, which is <c>SequenceValue { Elements: IEnumerable{ScalarValue { Value: ActivityLink }} }</c>.
 /// </summary>
-public class SpanLinkEnricher: ILogEventEnricher
+class SpanLinkEnricher: ILogEventEnricher
 {
-    private readonly SequenceValue _spanLinks;
+    readonly SequenceValue _spanLinks;
 
     public SpanLinkEnricher(IEnumerable<ActivityLink> links)
     {

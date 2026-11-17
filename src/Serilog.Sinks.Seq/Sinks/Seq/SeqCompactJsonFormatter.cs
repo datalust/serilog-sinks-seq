@@ -155,6 +155,33 @@ public sealed class SeqCompactJsonFormatter: ITextFormatter
                 output.Write(spanKind);
                 output.Write('\"');
             }
+            
+            var hasSpanLinks = false;
+            if (logEvent.Properties.TryGetValue("SpanLinks", out var sl) &&
+                sl is SequenceValue spanLinks)
+            {
+                var isFirst = true;
+
+                foreach (var link in spanLinks.Elements)
+                {
+                    if (link is not ScalarValue { Value: ActivityLink activityLink })
+                        continue;
+                
+                    output.Write(isFirst ? ",\"@sl\":[" : ",");
+                
+                    output.Write("{\"traceid\":\"");
+                    output.Write(activityLink.Context.TraceId.ToHexString());
+                    output.Write("\",\"spanid\":\"");
+                    output.Write(activityLink.Context.SpanId.ToHexString());
+                    output.Write("\"}");
+
+                    isFirst = false;
+                    hasSpanLinks = true;
+                }
+            
+                if (hasSpanLinks)
+                    output.Write("]");
+            }
         }
 
         var properties = _dottedPropertyNameConvention.ProcessDottedPropertyNames(logEvent.Properties);
@@ -162,9 +189,9 @@ public sealed class SeqCompactJsonFormatter: ITextFormatter
         {
             var name = property.Key;
                 
-            if (skipSpanProperties && name is "SpanStartTimestamp" or "ParentSpanId" or "SpanKind")
+            if (skipSpanProperties && name is "SpanStartTimestamp" or "ParentSpanId" or "SpanKind" or "SpanLinks")
                 continue;
-                
+
             if (name.Length > 0 && name[0] == '@')
             {
                 // Escape first '@' by doubling

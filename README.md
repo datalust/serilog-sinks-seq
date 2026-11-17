@@ -1,4 +1,4 @@
-# Serilog.Sinks.Seq&nbsp;[![Build status](https://github.com/datalust/serilog-sinks-seq/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/datalust/serilog-sinks-seq/actions)&nbsp;[![NuGet](https://img.shields.io/nuget/v/Serilog.Sinks.Seq.svg)](https://nuget.org/packages/serilog.sinks.seq)
+# Serilog.Sinks.Seq&nbsp;[![Build status](https://github.com/datalust/serilog-sinks-seq/actions/workflows/publish.yml/badge.svg?branch=dev)](https://github.com/datalust/serilog-sinks-seq/actions)&nbsp;[![NuGet](https://img.shields.io/nuget/v/Serilog.Sinks.Seq.svg)](https://nuget.org/packages/serilog.sinks.seq)
 
 A Serilog sink that writes events to the [Seq](https://datalust.co/seq) structured log server. Supports all modern .NET platforms.
 

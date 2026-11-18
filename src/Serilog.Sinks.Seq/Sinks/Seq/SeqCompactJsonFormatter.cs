@@ -184,12 +184,21 @@ public sealed class SeqCompactJsonFormatter: ITextFormatter
             }
         }
 
+        if (logEvent.Properties.TryGetValue("MetricDefinitions", out var d))
+        {
+            output.Write(",\"@d\":");
+            _valueFormatter.Format(d, output);
+        }
+
         var properties = _dottedPropertyNameConvention.ProcessDottedPropertyNames(logEvent.Properties);
         foreach (var property in properties)
         {
             var name = property.Key;
                 
             if (skipSpanProperties && name is "SpanStartTimestamp" or "ParentSpanId" or "SpanKind" or "SpanLinks")
+                continue;
+            
+            if (name is "MetricDefinitions")
                 continue;
 
             if (name.Length > 0 && name[0] == '@')

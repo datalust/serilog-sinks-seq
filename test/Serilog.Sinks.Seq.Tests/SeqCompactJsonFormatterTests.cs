@@ -218,4 +218,20 @@ public class SeqCompactJsonFormatterTests
         
         Assert.False(jObject.ContainsKey("@st"));
     }
+
+    [Fact]
+    public void RecognizesMetricDefinitions()
+    {
+        var definitions = new Dictionary<string, object?>
+        {
+            { "cpu.usage", new { kind = "Gauge" } }
+        };
+
+        var jObject = AssertValidJson(log => log.Information("{@MetricDefinitions}", definitions));
+        
+        Assert.False(jObject.ContainsKey("MetricDefinitions"));
+        
+        Assert.True(jObject.TryGetValue("@d", out var dValue));
+        Assert.Equal("Gauge", dValue["cpu.usage"]!["kind"]);
+    }
 }

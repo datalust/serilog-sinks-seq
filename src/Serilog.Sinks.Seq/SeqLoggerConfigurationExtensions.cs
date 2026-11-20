@@ -41,6 +41,9 @@ public static class SeqLoggerConfigurationExtensions
     /// <param name="serverUrl">The base URL of the Seq server that log events will be written to.</param>
     /// <param name="restrictedToMinimumLevel">The minimum log event level required 
     /// in order to write an event to the sink.</param>
+    /// <param name="restrictedToMinimumLevelSwitch">The switch controlling the minimum log event level required 
+    /// in order to write an event to the sink.
+    /// Notice, if the parameter is specified, the <paramref name="restrictedToMinimumLevel"/> should not be used.</param>
     /// <param name="batchPostingLimit">The maximum number of events to post in a single batch.</param>
     /// <param name="period">The time to wait between checking for event batches.</param>
     /// <param name="bufferBaseFilename">Path for a set of files that will be used to buffer events until they
@@ -73,6 +76,7 @@ public static class SeqLoggerConfigurationExtensions
         this LoggerSinkConfiguration loggerSinkConfiguration,
         string serverUrl,
         LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
+        LoggingLevelSwitch? restrictedToMinimumLevelSwitch = null,
         int batchPostingLimit = DefaultBatchPostingLimit,
         TimeSpan? period = null,
         string? apiKey = null,
@@ -115,7 +119,7 @@ public static class SeqLoggerConfigurationExtensions
             
             return loggerSinkConfiguration.Conditional(
                 controlledSwitch.IsIncluded,
-                wt => wt.Sink(batchedSink, options, restrictedToMinimumLevel, levelSwitch: null));
+                wt => wt.Sink(batchedSink, options, restrictedToMinimumLevel, restrictedToMinimumLevelSwitch));
         }
         
         var sink = new DurableSeqSink(
@@ -131,7 +135,7 @@ public static class SeqLoggerConfigurationExtensions
         
         return loggerSinkConfiguration.Conditional(
             controlledSwitch.IsIncluded,
-            wt => wt.Sink(sink, restrictedToMinimumLevel, levelSwitch: null));
+            wt => wt.Sink(sink, restrictedToMinimumLevel, restrictedToMinimumLevelSwitch));
     }
 
     /// <summary>
@@ -142,6 +146,9 @@ public static class SeqLoggerConfigurationExtensions
     /// <param name="serverUrl">The base URL of the Seq server that log events will be written to.</param>
     /// <param name="restrictedToMinimumLevel">The minimum log event level required 
     /// in order to write an event to the sink.</param>
+    /// <param name="restrictedToMinimumLevelSwitch">The switch controlling the minimum log event level required 
+    /// in order to write an event to the sink.
+    /// Notice, if the parameter is specified, the <paramref name="restrictedToMinimumLevel"/> should not be used.</param>
     /// <param name="apiKey">A Seq <i>API key</i> that authenticates the client to the Seq server.</param>
     /// <param name="messageHandler">Used to construct the HttpClient that will send the log messages to Seq.</param>
     /// <param name="payloadFormatter">An <see cref="ITextFormatter"/> that will be used to format (newline-delimited CLEF/JSON)
@@ -153,6 +160,7 @@ public static class SeqLoggerConfigurationExtensions
         this LoggerAuditSinkConfiguration loggerAuditSinkConfiguration,
         string serverUrl,
         LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
+        LoggingLevelSwitch? restrictedToMinimumLevelSwitch = null,
         string? apiKey = null,
         HttpMessageHandler? messageHandler = null,
         ITextFormatter? payloadFormatter = null,
@@ -163,6 +171,6 @@ public static class SeqLoggerConfigurationExtensions
 
         var ingestionApi = new SeqIngestionApiClient(serverUrl, apiKey, messageHandler);
         var sink = new SeqAuditSink(ingestionApi, payloadFormatter ?? CreateDefaultFormatter(formatProvider));
-        return loggerAuditSinkConfiguration.Sink(sink, restrictedToMinimumLevel);
+        return loggerAuditSinkConfiguration.Sink(sink, restrictedToMinimumLevel, restrictedToMinimumLevelSwitch);
     }
 }
